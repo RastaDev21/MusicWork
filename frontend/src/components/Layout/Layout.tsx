@@ -6,18 +6,37 @@ import BottomNav from "../BottomNav/BottomNav";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <Box sx={{ backgroundColor: "#0f0f0f", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        backgroundColor: "#0f0f0f",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Navbar />
-      <Sidebar />
 
       <Box
         sx={{
-          ml: { xs: 0, md: "220px" },
-          pt: "64px",
-          pb: { xs: "56px", md: 0 },
+          display: "flex",
+          flex: 1,
+          mt: "64px",
+          overflow: "hidden",
         }}
       >
-        {children}
+        <Sidebar />
+
+        <Box
+          sx={{
+            flex: 1,
+            ml: { xs: 0, md: "220px" },
+            pb: { xs: "56px", md: 0 },
+            overflowY: "auto",
+            height: "100%",
+          }}
+        >
+          {children}
+        </Box>
       </Box>
 
       <BottomNav />

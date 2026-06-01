@@ -54,8 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
 
       navigate("/feed");
-    } catch (error: any) {
-      throw new Error(error.response?.data?.error || "Erro ao fazer login");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || "Erro ao fazer login");
     } finally {
       setLoading(false);
     }

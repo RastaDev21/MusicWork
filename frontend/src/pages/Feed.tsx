@@ -1,31 +1,20 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Feed() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#0f0f0f", padding: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-        }}
-      >
-        <Typography variant="h5" sx={{ color: "#fff", fontWeight: "bold" }}>
+    <Layout>
+      <Box sx={{ maxWidth: 600, mx: "auto", p: 2 }}>
+        <Typography
+          sx={{ color: "#fff", fontWeight: 700, fontSize: 22, mb: 2 }}
+        >
           Olá, {user?.name}! 👋
         </Typography>
-        <Button
-          variant="outlined"
-          onClick={signOut}
-          sx={{ color: "#7c4dff", borderColor: "#7c4dff" }}
-        >
-          Sair
-        </Button>
+        <Typography sx={{ color: "#aaa" }}>Feed em construção... 🎵</Typography>
       </Box>
-      <Typography sx={{ color: "#aaa" }}>Feed em construção... 🎵</Typography>
-    </Box>
+    </Layout>
   );
 }

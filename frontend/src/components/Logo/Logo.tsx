@@ -3,7 +3,7 @@ export default function Logo() {
     <svg
       viewBox="0 0 680 240"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ width: "280px", height: "auto" }}
+      style={{ width: "160px", height: "auto" }}
     >
       <defs>
         <mask id="text-gaps" maskUnits="userSpaceOnUse">

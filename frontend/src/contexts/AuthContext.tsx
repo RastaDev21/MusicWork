@@ -21,6 +21,15 @@ interface AuthContextData {
   signed: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (data: {
+    name: string;
+    email: string;
+    password: string;
+    instrument?: string;
+    secondaryProfession?: string;
+    city?: string;
+    bio?: string;
+  }) => Promise<void>;
   signOut: () => void;
 }
 
@@ -46,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const response = await api.post("/login", { email, password });
-
       const { token, user } = response.data;
 
       localStorage.setItem("musicwork_token", token.replace(/"/g, ""));
@@ -62,6 +70,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function signUp(data: {
+    name: string;
+    email: string;
+    password: string;
+    instrument?: string;
+    secondaryProfession?: string;
+    city?: string;
+    bio?: string;
+  }) {
+    setLoading(true);
+    try {
+      await api.post("/users", data);
+      await signIn(data.email, data.password);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(err.response?.data?.error || "Erro ao criar conta");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function signOut() {
     localStorage.removeItem("musicwork_token");
     localStorage.removeItem("musicwork_user");
@@ -71,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, signed: !!user, loading, signIn, signOut }}
+      value={{ user, signed: !!user, loading, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

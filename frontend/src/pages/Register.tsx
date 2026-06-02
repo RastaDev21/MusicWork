@@ -1,24 +1,46 @@
 import { useState } from "react";
-import { Box, Button, Container, TextField, Paper, Link } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Paper,
+  Link,
+  Alert,
+} from "@mui/material";
 import Logo from "../components/Logo/Logo";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Register() {
+  const { signUp, loading } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [instrument, setInstrument] = useState("");
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [city, setCity] = useState("");
+  const [error, setError] = useState("");
 
-  function handleSubmit() {
-    console.log({
-      name,
-      email,
-      password,
-      instrument,
-      secondaryProfession,
-      city,
-    });
+  async function handleSubmit() {
+    if (!name || !email || !password) {
+      setError("Nome, email e senha são obrigatórios");
+      return;
+    }
+
+    try {
+      setError("");
+      await signUp({
+        name,
+        email,
+        password,
+        instrument,
+        secondaryProfession,
+        city,
+      });
+    } catch (err: unknown) {
+      const e = err as Error;
+      setError(e.message);
+    }
   }
 
   const inputSx = {
@@ -50,6 +72,12 @@ export default function Register() {
           <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
             <Logo />
           </Box>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <TextField
             fullWidth
@@ -111,9 +139,15 @@ export default function Register() {
             fullWidth
             variant="contained"
             onClick={handleSubmit}
-            sx={{ backgroundColor: "#7c4dff", py: 1.5, fontWeight: "bold" }}
+            disabled={loading}
+            sx={{
+              backgroundColor: "#7c4dff",
+              py: 1.5,
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: "#6a3de8" },
+            }}
           >
-            Cadastrar
+            {loading ? "Criando conta..." : "Cadastrar"}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

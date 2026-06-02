@@ -1,11 +1,37 @@
-import { AppBar, Toolbar, Box, IconButton, InputBase } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  IconButton,
+  InputBase,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  function handleOpenMenu(event: React.MouseEvent<HTMLElement>) {
+    setAnchorEl(event.currentTarget);
+  }
+
+  function handleCloseMenu() {
+    setAnchorEl(null);
+  }
+
+  function handleSignOut() {
+    handleCloseMenu();
+    signOut();
+  }
 
   return (
     <AppBar
@@ -47,6 +73,7 @@ export default function Navbar() {
           </IconButton>
 
           <Box
+            onClick={handleOpenMenu}
             sx={{
               width: 36,
               height: 36,
@@ -59,10 +86,64 @@ export default function Navbar() {
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",
+              "&:hover": { backgroundColor: "#6a3de8" },
             }}
           >
             {user?.name?.charAt(0).toUpperCase()}
           </Box>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #2a2a2a",
+                  borderRadius: 2,
+                  mt: 1,
+                },
+              },
+            }}
+          >
+            <MenuItem disabled sx={{ opacity: 1, pb: 0 }}>
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
+                {user?.name}
+              </Typography>
+            </MenuItem>
+            <MenuItem disabled sx={{ opacity: 1, pt: 0 }}>
+              <Typography sx={{ color: "#666", fontSize: 12 }}>
+                {user?.instrument} · {user?.city}
+              </Typography>
+            </MenuItem>
+
+            <Box sx={{ borderTop: "1px solid #2a2a2a", my: 0.5 }} />
+
+            <MenuItem
+              onClick={handleCloseMenu}
+              sx={{
+                color: "#aaa",
+                gap: 1,
+                "&:hover": { color: "#fff", backgroundColor: "#2a2a2a" },
+              }}
+            >
+              <PersonIcon fontSize="small" />
+              Perfil
+            </MenuItem>
+
+            <MenuItem
+              onClick={handleSignOut}
+              sx={{
+                color: "#ff4d6d",
+                gap: 1,
+                "&:hover": { backgroundColor: "#2a2a2a" },
+              }}
+            >
+              <LogoutIcon fontSize="small" />
+              Sair
+            </MenuItem>
+          </Menu>
         </Box>
       </Toolbar>
     </AppBar>

@@ -4,14 +4,20 @@ const api = axios.create({
   baseURL: "http://localhost:3333",
 });
 
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem("musicwork_token");
+api.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem("musicwork_token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+    if (token) {
+      const cleanToken = token.replace(/^"|"$/g, "");
+      config.headers.set("Authorization", `Bearer ${cleanToken}`);
+    }
 
-  return config;
-});
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  },
+);
 
 export default api;

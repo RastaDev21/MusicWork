@@ -1,8 +1,31 @@
 import { Box, Avatar, InputBase, Button } from "@mui/material";
+import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import api from "../../services/api";
 
-export default function NewPost() {
+interface NewPostProps {
+  onPost: () => void;
+}
+
+export default function NewPost({ onPost }: NewPostProps) {
   const { user } = useAuth();
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handlePost() {
+    if (!content.trim()) return;
+
+    setLoading(true);
+    try {
+      await api.post("/posts", { content });
+      setContent("");
+      onPost();
+    } catch (error) {
+      console.error("Erro ao criar post:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Box
@@ -24,6 +47,8 @@ export default function NewPost() {
       <InputBase
         fullWidth
         placeholder="No que você está pensando?"
+        value={content}
+        onChange={e => setContent(e.target.value)}
         sx={{
           color: "#aaa",
           fontSize: 14,
@@ -38,15 +63,18 @@ export default function NewPost() {
 
       <Button
         variant="contained"
+        onClick={handlePost}
+        disabled={loading || !content.trim()}
         sx={{
           backgroundColor: "#7c4dff",
           fontWeight: 700,
           borderRadius: 2,
           whiteSpace: "nowrap",
           "&:hover": { backgroundColor: "#6a3de8" },
+          "&:disabled": { backgroundColor: "#3a2a6a", color: "#666" },
         }}
       >
-        Postar
+        {loading ? "Postando..." : "Postar"}
       </Button>
     </Box>
   );

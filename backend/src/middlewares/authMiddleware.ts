@@ -17,16 +17,15 @@ export function authMiddleware(
     return response.status(401).json({ error: "Token não fornecido" });
   }
 
-  const [, token] = authHeader.split(" ");
+  const parts = authHeader.split(" ");
+  const token = parts[1];
 
   try {
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "default_secret",
     ) as TokenPayload;
-
-    request.body.userId = decoded.id;
-
+    request.headers["userId"] = decoded.id;
     return next();
   } catch {
     return response.status(401).json({ error: "Token inválido" });

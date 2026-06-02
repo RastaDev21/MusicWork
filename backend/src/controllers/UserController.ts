@@ -37,7 +37,7 @@ class UserController {
   }
   async profile(request: Request, response: Response) {
     try {
-      const { userId } = request.body;
+      const userId = request.headers["userId"] as string;
 
       const user = await UserService.findById(userId);
 

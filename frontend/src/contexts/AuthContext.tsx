@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const { token, user } = response.data;
 
-      localStorage.setItem("musicwork_token", token);
+      localStorage.setItem("musicwork_token", token.replace(/"/g, ""));
       localStorage.setItem("musicwork_user", JSON.stringify(user));
       setUser(user);
 

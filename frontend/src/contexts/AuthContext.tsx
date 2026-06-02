@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const response = await api.post("/login", { email, password });
+
       const { token, user } = response.data;
 
       localStorage.setItem("musicwork_token", token.replace(/"/g, ""));

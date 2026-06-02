@@ -7,9 +7,75 @@ import {
   Paper,
   Link,
   Alert,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import Logo from "../components/Logo/Logo";
 import { useAuth } from "../contexts/AuthContext";
+
+const instruments = [
+  "Guitarra",
+  "Baixo",
+  "Bateria",
+  "Teclado",
+  "Violão",
+  "Voz",
+  "Saxofone",
+  "Trompete",
+  "Violino",
+  "Percussão",
+  "DJ",
+  "Produtor Musical",
+  "Outro",
+];
+
+const professions = [
+  "Designer",
+  "Fotógrafo",
+  "Editor de vídeo",
+  "Desenvolvedor",
+  "Marketing",
+  "Professor",
+  "Técnico de som",
+  "Eletricista",
+  "Barbeiro",
+  "Tatuador",
+  "Outro",
+];
+
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    color: "#fff",
+    "& fieldset": { borderColor: "#444" },
+    "&:hover fieldset": { borderColor: "#7c4dff" },
+    "&.Mui-focused fieldset": { borderColor: "#7c4dff" },
+  },
+  "& .MuiInputLabel-root": { color: "#aaa" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "#7c4dff" },
+};
+
+const selectSx = {
+  color: "#fff",
+  "& .MuiOutlinedInput-notchedOutline": { borderColor: "#444" },
+  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#7c4dff" },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#7c4dff" },
+  "& .MuiSvgIcon-root": { color: "#aaa" },
+};
+
+const menuSx = {
+  "& .MuiPaper-root": {
+    backgroundColor: "#1a1a1a",
+    border: "1px solid #2a2a2a",
+  },
+};
+
+const menuItemSx = {
+  color: "#fff",
+  "&:hover": { backgroundColor: "#7c4dff22" },
+  "&.Mui-selected": { backgroundColor: "#7c4dff33" },
+};
 
 export default function Register() {
   const { signUp, loading } = useAuth();
@@ -26,7 +92,6 @@ export default function Register() {
       setError("Nome, email e senha são obrigatórios");
       return;
     }
-
     try {
       setError("");
       await signUp({
@@ -42,17 +107,6 @@ export default function Register() {
       setError(e.message);
     }
   }
-
-  const inputSx = {
-    "& .MuiOutlinedInput-root": {
-      color: "#fff",
-      "& fieldset": { borderColor: "#444" },
-      "&:hover fieldset": { borderColor: "#7c4dff" },
-      "&.Mui-focused fieldset": { borderColor: "#7c4dff" },
-    },
-    "& .MuiInputLabel-root": { color: "#aaa" },
-    "& .MuiInputLabel-root.Mui-focused": { color: "#7c4dff" },
-  };
 
   return (
     <Box
@@ -108,32 +162,58 @@ export default function Register() {
           />
 
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel
+                sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+              >
+                Instrumento
+              </InputLabel>
+              <Select
+                value={instrument}
+                label="Instrumento"
+                onChange={e => setInstrument(e.target.value)}
+                sx={selectSx}
+                MenuProps={{ sx: menuSx }}
+              >
+                {instruments.map(i => (
+                  <MenuItem key={i} value={i} sx={menuItemSx}>
+                    {i}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
             <TextField
               fullWidth
-              label="Instrumento"
-              variant="outlined"
-              value={instrument}
-              onChange={e => setInstrument(e.target.value)}
-              sx={inputSx}
-            />
-            <TextField
-              fullWidth
-              label="Cidade"
+              label="Cidade - Estado"
               variant="outlined"
               value={city}
               onChange={e => setCity(e.target.value)}
+              placeholder="Ex: Santos - SP"
               sx={inputSx}
             />
           </Box>
 
-          <TextField
-            fullWidth
-            label="Profissão secundária"
-            variant="outlined"
-            value={secondaryProfession}
-            onChange={e => setSecondaryProfession(e.target.value)}
-            sx={{ ...inputSx, mb: 3 }}
-          />
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel
+              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+            >
+              Profissão secundária
+            </InputLabel>
+            <Select
+              value={secondaryProfession}
+              label="Profissão secundária"
+              onChange={e => setSecondaryProfession(e.target.value)}
+              sx={selectSx}
+              MenuProps={{ sx: menuSx }}
+            >
+              {professions.map(p => (
+                <MenuItem key={p} value={p} sx={menuItemSx}>
+                  {p}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
           <Button
             fullWidth

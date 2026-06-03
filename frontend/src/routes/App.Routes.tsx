@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Feed from "../pages/Feed";
+import Profile from "../pages/Profile";
 import PrivateRoute from "./PrivateRoute";
 
 export default function AppRoutes() {
@@ -14,6 +15,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Feed />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/perfil"
+        element={
+          <PrivateRoute>
+            <Profile />
           </PrivateRoute>
         }
       />

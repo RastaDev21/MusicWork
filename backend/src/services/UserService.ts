@@ -54,6 +54,35 @@ class UserService {
       bio: user.bio,
     };
   }
+
+  async updateUser(
+    id: string,
+    data: {
+      name?: string;
+      instrument?: string;
+      secondaryProfession?: string;
+      city?: string;
+      bio?: string;
+    },
+  ) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    await user.update(data);
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      instrument: user.instrument,
+      secondaryProfession: user.secondaryProfession,
+      city: user.city,
+      bio: user.bio,
+    };
+  }
 }
 
 export default new UserService();

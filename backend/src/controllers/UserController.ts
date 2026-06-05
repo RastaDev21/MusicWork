@@ -46,6 +46,26 @@ class UserController {
       return response.status(400).json({ error: error.message });
     }
   }
+
+  async update(request: Request, response: Response) {
+    try {
+      const userId = request.headers["userId"] as string;
+      const { name, instrument, secondaryProfession, city, bio } = request.body;
+
+      const user = await UserService.updateUser(userId, {
+        name,
+        instrument,
+        secondaryProfession,
+        city,
+        bio,
+      });
+
+      return response.status(200).json(user);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
 }
 
 export default new UserController();

@@ -1,4 +1,19 @@
-import { Box, Typography, Chip, Button, Divider } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Chip,
+  Button,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
@@ -18,6 +33,36 @@ interface Post {
   };
 }
 
+const instruments = [
+  "Guitarra",
+  "Baixo",
+  "Bateria",
+  "Teclado",
+  "Violão",
+  "Voz",
+  "Saxofone",
+  "Trompete",
+  "Violino",
+  "Percussão",
+  "DJ",
+  "Produtor Musical",
+  "Outro",
+];
+
+const professions = [
+  "Designer",
+  "Fotógrafo",
+  "Editor de vídeo",
+  "Desenvolvedor",
+  "Marketing",
+  "Professor",
+  "Técnico de som",
+  "Eletricista",
+  "Barbeiro",
+  "Tatuador",
+  "Outro",
+];
+
 function timeAgo(date: string) {
   const now = new Date();
   const created = new Date(date);
@@ -28,40 +73,103 @@ function timeAgo(date: string) {
   return `${Math.floor(diff / 1440)}d atrás`;
 }
 
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    color: "#fff",
+    "& fieldset": { borderColor: "#444" },
+    "&:hover fieldset": { borderColor: "#7c4dff" },
+    "&.Mui-focused fieldset": { borderColor: "#7c4dff" },
+  },
+  "& .MuiInputLabel-root": { color: "#aaa" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "#7c4dff" },
+};
+
+const selectSx = {
+  color: "#fff",
+  "& .MuiOutlinedInput-notchedOutline": { borderColor: "#444" },
+  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#7c4dff" },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#7c4dff" },
+  "& .MuiSvgIcon-root": { color: "#aaa" },
+};
+
+const menuSx = {
+  "& .MuiPaper-root": {
+    backgroundColor: "#1a1a1a",
+    border: "1px solid #2a2a2a",
+  },
+};
+
+const menuItemSx = {
+  color: "#fff",
+  "&:hover": { backgroundColor: "#7c4dff22" },
+  "&.Mui-selected": { backgroundColor: "#7c4dff33" },
+};
+
 export default function Profile() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [name, setName] = useState(user?.name || "");
+  const [instrument, setInstrument] = useState(user?.instrument || "");
+  const [city, setCity] = useState(user?.city || "");
+  const [secondaryProfession, setSecondaryProfession] = useState("");
+  const [bio, setBio] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function loadMyPosts() {
+    async function loadData() {
       try {
-        const response = await api.get("/posts");
-        const myPosts = response.data.filter(
+        const [postsRes, profileRes] = await Promise.all([
+          api.get("/posts"),
+          api.get("/profile"),
+        ]);
+
+        const myPosts = postsRes.data.filter(
           (post: Post & { userId: string }) => post.User.name === user?.name,
         );
         setPosts(myPosts);
+        setBio(profileRes.data.bio || "");
+        setSecondaryProfession(profileRes.data.secondaryProfession || "");
       } catch (error) {
         console.error(error);
       }
     }
-    loadMyPosts();
+    loadData();
   }, [user]);
+
+  async function handleSave() {
+    setLoading(true);
+    try {
+      await api.put("/users", {
+        name,
+        instrument,
+        secondaryProfession,
+        city,
+        bio,
+      });
+      const savedUser = localStorage.getItem("musicwork_user");
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        const updated = { ...parsed, name, instrument, city };
+        localStorage.setItem("musicwork_user", JSON.stringify(updated));
+        window.location.reload();
+      }
+      setOpenEdit(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Layout>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         {/* Capa */}
-        <Box
-          sx={{
-            height: 160,
-            backgroundColor: "#2a2a2a",
-            position: "relative",
-          }}
-        />
+        <Box sx={{ height: 160, backgroundColor: "#2a2a2a" }} />
 
-        {/* Header do perfil */}
+        {/* Header */}
         <Box sx={{ px: 3, pb: 2, borderBottom: "1px solid #2a2a2a" }}>
-          {/* Avatar */}
           <Box
             sx={{
               width: 90,
@@ -124,6 +232,7 @@ export default function Profile() {
             <Button
               startIcon={<EditIcon />}
               variant="outlined"
+              onClick={() => setOpenEdit(true)}
               sx={{
                 color: "#7c4dff",
                 borderColor: "#7c4dff",
@@ -137,7 +246,6 @@ export default function Profile() {
             </Button>
           </Box>
 
-          {/* Estatísticas */}
           <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
             {[
               { label: "Posts", value: posts.length },
@@ -156,11 +264,17 @@ export default function Profile() {
               </Box>
             ))}
           </Box>
+          {bio && (
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}>
+                {bio}
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         {/* Conteúdo */}
         <Box sx={{ display: "flex", gap: 2, p: 2 }}>
-          {/* Posts */}
           <Box sx={{ flex: 1 }}>
             <Typography
               sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 2 }}
@@ -188,7 +302,6 @@ export default function Profile() {
             )}
           </Box>
 
-          {/* Card lateral — só desktop */}
           <Box sx={{ width: 200, display: { xs: "none", md: "block" } }}>
             <Box
               sx={{
@@ -200,6 +313,7 @@ export default function Profile() {
             >
               {[
                 { label: "Instrumento", value: user?.instrument },
+                { label: "Profissão", value: secondaryProfession },
                 { label: "Cidade", value: user?.city },
               ].map((item, i) => (
                 <Box key={item.label}>
@@ -218,6 +332,112 @@ export default function Profile() {
           </Box>
         </Box>
       </Box>
+
+      {/* Modal de edição */}
+      <Dialog
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: { sx: { backgroundColor: "#1a1a1a", borderRadius: 3 } },
+        }}
+      >
+        <DialogTitle sx={{ color: "#fff", borderBottom: "1px solid #2a2a2a" }}>
+          Editar perfil
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <TextField
+            fullWidth
+            label="Nome"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            sx={{ ...inputSx, mb: 2, mt: 1 }}
+          />
+
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel
+                sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+              >
+                Instrumento
+              </InputLabel>
+              <Select
+                value={instrument}
+                label="Instrumento"
+                onChange={e => setInstrument(e.target.value)}
+                sx={selectSx}
+                MenuProps={{ sx: menuSx }}
+              >
+                {instruments.map(i => (
+                  <MenuItem key={i} value={i} sx={menuItemSx}>
+                    {i}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              label="Cidade - Estado"
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              sx={inputSx}
+            />
+          </Box>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel
+              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+            >
+              Profissão secundária
+            </InputLabel>
+            <Select
+              value={secondaryProfession}
+              label="Profissão secundária"
+              onChange={e => setSecondaryProfession(e.target.value)}
+              sx={selectSx}
+              MenuProps={{ sx: menuSx }}
+            >
+              {professions.map(p => (
+                <MenuItem key={p} value={p} sx={menuItemSx}>
+                  {p}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            label="Bio"
+            multiline
+            rows={3}
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            placeholder="Conta um pouco sobre você..."
+            sx={inputSx}
+          />
+        </DialogContent>
+        <DialogActions sx={{ borderTop: "1px solid #2a2a2a", p: 2, gap: 1 }}>
+          <Button
+            onClick={() => setOpenEdit(false)}
+            sx={{ color: "#aaa", "&:hover": { color: "#fff" } }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={loading}
+            sx={{
+              backgroundColor: "#7c4dff",
+              "&:hover": { backgroundColor: "#6a3de8" },
+            }}
+          >
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 }

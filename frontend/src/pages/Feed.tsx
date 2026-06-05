@@ -7,6 +7,7 @@ import api from "../services/api";
 
 interface Post {
   id: string;
+  userId: string;
   content: string;
   createdAt: string;
   User: {
@@ -31,7 +32,12 @@ function timeAgo(date: string) {
 export default function Feed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const currentUser = JSON.parse(
+    localStorage.getItem("musicwork_user") || "{}",
+  );
+  console.log("currentUser id:", currentUser?.id);
+  console.log("primeiro post userId:", posts[0]?.userId);
+  console.log("isOwner:", currentUser?.id === posts[0]?.userId);
   async function loadPosts() {
     const token = localStorage.getItem("musicwork_token");
     if (!token) return;
@@ -43,6 +49,14 @@ export default function Feed() {
       console.error("Erro ao carregar posts:", error);
     } finally {
       setLoading(false);
+    }
+  }
+  async function handleDelete(postId: string) {
+    try {
+      await api.delete(`/posts/${postId}`);
+      loadPosts();
+    } catch (error) {
+      console.error("Erro ao deletar post:", error);
     }
   }
 
@@ -72,6 +86,7 @@ export default function Feed() {
           posts.map(post => (
             <PostCard
               key={post.id}
+              id={post.id}
               name={post.User.name}
               instrument={post.User.instrument}
               secondaryProfession={post.User.secondaryProfession}
@@ -80,6 +95,8 @@ export default function Feed() {
               content={post.content}
               likes={0}
               comments={0}
+              isOwner={currentUser?.id === post.userId}
+              onDelete={handleDelete}
             />
           ))
         )}

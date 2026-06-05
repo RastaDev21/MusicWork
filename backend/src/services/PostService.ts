@@ -31,6 +31,22 @@ class PostService {
 
     return posts;
   }
+
+  async deletePost(postId: string, userId: string) {
+    const post = await Post.findByPk(postId);
+
+    if (!post) {
+      throw new Error("Post não encontrado");
+    }
+
+    if (post.userId !== userId) {
+      throw new Error("Você não pode deletar o post de outro usuário");
+    }
+
+    await post.destroy();
+
+    return { message: "Post deletado com sucesso" };
+  }
 }
 
 export default new PostService();

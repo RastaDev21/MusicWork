@@ -2,8 +2,9 @@ import { Box, Typography, Avatar, IconButton, Chip } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import ShareIcon from "@mui/icons-material/Share";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 interface PostCardProps {
+  id: string;
   name: string;
   instrument: string;
   secondaryProfession: string;
@@ -12,9 +13,12 @@ interface PostCardProps {
   content: string;
   likes: number;
   comments: number;
+  isOwner?: boolean;
+  onDelete?: (id: string) => void;
 }
 
 export default function PostCard({
+  id,
   name,
   instrument,
   secondaryProfession,
@@ -23,6 +27,8 @@ export default function PostCard({
   content,
   likes,
   comments,
+  isOwner,
+  onDelete,
 }: PostCardProps) {
   return (
     <Box
@@ -65,6 +71,19 @@ export default function PostCard({
             {secondaryProfession} · {city} · {time}
           </Typography>
         </Box>
+
+        {isOwner && onDelete && (
+          <IconButton
+            size="small"
+            onClick={() => onDelete(id)}
+            sx={{
+              color: "#555",
+              "&:hover": { color: "#ff4d6d", backgroundColor: "#ff4d6d11" },
+            }}
+          >
+            <DeleteIcon fontSize="small" />{" "}
+          </IconButton>
+        )}
       </Box>
 
       <Typography sx={{ color: "#ccc", fontSize: 14, lineHeight: 1.7, mb: 2 }}>
@@ -88,19 +107,17 @@ export default function PostCard({
           </IconButton>
           <Typography sx={{ color: "#666", fontSize: 13 }}>{likes}</Typography>
         </Box>
-
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <IconButton
             size="small"
             sx={{ color: "#666", "&:hover": { color: "#7c4dff" } }}
           >
-            <ModeCommentOutlinedIcon fontSize="small" />{" "}
+            <ModeCommentOutlinedIcon fontSize="small" />
           </IconButton>
           <Typography sx={{ color: "#666", fontSize: 13 }}>
             {comments}
           </Typography>
         </Box>
-
         <IconButton
           size="small"
           sx={{ color: "#666", "&:hover": { color: "#7c4dff" } }}

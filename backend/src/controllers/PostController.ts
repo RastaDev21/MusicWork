@@ -26,6 +26,20 @@ class PostController {
       return response.status(400).json({ error: err.message });
     }
   }
+
+  async delete(request: Request, response: Response) {
+    try {
+      const { id } = request.params;
+      const userId = request.headers["userId"] as string;
+
+      const result = await PostService.deletePost(id, userId);
+
+      return response.status(200).json(result);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
 }
 
 export default new PostController();

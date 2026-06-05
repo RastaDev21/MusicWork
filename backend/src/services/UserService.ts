@@ -34,6 +34,8 @@ class UserService {
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
+      avatarUrl: user.avatarUrl, // 👈
+      coverUrl: user.coverUrl, // 👈
     };
   }
 
@@ -52,6 +54,8 @@ class UserService {
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
+      avatarUrl: user.avatarUrl,
+      coverUrl: user.coverUrl,
     };
   }
 
@@ -63,6 +67,8 @@ class UserService {
       secondaryProfession?: string;
       city?: string;
       bio?: string;
+      avatarUrl?: string | null;
+      coverUrl?: string | null;
     },
   ) {
     const user = await User.findByPk(id);
@@ -81,6 +87,8 @@ class UserService {
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
+      avatarUrl: user.avatarUrl, // 👈
+      coverUrl: user.coverUrl, // 👈
     };
   }
 }

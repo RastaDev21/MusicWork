@@ -19,8 +19,7 @@ import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 import PostCard from "../components/PostCard/PostCard";
 import { useEffect, useState } from "react";
-import api from "../services/api";
-
+import api, { uploadAvatar, uploadCover } from "../services/api";
 interface Post {
   id: string;
   content: string;
@@ -115,6 +114,10 @@ export default function Profile() {
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -129,6 +132,8 @@ export default function Profile() {
         );
         setPosts(myPosts);
         setBio(profileRes.data.bio || "");
+        setAvatarUrl(profileRes.data.avatarUrl || null);
+        setCoverUrl(profileRes.data.coverUrl || null);
         setSecondaryProfession(profileRes.data.secondaryProfession || "");
       } catch (error) {
         console.error(error);
@@ -161,16 +166,93 @@ export default function Profile() {
       setLoading(false);
     }
   }
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      const data = await uploadAvatar(file);
+      setAvatarUrl(data.avatarUrl);
+    } catch (error) {
+      console.error("Erro ao enviar avatar:", error);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCover(true);
+    try {
+      const data = await uploadCover(file);
+      setCoverUrl(data.coverUrl);
+    } catch (error) {
+      console.error("Erro ao enviar capa:", error);
+    } finally {
+      setUploadingCover(false);
+    }
+  }
 
   return (
     <Layout>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         {/* Capa */}
-        <Box sx={{ height: 160, backgroundColor: "#2a2a2a" }} />
+        <Box
+          component="label" // vira um label para o input ficar dentro
+          sx={{
+            height: 160,
+            backgroundColor: "#2a2a2a",
+            display: "block",
+            position: "relative",
+            cursor: "pointer",
+            overflow: "hidden",
+            "&:hover .cover-overlay": { opacity: 1 },
+          }}
+        >
+          {/* Mostra a foto de capa se tiver, senão fundo escuro */}
+          {coverUrl && (
+            <Box
+              component="img"
+              src={`http://localhost:3333${coverUrl}`}
+              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )}
+
+          {/* Overlay com ícone de câmera */}
+          <Box
+            className="cover-overlay"
+            sx={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.45)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: coverUrl ? 0 : 1, // se não tiver foto, sempre visível
+              transition: "opacity 0.2s",
+            }}
+          >
+            <Typography sx={{ color: "#fff", fontSize: 13 }}>
+              {uploadingCover ? "Enviando..." : "📷 Alterar foto de capa"}
+            </Typography>
+          </Box>
+
+          {/* Input escondido que abre o seletor de arquivo */}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleCoverChange}
+          />
+        </Box>
 
         {/* Header */}
         <Box sx={{ px: 3, pb: 2, borderBottom: "1px solid #2a2a2a" }}>
           <Box
+            component="label"
             sx={{
               width: 90,
               height: 90,
@@ -187,9 +269,49 @@ export default function Profile() {
               mb: 1.5,
               position: "relative",
               zIndex: 1,
+              cursor: "pointer",
+              overflow: "hidden",
+              "&:hover .avatar-overlay": { opacity: 1 },
             }}
           >
-            {user?.name?.charAt(0).toUpperCase()}
+            {/* Foto ou inicial */}
+            {avatarUrl ? (
+              <Box
+                component="img"
+                src={`http://localhost:3333${avatarUrl}`}
+                sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              user?.name?.charAt(0).toUpperCase()
+            )}
+
+            {/* Overlay com câmera */}
+            <Box
+              className="avatar-overlay"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0,
+                transition: "opacity 0.2s",
+                borderRadius: "50%",
+              }}
+            >
+              <Typography sx={{ fontSize: 20 }}>
+                {uploadingAvatar ? "⏳" : "📷"}
+              </Typography>
+            </Box>
+
+            {/* Input escondido */}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleAvatarChange}
+            />
           </Box>
 
           <Box
@@ -289,6 +411,7 @@ export default function Profile() {
               posts.map(post => (
                 <PostCard
                   key={post.id}
+                  id={post.id}
                   name={post.User.name}
                   instrument={post.User.instrument}
                   secondaryProfession={post.User.secondaryProfession}

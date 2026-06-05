@@ -20,4 +20,26 @@ api.interceptors.request.use(
   },
 );
 
+export async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await api.post("/upload/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data;
+}
+
+export async function uploadCover(file: File) {
+  const formData = new FormData();
+  formData.append("cover", file);
+
+  const response = await api.post("/upload/cover", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data;
+}
+
 export default api;

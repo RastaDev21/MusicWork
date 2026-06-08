@@ -10,6 +10,8 @@ interface Post {
   userId: string;
   content: string;
   createdAt: string;
+  likesCount: number;
+  likedByMe: boolean;
   User: {
     name: string;
     instrument: string;
@@ -35,9 +37,6 @@ export default function Feed() {
   const currentUser = JSON.parse(
     localStorage.getItem("musicwork_user") || "{}",
   );
-  console.log("currentUser id:", currentUser?.id);
-  console.log("primeiro post userId:", posts[0]?.userId);
-  console.log("isOwner:", currentUser?.id === posts[0]?.userId);
   async function loadPosts() {
     const token = localStorage.getItem("musicwork_token");
     if (!token) return;
@@ -93,7 +92,8 @@ export default function Feed() {
               city={post.User.city}
               time={timeAgo(post.createdAt)}
               content={post.content}
-              likes={0}
+              likes={post.likesCount}
+              likedByMe={post.likedByMe}
               comments={0}
               isOwner={currentUser?.id === post.userId}
               onDelete={handleDelete}

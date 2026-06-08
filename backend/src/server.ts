@@ -10,9 +10,11 @@ import userRouter from "./routes/userRoutes";
 import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
 import uploadRouter from "./routes/uploadRoutes";
+import likeRouter from "./routes/likeRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
+import Like from "./models/Like";
 
 const app = express();
 
@@ -25,6 +27,7 @@ app.use(userRouter);
 app.use(authRouter);
 app.use(postRouter);
 app.use(uploadRouter);
+app.use(likeRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -39,6 +42,16 @@ User.sync({ alter: true }).then(() => {
 
 Post.sync({ alter: true }).then(() => {
   console.log("✅ Tabela posts sincronizada");
+});
+
+User.hasMany(Like, { foreignKey: "userId" });
+Like.belongsTo(User, { foreignKey: "userId" });
+
+Post.hasMany(Like, { foreignKey: "postId" });
+Like.belongsTo(Post, { foreignKey: "postId" });
+
+Like.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela likes sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

@@ -1,8 +1,12 @@
 import { Box, Typography, Avatar, IconButton, Chip } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useState } from "react";
+import api from "../../services/api";
+
 interface PostCardProps {
   id: string;
   name: string;
@@ -13,6 +17,7 @@ interface PostCardProps {
   content: string;
   likes: number;
   comments: number;
+  likedByMe?: boolean; // 👈 o backend já nos diz se curtimos
   isOwner?: boolean;
   onDelete?: (id: string) => void;
 }
@@ -27,9 +32,29 @@ export default function PostCard({
   content,
   likes,
   comments,
+  likedByMe = false,
   isOwner,
   onDelete,
 }: PostCardProps) {
+  const [liked, setLiked] = useState(likedByMe);
+  const [likesCount, setLikesCount] = useState(likes);
+
+  async function handleLike() {
+    try {
+      const response = await api.post(`/likes/${id}`);
+
+      if (response.data.liked) {
+        setLiked(true);
+        setLikesCount(prev => prev + 1);
+      } else {
+        setLiked(false);
+        setLikesCount(prev => prev - 1);
+      }
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -81,7 +106,7 @@ export default function PostCard({
               "&:hover": { color: "#ff4d6d", backgroundColor: "#ff4d6d11" },
             }}
           >
-            <DeleteIcon fontSize="small" />{" "}
+            <DeleteIcon fontSize="small" />
           </IconButton>
         )}
       </Box>
@@ -98,15 +123,29 @@ export default function PostCard({
           pt: 1.5,
         }}
       >
+        {/* Botão de curtir */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <IconButton
             size="small"
-            sx={{ color: "#666", "&:hover": { color: "#ff4d6d" } }}
+            onClick={handleLike}
+            sx={{
+              color: liked ? "#ff4d6d" : "#666",
+              "&:hover": { color: "#ff4d6d" },
+              transition: "color 0.2s",
+            }}
           >
-            <FavoriteBorderIcon fontSize="small" />
+            {/* Coração cheio se curtido, vazio se não */}
+            {liked ? (
+              <FavoriteIcon fontSize="small" />
+            ) : (
+              <FavoriteBorderIcon fontSize="small" />
+            )}
           </IconButton>
-          <Typography sx={{ color: "#666", fontSize: 13 }}>{likes}</Typography>
+          <Typography sx={{ color: liked ? "#ff4d6d" : "#666", fontSize: 13 }}>
+            {likesCount}
+          </Typography>
         </Box>
+
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <IconButton
             size="small"
@@ -118,6 +157,7 @@ export default function PostCard({
             {comments}
           </Typography>
         </Box>
+
         <IconButton
           size="small"
           sx={{ color: "#666", "&:hover": { color: "#7c4dff" } }}

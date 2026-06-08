@@ -18,7 +18,9 @@ class PostController {
 
   async list(request: Request, response: Response) {
     try {
-      const posts = await PostService.listPosts();
+      const userId = request.headers["userId"] as string;
+
+      const posts = await PostService.listPosts(userId);
 
       return response.status(200).json(posts);
     } catch (error: unknown) {
@@ -29,7 +31,7 @@ class PostController {
 
   async delete(request: Request, response: Response) {
     try {
-      const { id } = request.params;
+      const id = request.params.id as string;
       const userId = request.headers["userId"] as string;
 
       const result = await PostService.deletePost(id, userId);

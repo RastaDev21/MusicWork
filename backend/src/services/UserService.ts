@@ -34,8 +34,8 @@ class UserService {
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
-      avatarUrl: user.avatarUrl, // 👈
-      coverUrl: user.coverUrl, // 👈
+      avatarUrl: user.avatarUrl,
+      coverUrl: user.coverUrl,
     };
   }
 
@@ -87,8 +87,8 @@ class UserService {
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
-      avatarUrl: user.avatarUrl, // 👈
-      coverUrl: user.coverUrl, // 👈
+      avatarUrl: user.avatarUrl,
+      coverUrl: user.coverUrl,
     };
   }
 }

@@ -1,5 +1,6 @@
 import Post from "../models/Post";
 import User from "../models/User";
+import Like from "../models/Like";
 
 class PostService {
   async createPost(content: string, userId: string) {
@@ -12,7 +13,7 @@ class PostService {
     return post;
   }
 
-  async listPosts() {
+  async listPosts(currentUserId?: string) {
     const posts = await Post.findAll({
       include: [
         {
@@ -23,13 +24,25 @@ class PostService {
             "instrument",
             "secondaryProfession",
             "city",
+            "avatarUrl",
           ],
+        },
+        {
+          model: Like,
+          attributes: ["userId"],
         },
       ],
       order: [["createdAt", "DESC"]],
     });
 
-    return posts;
+    return posts.map(post => {
+      const likes = (post as any).Likes || [];
+      return {
+        ...post.toJSON(),
+        likesCount: likes.length,
+        likedByMe: likes.some((like: any) => like.userId === currentUserId),
+      };
+    });
   }
 
   async deletePost(postId: string, userId: string) {

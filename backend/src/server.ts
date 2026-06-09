@@ -11,10 +11,12 @@ import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
 import uploadRouter from "./routes/uploadRoutes";
 import likeRouter from "./routes/likeRoutes";
+import workRouter from "./routes/workRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
 import Like from "./models/Like";
+import Work from "./models/Work";
 
 const app = express();
 
@@ -28,6 +30,7 @@ app.use(authRouter);
 app.use(postRouter);
 app.use(uploadRouter);
 app.use(likeRouter);
+app.use(workRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -35,6 +38,15 @@ app.get("/health", (request, response) => {
 
 User.hasMany(Post, { foreignKey: "userId" });
 Post.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(Like, { foreignKey: "userId" });
+Like.belongsTo(User, { foreignKey: "userId" });
+
+Post.hasMany(Like, { foreignKey: "postId" });
+Like.belongsTo(Post, { foreignKey: "postId" });
+
+User.hasMany(Work, { foreignKey: "userId" });
+Work.belongsTo(User, { foreignKey: "userId" });
 
 User.sync({ alter: true }).then(() => {
   console.log("✅ Tabela users sincronizada");
@@ -44,14 +56,12 @@ Post.sync({ alter: true }).then(() => {
   console.log("✅ Tabela posts sincronizada");
 });
 
-User.hasMany(Like, { foreignKey: "userId" });
-Like.belongsTo(User, { foreignKey: "userId" });
-
-Post.hasMany(Like, { foreignKey: "postId" });
-Like.belongsTo(Post, { foreignKey: "postId" });
-
 Like.sync({ alter: true }).then(() => {
   console.log("✅ Tabela likes sincronizada");
+});
+
+Work.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela works sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

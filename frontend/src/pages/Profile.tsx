@@ -62,6 +62,25 @@ const professions = [
   "Outro",
 ];
 
+const genres = [
+  "Rock",
+  "Samba",
+  "Jazz",
+  "MPB",
+  "Reggae",
+  "Funk",
+  "Forró",
+  "Pagode",
+  "Blues",
+  "Metal",
+  "Pop",
+  "Gospel",
+  "Eletrônico",
+  "Clássico",
+  "Bossa Nova",
+  "Outro",
+];
+
 function timeAgo(date: string) {
   const now = new Date();
   const created = new Date(date);
@@ -113,6 +132,7 @@ export default function Profile() {
   const [city, setCity] = useState(user?.city || "");
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [bio, setBio] = useState("");
+  const [genre, setGenre] = useState("");
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -135,6 +155,7 @@ export default function Profile() {
         setAvatarUrl(profileRes.data.avatarUrl || null);
         setCoverUrl(profileRes.data.coverUrl || null);
         setSecondaryProfession(profileRes.data.secondaryProfession || "");
+        setGenre(profileRes.data.genre || "");
       } catch (error) {
         console.error(error);
       }
@@ -151,6 +172,7 @@ export default function Profile() {
         secondaryProfession,
         city,
         bio,
+        genre,
       });
       const savedUser = localStorage.getItem("musicwork_user");
       if (savedUser) {
@@ -525,6 +547,26 @@ export default function Profile() {
               {professions.map(p => (
                 <MenuItem key={p} value={p} sx={menuItemSx}>
                   {p}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel
+              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+            >
+              Gênero musical
+            </InputLabel>
+            <Select
+              value={genre}
+              label="Gênero musical"
+              onChange={e => setGenre(e.target.value)}
+              sx={selectSx}
+              MenuProps={{ sx: menuSx }}
+            >
+              {genres.map(g => (
+                <MenuItem key={g} value={g} sx={menuItemSx}>
+                  {g}
                 </MenuItem>
               ))}
             </Select>

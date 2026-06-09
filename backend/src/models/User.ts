@@ -12,6 +12,7 @@ class User extends Model {
   declare bio: string;
   declare avatarUrl: string | null;
   declare coverUrl: string | null;
+  declare genre: string;
 }
 
 User.init(
@@ -55,6 +56,10 @@ User.init(
       allowNull: true,
     },
     coverUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    genre: {
       type: DataTypes.STRING,
       allowNull: true,
     },

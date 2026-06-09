@@ -10,6 +10,7 @@ class UserService {
     secondaryProfession?: string;
     city?: string;
     bio?: string;
+    genre?: string;
   }) {
     const userAlreadyExists = await User.findOne({
       where: { email: data.email },
@@ -36,6 +37,7 @@ class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
+      genre: user.genre,
     };
   }
 
@@ -56,6 +58,7 @@ class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
+      genre: user.genre,
     };
   }
 
@@ -69,6 +72,7 @@ class UserService {
       bio?: string;
       avatarUrl?: string | null;
       coverUrl?: string | null;
+      genre?: string | null;
     },
   ) {
     const user = await User.findByPk(id);
@@ -89,7 +93,37 @@ class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
+      genre: user.genre,
     };
+  }
+
+  async searchUsers(query: string) {
+    const { Op } = require("sequelize");
+
+    const users = await User.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { instrument: { [Op.iLike]: `%${query}%` } },
+          { city: { [Op.iLike]: `%${query}%` } },
+          { secondaryProfession: { [Op.iLike]: `%${query}%` } },
+          { genre: { [Op.iLike]: `%${query}%` } }, // 👈 busca por gênero!
+        ],
+      },
+      attributes: [
+        "id",
+        "name",
+        "instrument",
+        "secondaryProfession",
+        "city",
+        "bio",
+        "avatarUrl",
+        "genre",
+      ],
+      limit: 20,
+    });
+
+    return users;
   }
 }
 

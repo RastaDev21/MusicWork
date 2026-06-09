@@ -66,6 +66,23 @@ class UserController {
       return response.status(400).json({ error: err.message });
     }
   }
+  async search(request: Request, response: Response) {
+    try {
+      const { q } = request.query;
+
+      if (!q || typeof q !== "string") {
+        return response
+          .status(400)
+          .json({ error: "Parâmetro de busca obrigatório" });
+      }
+
+      const users = await UserService.searchUsers(q);
+
+      return response.status(200).json(users);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export default new UserController();

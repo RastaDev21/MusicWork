@@ -4,6 +4,7 @@ import Register from "../pages/Register";
 import Feed from "../pages/Feed";
 import Profile from "../pages/Profile";
 import Search from "../pages/Search";
+import WorkPage from "../pages/Work";
 import PrivateRoute from "./PrivateRoute";
 
 export default function AppRoutes() {
@@ -32,6 +33,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Search />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/work"
+        element={
+          <PrivateRoute>
+            <WorkPage />
           </PrivateRoute>
         }
       />

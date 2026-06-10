@@ -10,7 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const menuItems = [
   { label: "Feed", icon: <HomeIcon />, path: "/feed" },
   { label: "Buscar", icon: <SearchIcon />, path: "/buscar" },
-  { label: "Trampo", icon: <WorkIcon />, path: "/trampo" },
+  { label: "Work", icon: <WorkIcon />, path: "/work" },
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },
 ];
 

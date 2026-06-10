@@ -10,7 +10,7 @@ const navItems = [
   { label: "Feed", icon: <HomeIcon />, path: "/feed" },
   { label: "Buscar", icon: <SearchIcon />, path: "/buscar" },
   { label: "Postar", icon: <AddCircleIcon />, path: "/postar" },
-  { label: "Trampo", icon: <WorkIcon />, path: "/trampo" },
+  { label: "Work", icon: <WorkIcon />, path: "/work" },
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },
 ];
 

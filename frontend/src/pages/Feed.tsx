@@ -17,6 +17,7 @@ interface Post {
     instrument: string;
     secondaryProfession: string;
     city: string;
+    avatarUrl: string | null;
   };
 }
 
@@ -97,6 +98,7 @@ export default function Feed() {
               comments={0}
               isOwner={currentUser?.id === post.userId}
               onDelete={handleDelete}
+              avatarUrl={post.User.avatarUrl}
             />
           ))
         )}

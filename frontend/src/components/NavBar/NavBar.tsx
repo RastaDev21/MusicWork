@@ -15,6 +15,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
+import { Avatar } from "@mui/material";
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -72,25 +73,25 @@ export default function Navbar() {
             <NotificationsIcon />
           </IconButton>
 
-          <Box
+          <Avatar
             onClick={handleOpenMenu}
+            src={
+              user?.avatarUrl
+                ? `http://localhost:3333${user.avatarUrl}`
+                : undefined
+            }
             sx={{
               width: 36,
               height: 36,
-              borderRadius: "50%",
               backgroundColor: "#7c4dff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",
-              "&:hover": { backgroundColor: "#6a3de8" },
+              "&:hover": { opacity: 0.85 },
             }}
           >
             {user?.name?.charAt(0).toUpperCase()}
-          </Box>
+          </Avatar>
 
           <Menu
             anchorEl={anchorEl}

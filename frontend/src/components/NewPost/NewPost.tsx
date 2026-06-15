@@ -40,7 +40,12 @@ export default function NewPost({ onPost }: NewPostProps) {
         gap: 1.5,
       }}
     >
-      <Avatar sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}>
+      <Avatar
+        src={
+          user?.avatarUrl ? `http://localhost:3333${user.avatarUrl}` : undefined
+        }
+        sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
+      >
         {user?.name?.charAt(0).toUpperCase()}
       </Avatar>
 

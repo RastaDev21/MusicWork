@@ -14,6 +14,7 @@ interface User {
   email: string;
   instrument: string;
   city: string;
+  avatarUrl?: string | null;
 }
 
 interface AuthContextData {
@@ -31,6 +32,7 @@ interface AuthContextData {
     bio?: string;
   }) => Promise<void>;
   signOut: () => void;
+  updateUser: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -55,12 +57,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const response = await api.post("/login", { email, password });
-
       const { token, user } = response.data;
 
       localStorage.setItem("musicwork_token", token.replace(/"/g, ""));
-      localStorage.setItem("musicwork_user", JSON.stringify(user));
-      setUser(user);
+
+      // 👇 Busca o perfil completo com avatarUrl após login
+      const profileResponse = await api.get("/profile", {
+        headers: { Authorization: `Bearer ${token.replace(/"/g, "")}` },
+      });
+
+      const fullUser = { ...user, ...profileResponse.data };
+      localStorage.setItem("musicwork_user", JSON.stringify(fullUser));
+      setUser(fullUser);
 
       navigate("/feed");
     } catch (error: unknown) {
@@ -99,9 +107,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate("/");
   }
 
+  function updateUser(data: Partial<User>) {
+    if (!user) return;
+    const updated = { ...user, ...data };
+    setUser(updated);
+    localStorage.setItem("musicwork_user", JSON.stringify(updated));
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, signed: !!user, loading, signIn, signUp, signOut }}
+      value={{
+        user,
+        signed: !!user,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        updateUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

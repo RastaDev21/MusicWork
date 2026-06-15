@@ -17,7 +17,8 @@ interface PostCardProps {
   content: string;
   likes: number;
   comments: number;
-  likedByMe?: boolean; // 👈 o backend já nos diz se curtimos
+  likedByMe?: boolean;
+  avatarUrl?: string | null;
   isOwner?: boolean;
   onDelete?: (id: string) => void;
 }
@@ -33,6 +34,7 @@ export default function PostCard({
   likes,
   comments,
   likedByMe = false,
+  avatarUrl,
   isOwner,
   onDelete,
 }: PostCardProps) {
@@ -66,7 +68,10 @@ export default function PostCard({
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
-        <Avatar sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}>
+        <Avatar
+          src={avatarUrl ? `http://localhost:3333${avatarUrl}` : undefined}
+          sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
+        >
           {name.charAt(0).toUpperCase()}
         </Avatar>
         <Box sx={{ flex: 1 }}>

@@ -124,7 +124,7 @@ const menuItemSx = {
 };
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [openEdit, setOpenEdit] = useState(false);
   const [name, setName] = useState(user?.name || "");
@@ -196,6 +196,7 @@ export default function Profile() {
     try {
       const data = await uploadAvatar(file);
       setAvatarUrl(data.avatarUrl);
+      updateUser({ avatarUrl: data.avatarUrl });
     } catch (error) {
       console.error("Erro ao enviar avatar:", error);
     } finally {

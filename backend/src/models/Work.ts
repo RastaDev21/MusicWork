@@ -9,6 +9,8 @@ class Work extends Model {
   declare description: string;
   declare price: string;
   declare city: string;
+  declare category: string;
+  declare contact: string;
 }
 
 Work.init(
@@ -39,6 +41,14 @@ Work.init(
       allowNull: true,
     },
     city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    contact: {
       type: DataTypes.STRING,
       allowNull: true,
     },

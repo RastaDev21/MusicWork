@@ -5,7 +5,8 @@ class WorkController {
   async create(request: Request, response: Response) {
     try {
       const userId = request.headers["userId"] as string;
-      const { type, title, description, price, city } = request.body;
+      const { type, title, description, price, city, category, contact } =
+        request.body;
 
       if (!type || !title) {
         return response
@@ -20,6 +21,8 @@ class WorkController {
         description,
         price,
         city,
+        category,
+        contact,
       });
 
       return response.status(201).json(work);
@@ -44,6 +47,29 @@ class WorkController {
 
       const result = await WorkService.deleteWork(id, userId);
       return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
+  async update(request: Request, response: Response) {
+    try {
+      const id = request.params.id as string;
+      const userId = request.headers["userId"] as string;
+      const { type, title, description, price, city, category, contact } =
+        request.body;
+
+      const work = await WorkService.updateWork(id, userId, {
+        type,
+        title,
+        description,
+        price,
+        city,
+        category,
+        contact,
+      });
+
+      return response.status(200).json(work);
     } catch (error: any) {
       return response.status(400).json({ error: error.message });
     }

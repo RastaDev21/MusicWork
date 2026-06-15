@@ -53,14 +53,19 @@ export default function Navbar() {
         boxShadow: "none",
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
+      <Toolbar
+        sx={{ justifyContent: "space-between", gap: 2, position: "relative" }}
+      >
+        {" "}
         <Box sx={{ width: 160, flexShrink: 0 }}>
           <Logo />
         </Box>
-
         <Box
           sx={{
-            flex: 1,
+            position: "absolute",
+            left: { md: "calc(50% + 110px)", xs: "50%" },
+            transform: "translateX(-50%)",
+            width: "100%",
             maxWidth: 400,
             backgroundColor: "#0f0f0f",
             borderRadius: "20px",
@@ -83,7 +88,6 @@ export default function Navbar() {
             sx={{ color: "#aaa", fontSize: 14, flex: 1 }}
           />
         </Box>
-
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <IconButton sx={{ color: "#aaa" }}>
             <NotificationsIcon />

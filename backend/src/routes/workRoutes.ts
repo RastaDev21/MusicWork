@@ -7,5 +7,6 @@ const workRouter = Router();
 workRouter.post("/works", authMiddleware, WorkController.create);
 workRouter.get("/works", authMiddleware, WorkController.list);
 workRouter.delete("/works/:id", authMiddleware, WorkController.delete);
+workRouter.put("/works/:id", authMiddleware, WorkController.update);
 
 export default workRouter;

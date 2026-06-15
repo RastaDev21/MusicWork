@@ -9,6 +9,8 @@ class WorkService {
     description?: string;
     price?: string;
     city?: string;
+    category?: string;
+    contact?: string;
   }) {
     const work = await Work.create(data);
     return work;
@@ -40,6 +42,28 @@ class WorkService {
 
     await work.destroy();
     return { message: "Work deletado com sucesso" };
+  }
+  async updateWork(
+    workId: string,
+    userId: string,
+    data: {
+      type?: "offer" | "request";
+      title?: string;
+      description?: string;
+      price?: string;
+      city?: string;
+      category?: string;
+      contact?: string;
+    },
+  ) {
+    const work = await Work.findByPk(workId);
+
+    if (!work) throw new Error("Work não encontrado");
+    if (work.userId !== userId)
+      throw new Error("Você não pode editar o work de outro usuário");
+
+    await work.update(data);
+    return work;
   }
 }
 

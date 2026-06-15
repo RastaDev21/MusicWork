@@ -16,10 +16,20 @@ import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
 import { Avatar } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+
+  function handleSearch(e: React.KeyboardEvent) {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate(`/buscar?q=${searchQuery.trim()}`);
+    }
+  }
 
   function handleOpenMenu(event: React.MouseEvent<HTMLElement>) {
     setAnchorEl(event.currentTarget);
@@ -58,12 +68,18 @@ export default function Navbar() {
             alignItems: "center",
             px: 2,
             py: 0.5,
-            display: { xs: "none", md: "flex" },
+            display:
+              location.pathname === "/buscar"
+                ? "none"
+                : { xs: "none", md: "flex" },
           }}
         >
           <SearchIcon sx={{ color: "#555", fontSize: 18, mr: 1 }} />
           <InputBase
             placeholder="Buscar músicos..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
             sx={{ color: "#aaa", fontSize: 14, flex: 1 }}
           />
         </Box>
@@ -122,7 +138,10 @@ export default function Navbar() {
             <Box sx={{ borderTop: "1px solid #2a2a2a", my: 0.5 }} />
 
             <MenuItem
-              onClick={handleCloseMenu}
+              onClick={() => {
+                handleCloseMenu();
+                navigate("/perfil");
+              }}
               sx={{
                 color: "#aaa",
                 gap: 1,

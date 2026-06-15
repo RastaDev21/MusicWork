@@ -132,7 +132,7 @@ export default function Profile() {
   const [city, setCity] = useState(user?.city || "");
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [bio, setBio] = useState("");
-  const [genre, setGenre] = useState("");
+  const [genre, setGenre] = useState(user?.genre || "");
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -174,13 +174,14 @@ export default function Profile() {
         bio,
         genre,
       });
-      const savedUser = localStorage.getItem("musicwork_user");
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        const updated = { ...parsed, name, instrument, city };
-        localStorage.setItem("musicwork_user", JSON.stringify(updated));
-        window.location.reload();
-      }
+
+      updateUser({ name, instrument, city, genre });
+
+      const profileRes = await api.get("/profile");
+      setBio(profileRes.data.bio || "");
+      setGenre(profileRes.data.genre || "");
+      setSecondaryProfession(profileRes.data.secondaryProfession || "");
+
       setOpenEdit(false);
     } catch (error) {
       console.error(error);
@@ -254,7 +255,7 @@ export default function Profile() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              opacity: coverUrl ? 0 : 1, // se não tiver foto, sempre visível
+              opacity: coverUrl ? 0 : 1,
               transition: "opacity 0.2s",
             }}
           >
@@ -368,6 +369,17 @@ export default function Profile() {
                     }}
                   />
                 )}
+                {genre && ( // 👈 adiciona isso
+                  <Chip
+                    label={genre}
+                    size="small"
+                    sx={{
+                      backgroundColor: "#ff4d6d22",
+                      color: "#ff4d6d",
+                      fontSize: 11,
+                    }}
+                  />
+                )}
               </Box>
               <Typography sx={{ color: "#666", fontSize: 13 }}>
                 {user?.city}
@@ -460,6 +472,7 @@ export default function Profile() {
               {[
                 { label: "Instrumento", value: user?.instrument },
                 { label: "Profissão", value: secondaryProfession },
+                { label: "Gênero", value: genre },
                 { label: "Cidade", value: user?.city },
               ].map((item, i) => (
                 <Box key={item.label}>

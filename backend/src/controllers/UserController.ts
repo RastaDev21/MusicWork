@@ -50,7 +50,8 @@ class UserController {
   async update(request: Request, response: Response) {
     try {
       const userId = request.headers["userId"] as string;
-      const { name, instrument, secondaryProfession, city, bio } = request.body;
+      const { name, instrument, secondaryProfession, city, bio, genre } =
+        request.body;
 
       const user = await UserService.updateUser(userId, {
         name,
@@ -58,6 +59,7 @@ class UserController {
         secondaryProfession,
         city,
         bio,
+        genre,
       });
 
       return response.status(200).json(user);

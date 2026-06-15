@@ -10,7 +10,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import Layout from "../components/Layout/Layout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import api from "../services/api";
 
 interface Musician {
@@ -25,15 +26,22 @@ interface Musician {
 }
 
 export default function Search() {
-  const [query, setQuery] = useState("");
   const [results, setResults] = useState<Musician[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false); // para saber se já buscou
+  const [searched, setSearched] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q && q.length >= 2) {
+      handleSearch(q);
+    }
+  }, [searchParams]);
 
   async function handleSearch(value: string) {
     setQuery(value);
 
-    // Só busca se tiver pelo menos 2 caracteres
     if (value.trim().length < 2) {
       setResults([]);
       setSearched(false);

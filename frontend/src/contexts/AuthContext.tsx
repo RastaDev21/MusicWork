@@ -15,6 +15,7 @@ interface User {
   instrument: string;
   city: string;
   avatarUrl?: string | null;
+  genre?: string | null;
 }
 
 interface AuthContextData {

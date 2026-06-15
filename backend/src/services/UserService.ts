@@ -97,19 +97,33 @@ class UserService {
     };
   }
 
-  async searchUsers(query: string) {
+  async searchUsers(params: {
+    query?: string;
+    instrument?: string;
+    genre?: string;
+    city?: string;
+  }) {
     const { Op } = require("sequelize");
+    const { query, instrument, genre, city } = params;
+
+    const where: any = {};
+
+    if (query && query.trim().length >= 2) {
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${query}%` } },
+        { instrument: { [Op.iLike]: `%${query}%` } },
+        { city: { [Op.iLike]: `%${query}%` } },
+        { secondaryProfession: { [Op.iLike]: `%${query}%` } },
+        { genre: { [Op.iLike]: `%${query}%` } },
+      ];
+    }
+
+    if (instrument) where.instrument = { [Op.iLike]: `%${instrument}%` };
+    if (genre) where.genre = { [Op.iLike]: `%${genre}%` };
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
 
     const users = await User.findAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${query}%` } },
-          { instrument: { [Op.iLike]: `%${query}%` } },
-          { city: { [Op.iLike]: `%${query}%` } },
-          { secondaryProfession: { [Op.iLike]: `%${query}%` } },
-          { genre: { [Op.iLike]: `%${query}%` } }, // 👈 busca por gênero!
-        ],
-      },
+      where,
       attributes: [
         "id",
         "name",

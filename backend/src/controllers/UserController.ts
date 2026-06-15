@@ -70,15 +70,14 @@ class UserController {
   }
   async search(request: Request, response: Response) {
     try {
-      const { q } = request.query;
+      const { q, instrument, genre, city } = request.query;
 
-      if (!q || typeof q !== "string") {
-        return response
-          .status(400)
-          .json({ error: "Parâmetro de busca obrigatório" });
-      }
-
-      const users = await UserService.searchUsers(q);
+      const users = await UserService.searchUsers({
+        query: q as string,
+        instrument: instrument as string,
+        genre: genre as string,
+        city: city as string,
+      });
 
       return response.status(200).json(users);
     } catch (error: any) {

@@ -28,7 +28,7 @@ app.use(
 );
 app.use(express.json());
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads")));
 
 app.use(userRouter);
 app.use(authRouter);

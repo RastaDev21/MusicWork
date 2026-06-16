@@ -240,7 +240,7 @@ export default function Profile() {
           {coverUrl && (
             <Box
               component="img"
-              src={`http://localhost:3333${coverUrl}`}
+              src={`${import.meta.env.VITE_API_URL}${coverUrl}`}
               sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           )}
@@ -302,7 +302,7 @@ export default function Profile() {
             {avatarUrl ? (
               <Box
                 component="img"
-                src={`http://localhost:3333${avatarUrl}`}
+                src={`${import.meta.env.VITE_API_URL}${avatarUrl}`}
                 sx={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (

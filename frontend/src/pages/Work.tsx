@@ -494,7 +494,7 @@ export default function WorkPage() {
                       <Avatar
                         src={
                           work.User?.avatarUrl
-                            ? `http://localhost:3333${work.User.avatarUrl}`
+                            ? `${import.meta.env.VITE_API_URL}${work.User.avatarUrl}`
                             : undefined
                         }
                         sx={{

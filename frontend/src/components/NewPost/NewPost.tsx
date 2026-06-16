@@ -42,7 +42,9 @@ export default function NewPost({ onPost }: NewPostProps) {
     >
       <Avatar
         src={
-          user?.avatarUrl ? `http://localhost:3333${user.avatarUrl}` : undefined
+          user?.avatarUrl
+            ? `${import.meta.env.VITE_API_URL}${user.avatarUrl}`
+            : undefined
         }
         sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
       >

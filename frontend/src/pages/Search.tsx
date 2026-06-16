@@ -329,7 +329,7 @@ export default function Search() {
               <Avatar
                 src={
                   musician.avatarUrl
-                    ? `http://localhost:3333${musician.avatarUrl}`
+                    ? `${import.meta.env.VITE_API_URL}${musician.avatarUrl}`
                     : undefined
                 }
                 sx={{

@@ -97,7 +97,7 @@ export default function Navbar() {
             onClick={handleOpenMenu}
             src={
               user?.avatarUrl
-                ? `http://localhost:3333${user.avatarUrl}`
+                ? `${import.meta.env.VITE_API_URL}${user.avatarUrl}`
                 : undefined
             }
             sx={{

@@ -69,7 +69,11 @@ export default function PostCard({
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
         <Avatar
-          src={avatarUrl ? `http://localhost:3333${avatarUrl}` : undefined}
+          src={
+            avatarUrl
+              ? `${import.meta.env.VITE_API_URL}${avatarUrl}`
+              : undefined
+          }
           sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
         >
           {name.charAt(0).toUpperCase()}

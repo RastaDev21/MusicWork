@@ -25,8 +25,8 @@ export default function Login() {
     try {
       setError("");
       await signIn(email, password);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError((err as Error).message);
     }
   }
 
@@ -82,6 +82,7 @@ export default function Login() {
             variant="outlined"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
             sx={{ ...inputSx, mb: 3 }}
           />
 

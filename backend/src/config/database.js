@@ -9,6 +9,15 @@ module.exports = {
   username: process.env.DB_USER,
   password: process.env.DB_PASS || null,
   database: process.env.DB_NAME,
+  dialectOptions:
+    process.env.NODE_ENV === "production"
+      ? {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false,
+          },
+        }
+      : {},
   define: {
     timestamps: true,
     underscored: true,

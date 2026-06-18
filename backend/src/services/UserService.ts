@@ -103,27 +103,34 @@ class UserService {
     genre?: string;
     city?: string;
   }) {
-    const { Op } = require("sequelize");
+    const { Op, fn, col, where: sqlWhere } = require("sequelize");
     const { query, instrument, genre, city } = params;
 
-    const where: any = {};
+    const conditions: any[] = [];
+
+    const unaccentLike = (field: string, value: string) =>
+      sqlWhere(fn("unaccent", fn("lower", col(field))), {
+        [Op.like]: fn("unaccent", `%${value.toLowerCase()}%`),
+      });
 
     if (query && query.trim().length >= 2) {
-      where[Op.or] = [
-        { name: { [Op.iLike]: `%${query}%` } },
-        { instrument: { [Op.iLike]: `%${query}%` } },
-        { city: { [Op.iLike]: `%${query}%` } },
-        { secondaryProfession: { [Op.iLike]: `%${query}%` } },
-        { genre: { [Op.iLike]: `%${query}%` } },
-      ];
+      conditions.push({
+        [Op.or]: [
+          unaccentLike("name", query),
+          unaccentLike("instrument", query),
+          unaccentLike("city", query),
+          unaccentLike("secondaryProfession", query),
+          unaccentLike("genre", query),
+        ],
+      });
     }
 
-    if (instrument) where.instrument = { [Op.iLike]: `%${instrument}%` };
-    if (genre) where.genre = { [Op.iLike]: `%${genre}%` };
-    if (city) where.city = { [Op.iLike]: `%${city}%` };
+    if (instrument) conditions.push(unaccentLike("instrument", instrument));
+    if (genre) conditions.push(unaccentLike("genre", genre));
+    if (city) conditions.push(unaccentLike("city", city));
 
     const users = await User.findAll({
-      where,
+      where: conditions.length ? { [Op.and]: conditions } : {},
       attributes: [
         "id",
         "name",

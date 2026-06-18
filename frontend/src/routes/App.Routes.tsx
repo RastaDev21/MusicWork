@@ -6,6 +6,7 @@ import Profile from "../pages/Profile";
 import Search from "../pages/Search";
 import WorkPage from "../pages/Work";
 import PrivateRoute from "./PrivateRoute";
+import PublicProfile from "../pages/PublicProfile";
 
 export default function AppRoutes() {
   return (
@@ -41,6 +42,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <WorkPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/musico/:id"
+        element={
+          <PrivateRoute>
+            <PublicProfile />
           </PrivateRoute>
         }
       />

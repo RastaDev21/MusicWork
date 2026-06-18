@@ -15,7 +15,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import Layout from "../components/Layout/Layout";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 interface Musician {
@@ -88,6 +88,7 @@ const menuItemSx = {
 
 export default function Search() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [instrument, setInstrument] = useState("");
   const [genre, setGenre] = useState("");
@@ -313,6 +314,7 @@ export default function Search() {
           results.map(musician => (
             <Box
               key={musician.id}
+              onClick={() => navigate(`/musico/${musician.id}`)}
               sx={{
                 backgroundColor: "#1a1a1a",
                 borderRadius: 3,

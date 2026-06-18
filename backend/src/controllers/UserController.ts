@@ -84,6 +84,15 @@ class UserController {
       return response.status(400).json({ error: error.message });
     }
   }
+  async show(request: Request, response: Response) {
+    try {
+      const id = request.params.id as string;
+      const user = await UserService.findById(id);
+      return response.status(200).json(user);
+    } catch (error: any) {
+      return response.status(404).json({ error: error.message });
+    }
+  }
 }
 
 export default new UserController();

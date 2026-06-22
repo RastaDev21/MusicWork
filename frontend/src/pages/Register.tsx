@@ -11,7 +11,12 @@ import {
   Select,
   FormControl,
   InputLabel,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../components/Logo/Logo";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -86,10 +91,23 @@ export default function Register() {
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [city, setCity] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
 
   async function handleSubmit() {
     if (!name || !email || !password) {
       setError("Nome, email e senha são obrigatórios");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError("Digite um email válido");
+      return;
+    }
+    if (password.length < 6) {
+      setError("A senha deve ter no mínimo 6 caracteres");
       return;
     }
     try {
@@ -139,6 +157,7 @@ export default function Register() {
             variant="outlined"
             value={name}
             onChange={e => setName(e.target.value)}
+            disabled={loading}
             sx={{ ...inputSx, mb: 2 }}
           />
 
@@ -148,21 +167,39 @@ export default function Register() {
             variant="outlined"
             value={email}
             onChange={e => setEmail(e.target.value)}
+            disabled={loading}
             sx={{ ...inputSx, mb: 2 }}
           />
 
           <TextField
             fullWidth
             label="Senha"
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            disabled={loading}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: "#888" }}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
             sx={{ ...inputSx, mb: 2 }}
           />
 
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={loading}>
               <InputLabel
                 sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
               >
@@ -190,11 +227,12 @@ export default function Register() {
               value={city}
               onChange={e => setCity(e.target.value)}
               placeholder="Ex: Santos - SP"
+              disabled={loading}
               sx={inputSx}
             />
           </Box>
 
-          <FormControl fullWidth sx={{ mb: 3 }}>
+          <FormControl fullWidth disabled={loading} sx={{ mb: 3 }}>
             <InputLabel
               sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
             >
@@ -225,9 +263,18 @@ export default function Register() {
               py: 1.5,
               fontWeight: "bold",
               "&:hover": { backgroundColor: "#6a3de8" },
+              "&.Mui-disabled": {
+                backgroundColor: "#7c4dff",
+                opacity: 0.7,
+                color: "#fff",
+              },
             }}
           >
-            {loading ? "Criando conta..." : "Cadastrar"}
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: "#fff" }} />
+            ) : (
+              "Cadastrar"
+            )}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

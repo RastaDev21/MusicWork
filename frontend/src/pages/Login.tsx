@@ -8,7 +8,12 @@ import {
   Paper,
   Link,
   Alert,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../components/Logo/Logo";
 
 export default function Login() {
@@ -16,10 +21,19 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  function isValidEmail(value: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
 
   async function handleSubmit() {
     if (!email || !password) {
       setError("Preencha email e senha");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError("Digite um email válido");
       return;
     }
     try {
@@ -72,28 +86,73 @@ export default function Login() {
             variant="outlined"
             value={email}
             onChange={e => setEmail(e.target.value)}
+            disabled={loading}
             sx={{ ...inputSx, mb: 2 }}
           />
 
           <TextField
             fullWidth
             label="Senha"
-            type="password"
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            sx={{ ...inputSx, mb: 3 }}
+            disabled={loading}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: "#888" }}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ ...inputSx, mb: 1 }}
           />
+
+          <Box sx={{ textAlign: "right", mb: 2 }}>
+            <Link
+              href="#"
+              sx={{ color: "#888", fontSize: 13 }}
+              onClick={e => {
+                e.preventDefault();
+                setError("Recuperação de senha em breve 🙂");
+              }}
+            >
+              Esqueci minha senha
+            </Link>
+          </Box>
 
           <Button
             fullWidth
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
-            sx={{ backgroundColor: "#7c4dff", py: 1.5, fontWeight: "bold" }}
+            sx={{
+              backgroundColor: "#7c4dff",
+              py: 1.5,
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: "#6a3de8" },
+              "&.Mui-disabled": {
+                backgroundColor: "#7c4dff",
+                opacity: 0.7,
+                color: "#fff",
+              },
+            }}
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: "#fff" }} />
+            ) : (
+              "Entrar"
+            )}
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

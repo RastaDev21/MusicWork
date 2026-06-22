@@ -20,12 +20,23 @@ import Work from "./models/Work";
 
 const app = express();
 
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(",")
+  .map(origin => origin.trim());
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Bloqueado pelo CORS"));
+      }
+    },
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads")));

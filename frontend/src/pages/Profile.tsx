@@ -20,6 +20,7 @@ import { useAuth } from "../contexts/AuthContext";
 import PostCard from "../components/PostCard/PostCard";
 import { useEffect, useState } from "react";
 import api, { uploadAvatar, uploadCover } from "../services/api";
+import { useSnackbar } from "notistack";
 interface Post {
   id: string;
   content: string;
@@ -138,6 +139,7 @@ export default function Profile() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     async function loadData() {
@@ -198,8 +200,16 @@ export default function Profile() {
       const data = await uploadAvatar(file);
       setAvatarUrl(data.avatarUrl);
       updateUser({ avatarUrl: data.avatarUrl });
-    } catch (error) {
-      console.error("Erro ao enviar avatar:", error);
+      enqueueSnackbar("Foto de perfil atualizada!", { variant: "success" });
+    } catch (error: unknown) {
+      let msg = "Erro ao enviar a foto. Tente novamente.";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { error?: string } } };
+        if (err.response?.data?.error) {
+          msg = err.response.data.error;
+        }
+      }
+      enqueueSnackbar(msg, { variant: "error" });
     } finally {
       setUploadingAvatar(false);
     }
@@ -213,8 +223,16 @@ export default function Profile() {
     try {
       const data = await uploadCover(file);
       setCoverUrl(data.coverUrl);
-    } catch (error) {
-      console.error("Erro ao enviar capa:", error);
+      enqueueSnackbar("Foto de capa atualizada!", { variant: "success" });
+    } catch (error: unknown) {
+      let msg = "Erro ao enviar a foto. Tente novamente.";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { error?: string } } };
+        if (err.response?.data?.error) {
+          msg = err.response.data.error;
+        }
+      }
+      enqueueSnackbar(msg, { variant: "error" });
     } finally {
       setUploadingCover(false);
     }

@@ -24,7 +24,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import Layout from "../components/Layout/Layout";
 import { useEffect, useState } from "react";
 import api from "../services/api";
-
+import { useNavigate } from "react-router-dom";
 interface Work {
   id: string;
   userId: string;
@@ -121,6 +121,7 @@ export default function WorkPage() {
   const [contact, setContact] = useState("");
   const [saving, setSaving] = useState(false);
   const [editingWork, setEditingWork] = useState<Work | null>(null);
+  const navigate = useNavigate();
 
   const currentUser = JSON.parse(
     localStorage.getItem("musicwork_user") || "{}",
@@ -490,7 +491,19 @@ export default function WorkPage() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box
+                      onClick={() => navigate(`/musico/${work.User?.id}`)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        cursor: "pointer",
+                        borderRadius: 2,
+                        p: 0.5,
+                        transition: "background-color 0.2s",
+                        "&:hover": { backgroundColor: "#7c4dff15" },
+                      }}
+                    >
                       <Avatar
                         src={
                           work.User?.avatarUrl

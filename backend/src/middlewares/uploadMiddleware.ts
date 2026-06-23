@@ -1,17 +1,16 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 // Aqui definimos ONDE e COM QUE NOME salvar as fotos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Se for foto de perfil, salva em /uploads/avatars
-    // Se for foto de capa, salva em /uploads/covers
     const folder = file.fieldname === "avatar" ? "avatars" : "covers";
-    cb(null, path.join(__dirname, `../uploads/${folder}`));
+    const dir = path.join(process.cwd(), "src", "uploads", folder);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
-    // Nome do arquivo: ID do usuário + data + extensão original
-    // Ex: "42-1717600000000.jpg"
     const userId = (req as any).userId;
     const ext = path.extname(file.originalname);
     cb(null, `${userId}-${Date.now()}${ext}`);

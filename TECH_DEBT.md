@@ -48,22 +48,38 @@ email com formato válido é aceito, mesmo que não exista de verdade.
 - Depende do serviço de email acima
 - Gerar token temporário + tela de redefinir senha
 
-### Uploads de imagem em filesystem efêmero
+### Limpar fotos órfãs no Cloudinary ao trocar
 
-**Contexto:** O Render (plano free) apaga avatares e fotos de capa a cada redeploy.
-Dados do banco (posts, likes, works) ficam intactos no Neon.
+**Contexto:** Quando o usuário troca a foto de perfil ou capa, a imagem antiga fica
+órfã no Cloudinary para sempre. Não é urgente (o free tier aguenta muito acúmulo),
+mas com o tempo gera lixo desnecessário.
 
 **Como resolver:**
 
-- Integrar Cloudinary (free tier 25GB) ou similar
-- Trocar o upload middleware no backend
-- Atualizar URLs das imagens no frontend
+- Salvar o `public_id` de cada foto no banco (hoje guardamos só a URL)
+- Ao subir uma nova, chamar `cloudinary.uploader.destroy(public_id_antigo)`
+- Bom de fazer junto com outras mudanças na área de perfil
 
 ---
 
 ## 🟢 Baixa prioridade / quando der
 
-_(adicionar conforme surgirem)_
+### Cold start do backend (~30-50s)
+
+**Contexto:** O Render free coloca o serviço em repouso após inatividade. O primeiro
+acesso depois disso demora pra "acordar".
+
+**Como resolver:**
+
+- Plano pago do Render, OU
+- Um ping periódico (cron) para manter o serviço acordado
+
+---
+
+## ✅ Resolvidos
+
+- **Uploads em filesystem efêmero** -> migrado para Cloudinary (jun 2026). Fotos
+  agora persistem entre deploys.
 
 ---
 

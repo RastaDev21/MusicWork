@@ -5,8 +5,7 @@ import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
-import api from "../../services/api";
-
+import api, { getImageUrl } from "../../services/api";
 interface PostCardProps {
   id: string;
   name: string;
@@ -69,11 +68,7 @@ export default function PostCard({
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
         <Avatar
-          src={
-            avatarUrl
-              ? `${import.meta.env.VITE_API_URL}${avatarUrl}`
-              : undefined
-          }
+          src={getImageUrl(avatarUrl)}
           sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
         >
           {name.charAt(0).toUpperCase()}

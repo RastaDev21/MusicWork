@@ -1,23 +1,22 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary";
 
-// Aqui definimos ONDE e COM QUE NOME salvar as fotos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const folder = file.fieldname === "avatar" ? "avatars" : "covers";
-    const dir = path.join(process.cwd(), "src", "uploads", folder);
-    fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const userId = (req as any).userId;
-    const ext = path.extname(file.originalname);
-    cb(null, `${userId}-${Date.now()}${ext}`);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const folder =
+      file.fieldname === "avatar" ? "musicwork/avatars" : "musicwork/covers";
+    const userId = (req as any).userId || "user";
+    return {
+      folder,
+      public_id: `${userId}-${Date.now()}`,
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      transformation: [{ width: 1200, crop: "limit" }],
+    };
   },
 });
 
-// Filtro: só aceita imagens!
 const fileFilter = (
   _req: any,
   file: Express.Multer.File,
@@ -34,5 +33,5 @@ const fileFilter = (
 export const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Máximo 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 });

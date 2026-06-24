@@ -23,7 +23,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
 import Layout from "../components/Layout/Layout";
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import api, { getImageUrl } from "../services/api";
 import { useNavigate } from "react-router-dom";
 interface Work {
   id: string;
@@ -505,11 +505,7 @@ export default function WorkPage() {
                       }}
                     >
                       <Avatar
-                        src={
-                          work.User?.avatarUrl
-                            ? `${import.meta.env.VITE_API_URL}${work.User.avatarUrl}`
-                            : undefined
-                        }
+                        src={getImageUrl(work.User?.avatarUrl)}
                         sx={{
                           width: 24,
                           height: 24,

@@ -19,8 +19,9 @@ import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 import PostCard from "../components/PostCard/PostCard";
 import { useEffect, useState } from "react";
-import api, { uploadAvatar, uploadCover } from "../services/api";
+import api, { uploadAvatar, uploadCover, getImageUrl } from "../services/api";
 import { useSnackbar } from "notistack";
+
 interface Post {
   id: string;
   content: string;
@@ -258,7 +259,7 @@ export default function Profile() {
           {coverUrl && (
             <Box
               component="img"
-              src={`${import.meta.env.VITE_API_URL}${coverUrl}`}
+              src={getImageUrl(coverUrl)}
               sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           )}
@@ -320,7 +321,7 @@ export default function Profile() {
             {avatarUrl ? (
               <Box
                 component="img"
-                src={`${import.meta.env.VITE_API_URL}${avatarUrl}`}
+                src={getImageUrl(user?.avatarUrl)}
                 sx={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (

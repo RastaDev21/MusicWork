@@ -8,8 +8,7 @@ import {
 import Layout from "../components/Layout/Layout";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../services/api";
-
+import api, { getImageUrl } from "../services/api";
 interface Musician {
   id: string;
   name: string;
@@ -82,7 +81,7 @@ export default function PublicProfile() {
           {musician.coverUrl && (
             <Box
               component="img"
-              src={`${import.meta.env.VITE_API_URL}${musician.coverUrl}`}
+              src={getImageUrl(musician.coverUrl)}
               sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           )}
@@ -114,7 +113,7 @@ export default function PublicProfile() {
             {musician.avatarUrl ? (
               <Box
                 component="img"
-                src={`${import.meta.env.VITE_API_URL}${musician.avatarUrl}`}
+                src={getImageUrl(musician.avatarUrl)}
                 sx={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (

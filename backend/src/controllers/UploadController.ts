@@ -9,8 +9,7 @@ export class UploadController {
       }
 
       const userId = req.headers["userId"] || req.headers["userid"];
-
-      const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+      const avatarUrl = req.file.path;
 
       await User.update({ avatarUrl }, { where: { id: userId } });
 
@@ -26,9 +25,8 @@ export class UploadController {
         return res.status(400).json({ error: "Nenhuma imagem enviada!" });
       }
 
-      const userId = req.headers["userId"] || req.headers["userid"]; // 👈 corrigido
-
-      const coverUrl = `/uploads/covers/${req.file.filename}`;
+      const userId = req.headers["userId"] || req.headers["userid"];
+      const coverUrl = req.file.path;
 
       await User.update({ coverUrl }, { where: { id: userId } });
 

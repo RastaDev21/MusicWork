@@ -17,6 +17,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
 import { Avatar } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getImageUrl } from "../../services/api";
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -95,11 +96,7 @@ export default function Navbar() {
 
           <Avatar
             onClick={handleOpenMenu}
-            src={
-              user?.avatarUrl
-                ? `${import.meta.env.VITE_API_URL}${user.avatarUrl}`
-                : undefined
-            }
+            src={getImageUrl(user?.avatarUrl)}
             sx={{
               width: 36,
               height: 36,

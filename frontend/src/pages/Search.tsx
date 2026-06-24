@@ -16,8 +16,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import Layout from "../components/Layout/Layout";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import api from "../services/api";
-
+import api, { getImageUrl } from "../services/api";
 interface Musician {
   id: string;
   name: string;
@@ -329,11 +328,7 @@ export default function Search() {
               }}
             >
               <Avatar
-                src={
-                  musician.avatarUrl
-                    ? `${import.meta.env.VITE_API_URL}${musician.avatarUrl}`
-                    : undefined
-                }
+                src={getImageUrl(musician.avatarUrl)}
                 sx={{
                   backgroundColor: "#7c4dff",
                   fontWeight: 700,

@@ -1,8 +1,7 @@
 import { Box, Avatar, InputBase, Button } from "@mui/material";
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import api from "../../services/api";
-
+import api, { getImageUrl } from "../../services/api";
 interface NewPostProps {
   onPost: () => void;
 }
@@ -41,11 +40,7 @@ export default function NewPost({ onPost }: NewPostProps) {
       }}
     >
       <Avatar
-        src={
-          user?.avatarUrl
-            ? `${import.meta.env.VITE_API_URL}${user.avatarUrl}`
-            : undefined
-        }
+        src={getImageUrl(user?.avatarUrl)}
         sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
       >
         {user?.name?.charAt(0).toUpperCase()}

@@ -123,6 +123,7 @@ export default function WorkPage() {
   const [saving, setSaving] = useState(false);
   const [subcategory, setSubcategory] = useState("");
   const [editingWork, setEditingWork] = useState<Work | null>(null);
+  const [locationType, setLocationType] = useState("presencial");
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(
@@ -181,6 +182,7 @@ export default function WorkPage() {
       setSubcategory("");
       setContact("");
       setType("offer");
+      setLocationType("presencial");
       setEditingWork(null);
       setOpenNew(false);
       loadWorks();
@@ -230,7 +232,16 @@ export default function WorkPage() {
     setPrice(work.price || "");
     setCity(work.city || "");
     setCategory(work.category || "");
+    setSubcategory(work.subcategory || "");
     setContact(work.contact || "");
+
+    const lt = !work.city
+      ? "presencial"
+      : work.city === "Online"
+        ? "online"
+        : "pais";
+    setLocationType(lt);
+
     setOpenNew(true);
   }
 
@@ -589,6 +600,7 @@ export default function WorkPage() {
           setCategory("");
           setContact("");
           setType("offer");
+          setLocationType("presencial");
         }}
         maxWidth="sm"
         fullWidth
@@ -668,7 +680,18 @@ export default function WorkPage() {
               <Select
                 value={subcategory}
                 label="Modalidade"
-                onChange={e => setSubcategory(e.target.value)}
+                onChange={e => {
+                  setSubcategory(e.target.value);
+                  if (e.target.value === "Online") {
+                    setLocationType("online");
+                    setCity("");
+                  } else if (
+                    e.target.value === "Presencial" ||
+                    e.target.value === "Individual"
+                  ) {
+                    setLocationType("presencial");
+                  }
+                }}
                 sx={selectSx}
                 MenuProps={{ sx: menuSx }}
               >
@@ -698,7 +721,13 @@ export default function WorkPage() {
             placeholder="Descreva o serviço..."
             sx={{ ...inputSx, mb: 2 }}
           />
-          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              mb: locationType !== "presencial" ? 2 : 0,
+            }}
+          >
             <TextField
               fullWidth
               label="Valor (ex: R$ 80/h)"
@@ -706,14 +735,56 @@ export default function WorkPage() {
               onChange={e => setPrice(e.target.value)}
               sx={inputSx}
             />
+            {!(category === "aula" && subcategory === "Online") && (
+              <FormControl fullWidth>
+                <InputLabel
+                  sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+                >
+                  Localização
+                </InputLabel>
+                <Select
+                  value={locationType}
+                  label="Localização"
+                  onChange={e => {
+                    setLocationType(e.target.value);
+                    setCity("");
+                  }}
+                  sx={selectSx}
+                  MenuProps={{ sx: menuSx }}
+                >
+                  <MenuItem value="presencial" sx={menuItemSx}>
+                    📍 Presencial
+                  </MenuItem>
+                  <MenuItem value="online" sx={menuItemSx}>
+                    🌐 Online
+                  </MenuItem>
+                  <MenuItem value="pais" sx={menuItemSx}>
+                    🌍 País
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+
+          {locationType === "presencial" && (
             <TextField
               fullWidth
               label="Cidade"
               value={city}
               onChange={e => setCity(e.target.value)}
-              sx={inputSx}
+              sx={{ ...inputSx, mb: 2, mt: 2 }}
             />
-          </Box>
+          )}
+          {locationType === "pais" && (
+            <TextField
+              fullWidth
+              label="País"
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="Ex: Portugal, Argentina..."
+              sx={{ ...inputSx, mb: 2 }}
+            />
+          )}
           <TextField
             fullWidth
             label="Contato (WhatsApp ou email)"

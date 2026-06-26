@@ -43,24 +43,15 @@ const instruments = [
   "Voz",
   "Saxofone",
   "Trompete",
+  "Trombone",
   "Violino",
   "Percussão",
+  "Triângulo",
+  "Zabumba",
+  "Sanfona / Acordeon",
   "DJ",
   "Produtor Musical",
-  "Outro",
-];
-
-const professions = [
-  "Designer",
-  "Fotógrafo",
-  "Editor de vídeo",
-  "Desenvolvedor",
-  "Marketing",
-  "Professor",
   "Técnico de som",
-  "Eletricista",
-  "Barbeiro",
-  "Tatuador",
   "Outro",
 ];
 
@@ -564,26 +555,14 @@ export default function Profile() {
             />
           </Box>
 
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel
-              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
-            >
-              Profissão secundária
-            </InputLabel>
-            <Select
-              value={secondaryProfession}
-              label="Profissão secundária"
-              onChange={e => setSecondaryProfession(e.target.value)}
-              sx={selectSx}
-              MenuProps={{ sx: menuSx }}
-            >
-              {professions.map(p => (
-                <MenuItem key={p} value={p} sx={menuItemSx}>
-                  {p}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextField
+            fullWidth
+            label="Profissão secundária"
+            value={secondaryProfession}
+            onChange={e => setSecondaryProfession(e.target.value)}
+            placeholder="Ex: Fotógrafo, Designer, Professor..."
+            sx={{ ...inputSx, mb: 2 }}
+          />
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel
               sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}

@@ -34,6 +34,7 @@ interface Work {
   price: string;
   city: string;
   category: string;
+  subcategory: string;
   contact: string;
   createdAt: string;
   User: {
@@ -120,6 +121,7 @@ export default function WorkPage() {
   const [category, setCategory] = useState("");
   const [contact, setContact] = useState("");
   const [saving, setSaving] = useState(false);
+  const [subcategory, setSubcategory] = useState("");
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const navigate = useNavigate();
 
@@ -155,6 +157,7 @@ export default function WorkPage() {
           price,
           city,
           category,
+          subcategory,
           contact,
         });
       } else {
@@ -166,6 +169,7 @@ export default function WorkPage() {
           price,
           city,
           category,
+          subcategory,
           contact,
         });
       }
@@ -174,6 +178,7 @@ export default function WorkPage() {
       setPrice("");
       setCity("");
       setCategory("");
+      setSubcategory("");
       setContact("");
       setType("offer");
       setEditingWork(null);
@@ -426,6 +431,20 @@ export default function WorkPage() {
                         }}
                       />
                     )}
+
+                    {work.subcategory && (
+                      <Chip
+                        label={work.subcategory}
+                        size="small"
+                        sx={{
+                          backgroundColor: "#7c4dff22",
+                          color: "#9c6fe4",
+                          fontSize: 11,
+                          height: 20,
+                        }}
+                      />
+                    )}
+
                     <Typography
                       sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}
                     >
@@ -639,6 +658,29 @@ export default function WorkPage() {
               ))}
             </Select>
           </FormControl>
+          {category === "aula" && (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel
+                sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+              >
+                Modalidade
+              </InputLabel>
+              <Select
+                value={subcategory}
+                label="Modalidade"
+                onChange={e => setSubcategory(e.target.value)}
+                sx={selectSx}
+                MenuProps={{ sx: menuSx }}
+              >
+                {["Presencial", "Online", "Grupo", "Individual"].map(m => (
+                  <MenuItem key={m} value={m} sx={menuItemSx}>
+                    {m}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+
           <TextField
             fullWidth
             label="Título"

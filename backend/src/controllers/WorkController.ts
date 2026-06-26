@@ -5,8 +5,16 @@ class WorkController {
   async create(request: Request, response: Response) {
     try {
       const userId = request.headers["userId"] as string;
-      const { type, title, description, price, city, category, contact } =
-        request.body;
+      const {
+        type,
+        title,
+        description,
+        price,
+        city,
+        category,
+        subcategory,
+        contact,
+      } = request.body;
 
       if (!type || !title) {
         return response
@@ -22,6 +30,7 @@ class WorkController {
         price,
         city,
         category,
+        subcategory,
         contact,
       });
 
@@ -56,16 +65,27 @@ class WorkController {
     try {
       const id = request.params.id as string;
       const userId = request.headers["userId"] as string;
-      const { type, title, description, price, city, category, contact } =
-        request.body;
-
-      const work = await WorkService.updateWork(id, userId, {
+      const {
         type,
         title,
         description,
         price,
         city,
         category,
+        subcategory,
+        contact,
+      } = request.body;
+      request.body;
+
+      const work = await WorkService.createWork({
+        userId,
+        type,
+        title,
+        description,
+        price,
+        city,
+        category,
+        subcategory,
         contact,
       });
 

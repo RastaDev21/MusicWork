@@ -10,6 +10,7 @@ class WorkService {
     price?: string;
     city?: string;
     category?: string;
+    subcategory?: string;
     contact?: string;
   }) {
     const work = await Work.create(data);
@@ -53,6 +54,7 @@ class WorkService {
       price?: string;
       city?: string;
       category?: string;
+      subcategory?: string;
       contact?: string;
     },
   ) {

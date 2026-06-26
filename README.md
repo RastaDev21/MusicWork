@@ -111,8 +111,8 @@ musicwork/
 
 ### ▶️ Fase 1 — Vitórias rápidas (PRÓXIMA)
 
-- [ ] #2 Profissão secundária como campo livre (dropdown → texto) ← COMEÇAR POR AQUI
-- [ ] #5 Subcategoria de tipo de aula no Work (instrumento ensinado)
+- ✅ #2 Profissão secundária como campo livre (dropdown → texto) ← COMEÇAR POR AQUI
+- ✅ #5 Subcategoria de tipo de aula no Work (instrumento ensinado)
 - [ ] #7 Localização flexível no Work (online / estado / país)
 - [ ] Links sociais no perfil (Instagram, YouTube, SoundCloud)
 - [ ] Compartilhar post (copiar link)

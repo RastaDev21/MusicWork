@@ -12,11 +12,13 @@ import postRouter from "./routes/postRoutes";
 import uploadRouter from "./routes/uploadRoutes";
 import likeRouter from "./routes/likeRoutes";
 import workRouter from "./routes/workRoutes";
+import followRouter from "./routes/followRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
 import Like from "./models/Like";
 import Work from "./models/Work";
+import Follow from "./models/Follow";
 
 const app = express();
 
@@ -47,6 +49,7 @@ app.use(postRouter);
 app.use(uploadRouter);
 app.use(likeRouter);
 app.use(workRouter);
+app.use(followRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -64,6 +67,12 @@ Like.belongsTo(Post, { foreignKey: "postId" });
 User.hasMany(Work, { foreignKey: "userId" });
 Work.belongsTo(User, { foreignKey: "userId" });
 
+User.hasMany(Follow, { foreignKey: "followerId", as: "following" });
+Follow.belongsTo(User, { foreignKey: "followerId" });
+
+User.hasMany(Follow, { foreignKey: "followingId", as: "followers" });
+Follow.belongsTo(User, { foreignKey: "followingId" });
+
 User.sync({ alter: true }).then(() => {
   console.log("✅ Tabela users sincronizada");
 });
@@ -78,6 +87,10 @@ Like.sync({ alter: true }).then(() => {
 
 Work.sync({ alter: true }).then(() => {
   console.log("✅ Tabela works sincronizada");
+});
+
+Follow.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela follows sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

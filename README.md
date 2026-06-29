@@ -120,7 +120,7 @@ musicwork/
 ### Fase 2 — Coração social
 
 - [ ] Comentários nos posts
-- [ ] Seguir músicos (contadores reais)
+- ✅ Seguir músicos (contadores reais)
 
 ### Fase 3 — Conta e segurança
 

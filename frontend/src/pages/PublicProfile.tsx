@@ -4,6 +4,7 @@ import {
   Chip,
   Divider,
   CircularProgress,
+  Button,
 } from "@mui/material";
 import Layout from "../components/Layout/Layout";
 import { useEffect, useState } from "react";
@@ -29,6 +30,9 @@ export default function PublicProfile() {
   const [musician, setMusician] = useState<Musician | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followers, setFollowers] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     async function loadProfile() {
@@ -37,6 +41,10 @@ export default function PublicProfile() {
       try {
         const response = await api.get(`/users/${id}`);
         setMusician(response.data);
+        const followRes = await api.get(`/follows/${id}`);
+        setFollowing(followRes.data.following);
+        setFollowers(followRes.data.followers);
+        setFollowingCount(followRes.data.followingCount);
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
         setNotFound(true);
@@ -46,6 +54,12 @@ export default function PublicProfile() {
     }
     if (id) loadProfile();
   }, [id]);
+
+  async function handleFollow() {
+    const res = await api.post(`/follows/${id}`);
+    setFollowing(res.data.following);
+    setFollowers(prev => (res.data.following ? prev + 1 : prev - 1));
+  }
 
   if (loading) {
     return (
@@ -155,6 +169,24 @@ export default function PublicProfile() {
             )}
           </Box>
 
+          <Button
+            variant={following ? "outlined" : "contained"}
+            onClick={handleFollow}
+            sx={{
+              mt: 1,
+              mb: 1,
+              backgroundColor: following ? "transparent" : "#7c4dff",
+              borderColor: "#7c4dff",
+              color: following ? "#7c4dff" : "#fff",
+              "&:hover": {
+                backgroundColor: following ? "#7c4dff11" : "#6a3de8",
+                borderColor: "#7c4dff",
+              },
+            }}
+          >
+            {following ? "Seguindo" : "Seguir"}
+          </Button>
+
           <Typography sx={{ color: "#666", fontSize: 13 }}>
             {musician.city}
           </Typography>
@@ -246,6 +278,24 @@ export default function PublicProfile() {
               </Typography>
             </Box>
           )}
+
+          <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
+            {[
+              { label: "Seguidores", value: followers },
+              { label: "Seguindo", value: followingCount },
+            ].map(stat => (
+              <Box key={stat.label} sx={{ textAlign: "center" }}>
+                <Typography
+                  sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
+                >
+                  {stat.value}
+                </Typography>
+                <Typography sx={{ color: "#666", fontSize: 12 }}>
+                  {stat.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
 
         {/* Detalhes */}

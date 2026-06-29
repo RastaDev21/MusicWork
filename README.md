@@ -119,8 +119,14 @@ musicwork/
 
 ### Fase 2 — Coração social
 
-- [ ] Comentários nos posts
+- ✅ Comentários nos posts
 - ✅ Seguir músicos (contadores reais)
+
+### Fase 2.5 — Social avançado
+
+- [ ] Curtir comentários
+- [ ] Responder comentários (threading)
+- [ ] Notificações (seguir, curtir, comentar)
 
 ### Fase 3 — Conta e segurança
 

@@ -6,6 +6,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import api, { getImageUrl } from "../../services/api";
+import { useSnackbar } from "notistack";
 interface PostCardProps {
   id: string;
   name: string;
@@ -39,6 +40,14 @@ export default function PostCard({
 }: PostCardProps) {
   const [liked, setLiked] = useState(likedByMe);
   const [likesCount, setLikesCount] = useState(likes);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  function handleShare() {
+    const url = `https://music-work.vercel.app/post/${id}`;
+    navigator.clipboard.writeText(url);
+    enqueueSnackbar("Link copiado!", { variant: "success" });
+  }
 
   async function handleLike() {
     try {
@@ -164,6 +173,7 @@ export default function PostCard({
 
         <IconButton
           size="small"
+          onClick={handleShare}
           sx={{ color: "#666", "&:hover": { color: "#7c4dff" } }}
         >
           <ShareIcon fontSize="small" />

@@ -13,6 +13,9 @@ class User extends Model {
   declare avatarUrl: string | null;
   declare coverUrl: string | null;
   declare genre: string;
+  declare instagram: string | null;
+  declare youtube: string | null;
+  declare spotify: string | null;
 }
 
 User.init(
@@ -60,6 +63,18 @@ User.init(
       allowNull: true,
     },
     genre: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    instagram: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    youtube: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    spotify: {
       type: DataTypes.STRING,
       allowNull: true,
     },

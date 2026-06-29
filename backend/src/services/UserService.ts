@@ -11,6 +11,9 @@ class UserService {
     city?: string;
     bio?: string;
     genre?: string;
+    instagram?: string | null;
+    youtube?: string | null;
+    spotify?: string | null;
   }) {
     const userAlreadyExists = await User.findOne({
       where: { email: data.email },
@@ -59,6 +62,9 @@ class UserService {
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
       genre: user.genre,
+      instagram: user.instagram,
+      youtube: user.youtube,
+      spotify: user.spotify,
     };
   }
 
@@ -73,6 +79,9 @@ class UserService {
       avatarUrl?: string | null;
       coverUrl?: string | null;
       genre?: string | null;
+      instagram?: string | null;
+      youtube?: string | null;
+      spotify?: string | null;
     },
   ) {
     const user = await User.findByPk(id);
@@ -94,6 +103,9 @@ class UserService {
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
       genre: user.genre,
+      instagram: user.instagram,
+      youtube: user.youtube,
+      spotify: user.spotify,
     };
   }
 

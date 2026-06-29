@@ -115,7 +115,7 @@ musicwork/
 - ✅ #5 Subcategoria de tipo de aula no Work (instrumento ensinado)
 - ✅ #7 Localização flexível no Work (online / estado / país)
 - ✅ Links sociais no perfil (Instagram, YouTube, SoundCloud)
-- [ ] Compartilhar post (copiar link)
+- ✅ Compartilhar post (copiar link)
 
 ### Fase 2 — Coração social
 

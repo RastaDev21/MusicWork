@@ -1,7 +1,7 @@
 import Post from "../models/Post";
 import User from "../models/User";
 import Like from "../models/Like";
-
+import Comment from "../models/Comment";
 class PostService {
   async createPost(content: string, userId: string) {
     if (!content || content.trim() === "") {
@@ -31,6 +31,10 @@ class PostService {
           model: Like,
           attributes: ["userId"],
         },
+        {
+          model: Comment,
+          attributes: ["id"],
+        },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -41,6 +45,7 @@ class PostService {
         ...post.toJSON(),
         likesCount: likes.length,
         likedByMe: likes.some((like: any) => like.userId === currentUserId),
+        commentsCount: ((post as any).Comments || []).length,
       };
     });
   }

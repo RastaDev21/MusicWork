@@ -12,6 +12,7 @@ interface Post {
   createdAt: string;
   likesCount: number;
   likedByMe: boolean;
+  commentsCount: number;
   User: {
     name: string;
     instrument: string;
@@ -95,7 +96,7 @@ export default function Feed() {
               content={post.content}
               likes={post.likesCount}
               likedByMe={post.likedByMe}
-              comments={0}
+              comments={post.commentsCount}
               isOwner={currentUser?.id === post.userId}
               onDelete={handleDelete}
               avatarUrl={post.User.avatarUrl}

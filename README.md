@@ -4,8 +4,8 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 
 **🌐 Produção:**
 
-- Frontend: https://music-work.vercel.app
-- Backend: https://musicwork.onrender.com
+- Frontend: https://musicwork.com.br (também: https://music-work.vercel.app)
+- Backend: https://api.musicwork.com.br (também: https://musicwork.onrender.com)
 
 ## Stack
 
@@ -17,28 +17,28 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Deploy:** Render (backend) + Vercel (frontend)
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
+- **DNS:** Cloudflare (musicwork.com.br)
+- **Email sistema:** Resend (pendente verificação de domínio)
 
 ## Estrutura
 
-```
 musicwork/
 ├── backend/
-│   └── src/
-│       ├── config/ (cloudinary.ts)
-│       ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, WorkController)
-│       ├── middlewares/ (authMiddleware, uploadMiddleware)
-│       ├── models/ (User, Post, Like, Work)
-│       ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, workRoutes)
-│       ├── services/ (AuthService, UserService, PostService, WorkService)
-│       └── server.ts
+│ └── src/
+│ ├── config/ (cloudinary.ts)
+│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, WorkController, FollowController, CommentController)
+│ ├── middlewares/ (authMiddleware, uploadMiddleware)
+│ ├── models/ (User, Post, Like, Work, Follow, Comment)
+│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, workRoutes, followRoutes, commentRoutes)
+│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService)
+│ └── server.ts
 └── frontend/
-    └── src/
-        ├── components/ (Layout, Navbar, Sidebar, BottomNav, PostCard, NewPost, Logo)
-        ├── contexts/ (AuthContext)
-        ├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work)
-        ├── routes/ (AppRoutes, PrivateRoute)
-        └── services/ (api.ts — inclui helper getImageUrl)
-```
+└── src/
+├── components/ (Layout, Navbar, Sidebar, BottomNav, PostCard, NewPost, Logo)
+├── contexts/ (AuthContext)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work)
+├── routes/ (AppRoutes, PrivateRoute)
+└── services/ (api.ts — inclui helper getImageUrl)
 
 ## O que já foi feito
 
@@ -67,26 +67,39 @@ musicwork/
 
 - ✅ Criar, editar e deletar works
 - ✅ Categorias de serviço (Show, Aula, Gravação, Foto/Vídeo, Banda, Equipamento)
+- ✅ Subcategoria de modalidade para Aula (Presencial, Online, Grupo, Individual)
+- ✅ Localização flexível (Presencial + cidade, Online, País)
 - ✅ Filtros por categoria e cidade
 - ✅ Contato direto (WhatsApp ou email)
 - ✅ Tipo Ofereço / Procuro
 - ✅ Clicar no autor do work abre o perfil dele
 
-### Curtidas ✅
+### Social ✅
 
 - ✅ Curtir e descurtir posts
 - ✅ Contador de curtidas em tempo real
+- ✅ Comentários nos posts (criar, listar, deletar)
+- ✅ Contador de comentários real no feed
+- ✅ Seguir músicos (persistido no banco)
+- ✅ Contadores reais de seguidores/seguindo no perfil público
 
-### Perfil público ✅
+### Perfil ✅
 
 - ✅ Página de perfil público de outros usuários (/musico/:id)
+- ✅ Links sociais no perfil (Instagram, YouTube, Spotify)
+- ✅ Profissão secundária como campo livre
+- ✅ Novos instrumentos na lista (Trombone, Sanfona, Triângulo, Zabumba, Técnico de som)
 
-### Deploy 🚀 ✅
+### Deploy e Infraestrutura ✅
 
 - ✅ Banco de dados na nuvem (Neon PostgreSQL — São Paulo)
 - ✅ Deploy do backend (Render)
 - ✅ Deploy do frontend (Vercel)
-- ✅ CORS configurado para aceitar local + produção
+- ✅ Domínio próprio registrado: musicwork.com.br (Registro.br, expira 30/06/2027)
+- ✅ DNS gerenciado pelo Cloudflare
+- ✅ Frontend no domínio próprio: https://musicwork.com.br
+- ✅ Backend no domínio próprio: https://api.musicwork.com.br
+- ✅ CORS configurado para todos os domínios
 
 ### Melhorias de login/cadastro ✅
 
@@ -94,7 +107,7 @@ musicwork/
 - ✅ Validação de formato de email
 - ✅ Validação de senha mínima (6 caracteres) no cadastro
 - ✅ Bloqueio dos campos durante o loading + spinner no botão
-- ✅ Link "Esqueci minha senha" (visual — recuperação real é dívida técnica)
+- ✅ Link "Esqueci minha senha" (visual — recuperação real pendente)
 
 ### Uploads robustos ✅
 
@@ -109,18 +122,20 @@ musicwork/
 
 ## Próximos passos — ROADMAP
 
-### ▶️ Fase 1 — Vitórias rápidas (PRÓXIMA)
+### ⏳ Pendente — Configuração de email (FAZER PRIMEIRO NA PRÓXIMA SESSÃO)
 
-- ✅ #2 Profissão secundária como campo livre (dropdown → texto) ← COMEÇAR POR AQUI
-- ✅ #5 Subcategoria de tipo de aula no Work (instrumento ensinado)
-- ✅ #7 Localização flexível no Work (online / estado / país)
-- ✅ Links sociais no perfil (Instagram, YouTube, SoundCloud)
-- ✅ Compartilhar post (copiar link)
+- [ ] Adicionar registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF)
+- [ ] Configurar Cloudflare Email Routing (contato@musicwork.com.br → Gmail)
+- [ ] Criar API key no Resend e adicionar RESEND_API_KEY no Render
+- [ ] Implementar recuperação de senha (backend: /forgot-password e /reset-password)
+- [ ] Implementar telas de recuperação de senha no frontend
 
-### Fase 2 — Coração social
+### Fase 3 — Conta e segurança
 
-- ✅ Comentários nos posts
-- ✅ Seguir músicos (contadores reais)
+- [ ] Recuperação de senha por email (Resend)
+- [ ] Editar email e senha (configurações)
+- [ ] Verificação real de email no cadastro
+- [ ] Login com Google (OAuth)
 
 ### Fase 2.5 — Social avançado
 
@@ -128,27 +143,11 @@ musicwork/
 - [ ] Responder comentários (threading)
 - [ ] Notificações (seguir, curtir, comentar)
 
-### Fase 3 — Conta e segurança
-
-- [ ] Serviço de email + recuperação de senha
-- [ ] Editar email e senha (configurações)
-- [ ] Verificação real de email
-
 ### Fase 4 — Features grandes
 
 - [ ] Calendário de shows
-- [ ] Notificações
 - [ ] Vídeo/áudio de apresentação no perfil
-- [ ] #3 Múltiplos instrumentos no perfil
-
-### Funcionalidades incompletas (botão existe, sem ação)
-
-- [ ] Comentar (botão no PostCard)
-- [ ] Compartilhar (ícone no PostCard)
-- [ ] Seguir (contadores fixos em 0)
-- [ ] Notificações (sino na navbar)
-
-> 📋 Dívida técnica detalhada em `TECH_DEBT.md`
+- [ ] Múltiplos instrumentos no perfil
 
 ---
 
@@ -181,7 +180,7 @@ npm run dev
 PORT=3333
 JWT_SECRET=sua_chave
 NODE_ENV=development
-FRONTEND_URL=http://localhost:5173,https://music-work.vercel.app
+FRONTEND_URL=http://localhost:5173,https://musicwork.com.br,https://www.musicwork.com.br,https://music-work.vercel.app
 DATABASE_URL=postgresql://...
 DB_HOST=...
 DB_PORT=5432
@@ -191,6 +190,7 @@ DB_PASS=...
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
+RESEND_API_KEY=... (pendente)
 ```
 
 ### Frontend (.env)
@@ -199,8 +199,14 @@ CLOUDINARY_API_SECRET=...
 VITE_API_URL=http://localhost:3333
 ```
 
+### Frontend (.env.production)
+
+VITE_API_URL=https://api.musicwork.com.br
+
 ## Notas importantes
 
 - **Banco único:** local e produção usam o mesmo banco Neon (ver TECH_DEBT.md)
 - **Cold start:** o backend no Render free "dorme" após inatividade — primeiro acesso pode levar ~30-50s
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
+- **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
+- **Email routing:** pendente configuração do Cloudflare Email Routing e verificação do Resend

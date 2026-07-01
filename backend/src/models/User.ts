@@ -16,6 +16,8 @@ class User extends Model {
   declare instagram: string | null;
   declare youtube: string | null;
   declare spotify: string | null;
+  declare resetPasswordToken: string | null;
+  declare resetPasswordExpires: Date | null;
 }
 
 User.init(
@@ -76,6 +78,14 @@ User.init(
     },
     spotify: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
       allowNull: true,
     },
   },

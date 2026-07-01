@@ -7,12 +7,16 @@ import Search from "../pages/Search";
 import WorkPage from "../pages/Work";
 import PrivateRoute from "./PrivateRoute";
 import PublicProfile from "../pages/PublicProfile";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/feed"
         element={

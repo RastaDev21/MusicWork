@@ -119,14 +119,7 @@ export default function Login() {
           />
 
           <Box sx={{ textAlign: "right", mb: 2 }}>
-            <Link
-              href="#"
-              sx={{ color: "#888", fontSize: 13 }}
-              onClick={e => {
-                e.preventDefault();
-                setError("Recuperação de senha em breve 🙂");
-              }}
-            >
+            <Link href="/forgot-password" sx={{ color: "#888", fontSize: 13 }}>
               Esqueci minha senha
             </Link>
           </Box>

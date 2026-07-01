@@ -60,4 +60,14 @@ export function getImageUrl(url: string | null | undefined) {
   return `${import.meta.env.VITE_API_URL}${url}`;
 }
 
+export async function forgotPassword(email: string) {
+  const response = await api.post("/forgot-password", { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, password: string) {
+  const response = await api.post("/reset-password", { token, password });
+  return response.data;
+}
+
 export default api;

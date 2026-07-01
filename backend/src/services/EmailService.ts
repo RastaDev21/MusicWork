@@ -1,0 +1,30 @@
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+class EmailService {
+  async sendPasswordReset(to: string, name: string, token: string) {
+    const resetUrl = `${process.env.FRONTEND_RESET_URL || "https://musicwork.com.br/reset-password"}?token=${token}`;
+
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "MusicWork <contato@musicwork.com.br>",
+      to,
+      subject: "Recuperação de senha - MusicWork",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2>Olá, ${name}!</h2>
+          <p>Recebemos uma solicitação para redefinir sua senha no MusicWork.</p>
+          <p>Clique no botão abaixo para criar uma nova senha. Este link expira em 1 hora.</p>
+          <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#6C63FF;color:#fff;text-decoration:none;border-radius:8px;margin:16px 0;">
+            Redefinir senha
+          </a>
+          <p>Se você não solicitou isso, pode ignorar este email com segurança.</p>
+        </div>
+      `,
+    });
+
+    return result;
+  }
+}
+
+export default new EmailService();

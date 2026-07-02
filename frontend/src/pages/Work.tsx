@@ -386,8 +386,8 @@ export default function WorkPage() {
             const isOwner = currentUser?.id === work.userId;
             const accentColor = isOffer ? "#1D9E75" : "#7c4dff";
             const bgColor = isOffer ? "#1D9E7511" : "#7c4dff11";
-            const badgeBg = isOffer ? "#1D9E7522" : "#7c4dff22";
-            const badgeColor = isOffer ? "#085041" : "#3C3489";
+            const badgeBg = isOffer ? "#1D9E7533" : "#7c4dff33";
+            const badgeColor = isOffer ? "#4ADE80" : "#B794F6";
 
             return (
               <Box
@@ -553,10 +553,11 @@ export default function WorkPage() {
                     </Box>
 
                     {/* Botão de contato */}
-                    {work.contact && !isOwner && (
+                    {work.contact && (
                       <IconButton
                         size="small"
                         onClick={() =>
+                          !isOwner &&
                           handleContact(work.contact, work.User?.name)
                         }
                         sx={{
@@ -566,10 +567,16 @@ export default function WorkPage() {
                           backgroundColor: isWhatsApp(work.contact)
                             ? "#25D36622"
                             : "#7c4dff22",
+                          opacity: isOwner ? 0.5 : 1,
+                          cursor: isOwner ? "default" : "pointer",
                           "&:hover": {
-                            backgroundColor: isWhatsApp(work.contact)
-                              ? "#25D36633"
-                              : "#7c4dff33",
+                            backgroundColor: isOwner
+                              ? isWhatsApp(work.contact)
+                                ? "#25D36622"
+                                : "#7c4dff22"
+                              : isWhatsApp(work.contact)
+                                ? "#25D36633"
+                                : "#7c4dff33",
                           },
                         }}
                       >

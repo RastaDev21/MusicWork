@@ -88,6 +88,7 @@ export default function Feed() {
             <PostCard
               key={post.id}
               id={post.id}
+              userId={post.userId}
               name={post.User.name}
               instrument={post.User.instrument}
               secondaryProfession={post.User.secondaryProfession}

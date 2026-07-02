@@ -24,13 +24,18 @@ import { useSnackbar } from "notistack";
 
 interface Post {
   id: string;
+  userId: string;
   content: string;
   createdAt: string;
+  likesCount: number;
+  likedByMe: boolean;
+  commentsCount: number;
   User: {
     name: string;
     instrument: string;
     secondaryProfession: string;
     city: string;
+    avatarUrl: string | null;
   };
 }
 
@@ -145,7 +150,7 @@ export default function Profile() {
         ]);
 
         const myPosts = postsRes.data.filter(
-          (post: Post & { userId: string }) => post.User.name === user?.name,
+          (post: Post) => post.User.name === user?.name,
         );
         setPosts(myPosts);
         setBio(profileRes.data.bio || "");
@@ -192,6 +197,16 @@ export default function Profile() {
       setLoading(false);
     }
   }
+
+  async function handleDelete(postId: string) {
+    try {
+      await api.delete(`/posts/${postId}`);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      console.error("Erro ao deletar post:", error);
+    }
+  }
+
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -546,14 +561,19 @@ export default function Profile() {
                 <PostCard
                   key={post.id}
                   id={post.id}
+                  userId={post.userId}
                   name={post.User.name}
                   instrument={post.User.instrument}
                   secondaryProfession={post.User.secondaryProfession}
                   city={post.User.city}
                   time={timeAgo(post.createdAt)}
                   content={post.content}
-                  likes={0}
-                  comments={0}
+                  likes={post.likesCount}
+                  likedByMe={post.likedByMe}
+                  comments={post.commentsCount}
+                  avatarUrl={post.User.avatarUrl}
+                  isOwner
+                  onDelete={handleDelete}
                 />
               ))
             )}

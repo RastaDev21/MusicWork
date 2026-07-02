@@ -16,6 +16,7 @@ import { useState } from "react";
 import api, { getImageUrl } from "../../services/api";
 import { useSnackbar } from "notistack";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface Comment {
   id: string;
@@ -31,6 +32,7 @@ interface Comment {
 
 interface PostCardProps {
   id: string;
+  userId: string;
   name: string;
   instrument: string;
   secondaryProfession: string;
@@ -47,6 +49,7 @@ interface PostCardProps {
 
 export default function PostCard({
   id,
+  userId,
   name,
   instrument,
   secondaryProfession,
@@ -70,6 +73,15 @@ export default function PostCard({
   const [sendingComment, setSendingComment] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  function handleGoToProfile() {
+    if (isOwner) {
+      navigate("/perfil");
+    } else {
+      navigate(`/musico/${userId}`);
+    }
+  }
 
   function handleShare() {
     const url = `https://music-work.vercel.app/post/${id}`;
@@ -147,7 +159,12 @@ export default function PostCard({
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
         <Avatar
           src={getImageUrl(avatarUrl)}
-          sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
+          onClick={handleGoToProfile}
+          sx={{
+            backgroundColor: "#7c4dff",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
         >
           {name.charAt(0).toUpperCase()}
         </Avatar>
@@ -160,7 +177,16 @@ export default function PostCard({
               flexWrap: "wrap",
             }}
           >
-            <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
+            <Typography
+              onClick={handleGoToProfile}
+              sx={{
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
+              }}
+            >
               {name}
             </Typography>
             <Chip

@@ -1,4 +1,5 @@
 import Follow from "../models/Follow";
+import NotificationService from "./NotificationService";
 
 class FollowService {
   async toggle(followerId: string, followingId: string) {
@@ -14,6 +15,7 @@ class FollowService {
     }
 
     await Follow.create({ followerId, followingId });
+    await NotificationService.create(followingId, followerId, "follow");
     return { following: true };
   }
 

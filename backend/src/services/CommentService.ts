@@ -1,5 +1,7 @@
 import Comment from "../models/Comment";
 import User from "../models/User";
+import Post from "../models/Post";
+import NotificationService from "./NotificationService";
 
 class CommentService {
   async create(userId: string, postId: string, content: string) {
@@ -9,6 +11,12 @@ class CommentService {
         { model: User, attributes: ["id", "name", "avatarUrl", "instrument"] },
       ],
     });
+
+    const post = await Post.findByPk(postId);
+    if (post) {
+      await NotificationService.create(post.userId, userId, "comment", postId);
+    }
+
     return withUser;
   }
 

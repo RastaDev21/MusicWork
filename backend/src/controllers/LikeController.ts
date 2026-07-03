@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Like from "../models/Like";
+import Post from "../models/Post";
+import NotificationService from "../services/NotificationService";
 
 export class LikeController {
   async toggle(req: Request, res: Response) {
@@ -16,6 +18,17 @@ export class LikeController {
         return res.json({ liked: false });
       } else {
         await Like.create({ userId, postId });
+
+        const post = await Post.findByPk(postId as string);
+        if (post) {
+          await NotificationService.create(
+            post.userId,
+            userId as string,
+            "like",
+            postId as string,
+          );
+        }
+
         return res.json({ liked: true });
       }
     } catch (error) {

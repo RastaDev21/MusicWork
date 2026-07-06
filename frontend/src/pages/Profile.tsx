@@ -13,6 +13,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Autocomplete,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Layout from "../components/Layout/Layout";
@@ -127,6 +128,9 @@ export default function Profile() {
   const [openEdit, setOpenEdit] = useState(false);
   const [name, setName] = useState(user?.name || "");
   const [instrument, setInstrument] = useState(user?.instrument || "");
+  const [secondaryInstruments, setSecondaryInstruments] = useState<string[]>(
+    [],
+  );
   const [city, setCity] = useState(user?.city || "");
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [bio, setBio] = useState("");
@@ -161,6 +165,7 @@ export default function Profile() {
         setInstagram(profileRes.data.instagram || "");
         setYoutube(profileRes.data.youtube || "");
         setSpotify(profileRes.data.spotify || "");
+        setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
       } catch (error) {
         console.error(error);
       }
@@ -174,6 +179,7 @@ export default function Profile() {
       await api.put("/users", {
         name,
         instrument,
+        secondaryInstruments,
         secondaryProfession,
         city,
         bio,
@@ -183,12 +189,13 @@ export default function Profile() {
         spotify,
       });
 
-      updateUser({ name, instrument, city, genre });
+      updateUser({ name, instrument, secondaryInstruments, city, genre });
 
       const profileRes = await api.get("/profile");
       setBio(profileRes.data.bio || "");
       setGenre(profileRes.data.genre || "");
       setSecondaryProfession(profileRes.data.secondaryProfession || "");
+      setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
 
       setOpenEdit(false);
     } catch (error) {
@@ -414,6 +421,18 @@ export default function Profile() {
                     }}
                   />
                 )}
+                {secondaryInstruments.map(inst => (
+                  <Chip
+                    key={inst}
+                    label={inst}
+                    size="small"
+                    sx={{
+                      backgroundColor: "#33333380",
+                      color: "#bbb",
+                      fontSize: 11,
+                    }}
+                  />
+                ))}
               </Box>
               <Typography sx={{ color: "#666", fontSize: 13 }}>
                 {user?.city}
@@ -663,6 +682,62 @@ export default function Profile() {
               sx={inputSx}
             />
           </Box>
+
+          <Autocomplete
+            multiple
+            options={instruments.filter(
+              i => i !== instrument && !secondaryInstruments.includes(i),
+            )}
+            value={secondaryInstruments}
+            onChange={(_, newValue) => setSecondaryInstruments(newValue)}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => {
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Chip
+                    key={key}
+                    label={option}
+                    size="small"
+                    sx={{
+                      backgroundColor: "#7c4dff",
+                      color: "#fff",
+                      fontWeight: 600,
+                      "& .MuiChip-deleteIcon": {
+                        color: "#fff",
+                        opacity: 0.8,
+                        "&:hover": { opacity: 1 },
+                      },
+                    }}
+                    {...tagProps}
+                  />
+                );
+              })
+            }
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="Outros instrumentos (opcional)"
+                placeholder="Selecione..."
+                sx={inputSx}
+              />
+            )}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #2a2a2a",
+                  "& .MuiAutocomplete-option": {
+                    color: "#fff",
+                    '&[aria-selected="true"]': {
+                      backgroundColor: "#7c4dff33",
+                    },
+                    "&:hover": { backgroundColor: "#7c4dff22" },
+                  },
+                },
+              },
+            }}
+            sx={{ mb: 2 }}
+          />
 
           <TextField
             fullWidth

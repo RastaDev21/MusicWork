@@ -13,11 +13,11 @@ interface User {
   name: string;
   email: string;
   instrument: string;
+  secondaryInstruments?: string[];
   city: string;
   avatarUrl?: string | null;
   genre?: string | null;
 }
-
 interface AuthContextData {
   user: User | null;
   signed: boolean;

@@ -14,6 +14,7 @@ interface Musician {
   id: string;
   name: string;
   instrument: string;
+  secondaryInstruments?: string[];
   secondaryProfession: string;
   city: string;
   bio: string;
@@ -167,6 +168,18 @@ export default function PublicProfile() {
                 }}
               />
             )}
+            {musician.secondaryInstruments?.map(inst => (
+              <Chip
+                key={inst}
+                label={inst}
+                size="small"
+                sx={{
+                  backgroundColor: "#33333380",
+                  color: "#bbb",
+                  fontSize: 11,
+                }}
+              />
+            ))}
           </Box>
 
           <Button

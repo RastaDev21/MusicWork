@@ -69,5 +69,35 @@ export async function resetPassword(token: string, password: string) {
   const response = await api.post("/reset-password", { token, password });
   return response.data;
 }
+export interface NotificationItem {
+  id: string;
+  type: "follow" | "like" | "comment";
+  postId: string | null;
+  read: boolean;
+  createdAt: string;
+  sender: {
+    id: string;
+    name: string;
+    avatarUrl?: string | null;
+    instrument?: string | null;
+  };
+}
+
+export async function getNotifications() {
+  const response = await api.get<NotificationItem[]>("/notifications");
+  return response.data;
+}
+
+export async function getUnreadNotificationCount() {
+  const response = await api.get<{ count: number }>(
+    "/notifications/unread-count",
+  );
+  return response.data.count;
+}
+
+export async function markNotificationsAsRead() {
+  const response = await api.patch("/notifications/read-all");
+  return response.data;
+}
 
 export default api;

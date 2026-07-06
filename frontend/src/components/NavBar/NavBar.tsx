@@ -7,24 +7,103 @@ import {
   Menu,
   MenuItem,
   Typography,
+  Badge,
+  Divider,
+  Avatar as MuiAvatar,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
 import { Avatar } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getImageUrl } from "../../services/api";
+import {
+  getImageUrl,
+  getNotifications,
+  getUnreadNotificationCount,
+  markNotificationsAsRead,
+  NotificationItem,
+} from "../../services/api";
+
+function timeAgo(dateString: string) {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "agora";
+  if (minutes < 60) return `${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
+
+function notificationText(notification: NotificationItem) {
+  const name = notification.sender?.name || "Alguém";
+  switch (notification.type) {
+    case "follow":
+      return `${name} começou a seguir você`;
+    case "like":
+      return `${name} curtiu sua publicação`;
+    case "comment":
+      return `${name} comentou na sua publicação`;
+    default:
+      return `${name} interagiu com você`;
+  }
+}
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const count = await getUnreadNotificationCount();
+      setUnreadCount(count);
+    } catch {
+      // silencioso: não trava a navbar por causa disso
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
+
+  async function handleOpenNotifications(event: React.MouseEvent<HTMLElement>) {
+    setNotifAnchorEl(event.currentTarget);
+    try {
+      const data = await getNotifications();
+      setNotifications(data);
+      if (unreadCount > 0) {
+        await markNotificationsAsRead();
+        setUnreadCount(0);
+      }
+    } catch {
+      // silencioso
+    }
+  }
+
+  function handleCloseNotifications() {
+    setNotifAnchorEl(null);
+  }
+
+  function handleNotificationClick(notification: NotificationItem) {
+    handleCloseNotifications();
+    if (notification.type === "follow") {
+      navigate(`/musico/${notification.sender.id}`);
+    } else {
+      navigate("/feed");
+    }
+  }
 
   function handleSearch(e: React.KeyboardEvent) {
     if (e.key === "Enter" && searchQuery.trim()) {
@@ -90,9 +169,98 @@ export default function Navbar() {
           />
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton sx={{ color: "#aaa" }}>
-            <NotificationsIcon />
+          <IconButton sx={{ color: "#aaa" }} onClick={handleOpenNotifications}>
+            <Badge
+              badgeContent={unreadCount}
+              max={9}
+              color="error"
+              sx={{
+                "& .MuiBadge-badge": {
+                  fontSize: 10,
+                  height: 16,
+                  minWidth: 16,
+                },
+              }}
+            >
+              <NotificationsIcon />
+            </Badge>
           </IconButton>
+
+          <Menu
+            anchorEl={notifAnchorEl}
+            open={Boolean(notifAnchorEl)}
+            onClose={handleCloseNotifications}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #2a2a2a",
+                  borderRadius: 2,
+                  mt: 1,
+                  width: 320,
+                  maxHeight: 420,
+                },
+              },
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 14,
+                px: 2,
+                py: 1,
+              }}
+            >
+              Notificações
+            </Typography>
+            <Divider sx={{ borderColor: "#2a2a2a" }} />
+
+            {notifications.length === 0 && (
+              <Typography sx={{ color: "#666", fontSize: 13, px: 2, py: 2 }}>
+                Nenhuma notificação por enquanto.
+              </Typography>
+            )}
+
+            {notifications.map(notification => (
+              <MenuItem
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification)}
+                sx={{
+                  gap: 1.5,
+                  py: 1.2,
+                  alignItems: "flex-start",
+                  whiteSpace: "normal",
+                  backgroundColor: notification.read
+                    ? "transparent"
+                    : "rgba(124, 77, 255, 0.08)",
+                  "&:hover": { backgroundColor: "#2a2a2a" },
+                }}
+              >
+                <MuiAvatar
+                  src={getImageUrl(notification.sender?.avatarUrl)}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor: "#7c4dff",
+                    fontSize: 13,
+                  }}
+                >
+                  {notification.sender?.name?.charAt(0).toUpperCase()}
+                </MuiAvatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    sx={{ color: "#ddd", fontSize: 13, lineHeight: 1.4 }}
+                  >
+                    {notificationText(notification)}
+                  </Typography>
+                  <Typography sx={{ color: "#666", fontSize: 11, mt: 0.3 }}>
+                    {timeAgo(notification.createdAt)}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))}
+          </Menu>
 
           <Avatar
             onClick={handleOpenMenu}

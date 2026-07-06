@@ -128,7 +128,8 @@ musicwork/
 
 - ✅ Implementar recuperação de senha (backend: /forgot-password e /reset-password)
 - ✅ Implementar telas de recuperação de senha no frontend
-- [ ] Adicionar registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF) — **bloqueado, aguardando resposta do suporte do Resend sobre a verificação do domínio musicwork.com.br**
+- ✅ Registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF) — confirmado pelo suporte que estão válidos
+- [ ] **Bloqueado por bug interno do Resend:** identidade do domínio registrada em região AWS diferente da usada pelo envio, causando erro 403. Suporte já confirmou o problema e está corrigindo, sem prazo. Nenhuma ação nossa necessária.
 - [ ] Configurar Cloudflare Email Routing (contato@musicwork.com.br → Gmail)
 - [ ] Criar API key no Resend e adicionar RESEND_API_KEY no Render
 
@@ -212,5 +213,5 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Cold start:** o backend no Render free "dorme" após inatividade — primeiro acesso pode levar ~30-50s
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
-- **Email routing:** recuperação de senha já implementada no código, mas o envio real de email está bloqueado até o Resend verificar o domínio musicwork.com.br — ticket de suporte aberto, aguardando resposta
+- **Email routing:** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco

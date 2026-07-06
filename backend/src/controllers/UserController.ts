@@ -9,6 +9,7 @@ class UserController {
         email,
         password,
         instrument,
+        secondaryInstruments,
         secondaryProfession,
         city,
         bio,
@@ -25,6 +26,7 @@ class UserController {
         email,
         password,
         instrument,
+        secondaryInstruments,
         secondaryProfession,
         city,
         bio,
@@ -53,6 +55,7 @@ class UserController {
       const {
         name,
         instrument,
+        secondaryInstruments,
         secondaryProfession,
         city,
         bio,
@@ -65,6 +68,7 @@ class UserController {
       const user = await UserService.updateUser(userId, {
         name,
         instrument,
+        secondaryInstruments,
         secondaryProfession,
         city,
         bio,

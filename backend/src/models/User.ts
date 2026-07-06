@@ -7,6 +7,7 @@ class User extends Model {
   declare email: string;
   declare password: string;
   declare instrument: string;
+  declare secondaryInstruments: string[];
   declare secondaryProfession: string;
   declare city: string;
   declare bio: string;
@@ -43,6 +44,11 @@ User.init(
     instrument: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    secondaryInstruments: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: [],
     },
     secondaryProfession: {
       type: DataTypes.STRING,

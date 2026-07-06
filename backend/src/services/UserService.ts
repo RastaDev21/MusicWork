@@ -7,6 +7,7 @@ class UserService {
     email: string;
     password: string;
     instrument?: string;
+    secondaryInstruments?: string[];
     secondaryProfession?: string;
     city?: string;
     bio?: string;
@@ -35,6 +36,7 @@ class UserService {
       name: user.name,
       email: user.email,
       instrument: user.instrument,
+      secondaryInstruments: user.secondaryInstruments,
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
@@ -56,6 +58,7 @@ class UserService {
       name: user.name,
       email: user.email,
       instrument: user.instrument,
+      secondaryInstruments: user.secondaryInstruments,
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
@@ -73,6 +76,7 @@ class UserService {
     data: {
       name?: string;
       instrument?: string;
+      secondaryInstruments?: string[];
       secondaryProfession?: string;
       city?: string;
       bio?: string;
@@ -97,6 +101,7 @@ class UserService {
       name: user.name,
       email: user.email,
       instrument: user.instrument,
+      secondaryInstruments: user.secondaryInstruments,
       secondaryProfession: user.secondaryProfession,
       city: user.city,
       bio: user.bio,
@@ -147,6 +152,7 @@ class UserService {
         "id",
         "name",
         "instrument",
+        "secondaryInstruments",
         "secondaryProfession",
         "city",
         "bio",

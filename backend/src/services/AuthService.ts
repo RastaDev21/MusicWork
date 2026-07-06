@@ -96,6 +96,45 @@ class AuthService {
 
     return { message: "Senha atualizada com sucesso" };
   }
+
+  async changeEmail(userId: string, currentPassword: string, newEmail: string) {
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error("Usuário não encontrado");
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) throw new Error("Senha atual incorreta");
+
+    const emailInUse = await User.findOne({ where: { email: newEmail } });
+    if (emailInUse && emailInUse.id !== userId) {
+      throw new Error("Este email já está em uso por outra conta");
+    }
+
+    user.email = newEmail;
+    await user.save();
+
+    return { id: user.id, email: user.email };
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error("Usuário não encontrado");
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) throw new Error("Senha atual incorreta");
+
+    if (newPassword.length < 6) {
+      throw new Error("A nova senha deve ter no mínimo 6 caracteres");
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return { message: "Senha atualizada com sucesso" };
+  }
 }
 
 export default new AuthService();

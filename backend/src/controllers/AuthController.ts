@@ -64,6 +64,50 @@ class AuthController {
       return response.status(400).json({ error: error.message });
     }
   }
+
+  async changeEmail(request: Request, response: Response) {
+    try {
+      const userId = request.headers["userId"] as string;
+      const { currentPassword, newEmail } = request.body;
+
+      if (!currentPassword || !newEmail) {
+        return response.status(400).json({
+          error: "Senha atual e novo email são obrigatórios",
+        });
+      }
+
+      const result = await AuthService.changeEmail(
+        userId,
+        currentPassword,
+        newEmail,
+      );
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
+  async changePassword(request: Request, response: Response) {
+    try {
+      const userId = request.headers["userId"] as string;
+      const { currentPassword, newPassword } = request.body;
+
+      if (!currentPassword || !newPassword) {
+        return response.status(400).json({
+          error: "Senha atual e nova senha são obrigatórias",
+        });
+      }
+
+      const result = await AuthService.changePassword(
+        userId,
+        currentPassword,
+        newPassword,
+      );
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export default new AuthController();

@@ -215,6 +215,25 @@ VITE_API_URL=http://localhost:3333
 
 VITE_API_URL=https://api.musicwork.com.br
 
+## Convenções de código
+
+- **Tipagem de `req.params`:** controllers novos com parâmetro de rota (`:algo` na URL) devem tipar via generic do Express, ex: `Request<{ commentId: string }>`, em vez de usar `as string` depois de desestruturar. Isso evita erros de build no Render por incompatibilidade de tipo (`string | string[]`). Controllers antigos que já funcionam com `as string` (LikeController, CommentController, FollowController etc.) não precisam ser refatorados — a convenção vale só para código novo.
+
+- **Arquitetura mista (Service vs Model direto) é intencional:** `FollowService`, `CommentService`, `PostService`, `NotificationService` usam camada de service entre controller e model. Já `LikeController` e `CommentLikeController` chamam o Model direto, sem service. Isso não é uma inconsistência esquecida — foi mantido de propósito para não gerar refactor desnecessário em código que já funciona. Não "corrigir" isso sem necessidade real.
+
+- **Checklist para criar uma tabela/model novo:** sempre que adicionar um `Model` novo, os 3 passos abaixo têm que ser feitos juntos no `server.ts`, ou a tabela não existe em runtime:
+  1. Importar o model e registrar sua rota (`app.use(...)`)
+  2. Declarar as associações (`belongsTo` / `hasMany`) com os models relacionados
+  3. Chamar `Model.sync({ alter: true })`
+
+  Esquecer qualquer um desses passos é a causa mais comum de bug tipo "por que essa tabela não existe?" ou "por que essa relação não carrega?". Não usamos `sequelize-cli` / pasta `migrations/` (que existe mas está obsoleta) — o schema é gerenciado só pelo `sync({ alter: true })` direto no server.ts.
+
+- **Autenticação via `request.headers["userId"]`:** o `authMiddleware` decodifica o JWT e injeta o ID do usuário logado em `request.headers["userId"]` (não em `req.user.id`, que seria o padrão mais comum em outros projetos Express). Todos os controllers que precisam saber quem está logado leem daí.
+
+- **Notificações nunca disparam para si mesmo:** regra centralizada em `NotificationService.create` (`if (recipientId === senderId) return null`). Qualquer novo tipo de notificação que for criado no futuro já herda essa proteção automaticamente, sem precisar reimplementar a checagem em cada lugar que dispara notificação.
+
+- **Threading de comentários tem só 1 nível de profundidade:** uma resposta não pode ser respondida (não existe resposta-de-resposta). É uma escolha de design para manter a UI simples, não uma limitação técnica — se decidir aprofundar no futuro, vai exigir mudança tanto no modelo de dados quanto na renderização em árvore no frontend.
+
 ## Notas importantes
 
 - **Banco único:** local e produção usam o mesmo banco Neon (ver TECH_DEBT.md)

@@ -690,34 +690,13 @@ export default function Profile() {
             )}
             value={secondaryInstruments}
             onChange={(_, newValue) => setSecondaryInstruments(newValue)}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => {
-                const { key, ...tagProps } = getTagProps({ index });
-                return (
-                  <Chip
-                    key={key}
-                    label={option}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#7c4dff",
-                      color: "#fff",
-                      fontWeight: 600,
-                      "& .MuiChip-deleteIcon": {
-                        color: "#fff",
-                        opacity: 0.8,
-                        "&:hover": { opacity: 1 },
-                      },
-                    }}
-                    {...tagProps}
-                  />
-                );
-              })
-            }
             renderInput={params => (
               <TextField
                 {...params}
                 label="Outros instrumentos (opcional)"
-                placeholder="Selecione..."
+                placeholder={
+                  secondaryInstruments.length === 0 ? "Selecione..." : ""
+                }
                 sx={inputSx}
               />
             )}
@@ -736,7 +715,19 @@ export default function Profile() {
                 },
               },
             }}
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2,
+              "& .MuiAutocomplete-tag": {
+                backgroundColor: "#7c4dff",
+                color: "#fff",
+                fontWeight: 600,
+              },
+              "& .MuiAutocomplete-tag .MuiChip-deleteIcon": {
+                color: "#fff",
+                opacity: 0.85,
+                "&:hover": { opacity: 1 },
+              },
+            }}
           />
 
           <TextField

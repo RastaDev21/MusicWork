@@ -80,10 +80,11 @@ musicwork/
 - ✅ Contador de curtidas em tempo real
 - ✅ Comentários nos posts (criar, listar, deletar)
 - ✅ Responder comentários (threading, 1 nível de profundidade)
+- ✅ Curtir e descurtir comentários e respostas
 - ✅ Contador de comentários real no feed (inclui respostas)
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo no perfil público
-- ✅ Notificações (seguir, curtir, comentar, responder) com sino no navbar, badge de não lidas e marcação automática ao abrir
+- ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 
 ### Perfil ✅
 
@@ -139,7 +140,7 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 
 - ✅ Notificações (seguir, curtir, comentar, responder)
 - ✅ Responder comentários (threading)
-- [ ] Curtir comentários
+- ✅ Curtir comentários
 
 ### Fase 3 — Conta e segurança
 
@@ -152,6 +153,13 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - [ ] Calendário de shows
 - [ ] Vídeo/áudio de apresentação no perfil
 - [ ] Múltiplos instrumentos no perfil
+
+### Fase 5 — Real-time (planejado, não iniciado)
+
+- [ ] WebSocket (Socket.IO) para notificações instantâneas, substituindo o polling atual de 30s
+- [ ] Lógica de reconexão no frontend (o backend no Render free hiberna por inatividade, então a conexão persistente vai cair)
+
+**Decisão registrada (jul/2026):** optamos por adiar o WebSocket. Hoje as notificações funcionam por polling (frontend consulta `/notifications/unread-count` a cada 30s), o que não é real-time de verdade mas resolve bem pra um projeto com poucos usuários. WebSocket não vai exigir refazer nada do que já existe — é uma camada adicional em cima do que já temos (o REST continua servindo a lista de notificações, o socket só avisa "tem algo novo"). Faz mais sentido implementar quando: (a) já tivermos uma base de usuários ativa que justifique, e (b) migrarmos pra um plano/host que não hiberne, pra não ter reconexão toda hora.
 
 ---
 
@@ -215,3 +223,4 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
 - **Email routing:** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
+- **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap

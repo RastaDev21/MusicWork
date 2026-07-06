@@ -5,7 +5,7 @@ class Notification extends Model {
   declare id: string;
   declare recipientId: string;
   declare senderId: string;
-  declare type: "follow" | "like" | "comment" | "reply";
+  declare type: "follow" | "like" | "comment" | "reply" | "comment_like";
   declare postId: string | null;
   declare read: boolean;
 }

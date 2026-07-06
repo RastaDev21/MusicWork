@@ -29,7 +29,8 @@ class CommentController {
   async list(request: Request, response: Response) {
     try {
       const postId = request.params.postId as string;
-      const comments = await CommentService.listByPost(postId);
+      const userId = request.headers["userId"] as string;
+      const comments = await CommentService.listByPost(postId, userId);
       return response.status(200).json(comments);
     } catch (error: any) {
       return response.status(400).json({ error: error.message });

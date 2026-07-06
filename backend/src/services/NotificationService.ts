@@ -5,7 +5,7 @@ class NotificationService {
   async create(
     recipientId: string,
     senderId: string,
-    type: "follow" | "like" | "comment" | "reply",
+    type: "follow" | "like" | "comment" | "reply" | "comment_like",
     postId?: string,
   ) {
     if (recipientId === senderId) return null; // não notifica a si mesmo

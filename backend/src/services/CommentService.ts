@@ -1,6 +1,7 @@
 import Comment from "../models/Comment";
 import User from "../models/User";
 import Post from "../models/Post";
+import CommentLike from "../models/CommentLike";
 import NotificationService from "./NotificationService";
 
 class CommentService {
@@ -47,13 +48,25 @@ class CommentService {
     return withUser;
   }
 
-  async listByPost(postId: string) {
-    return Comment.findAll({
+  async listByPost(postId: string, currentUserId?: string) {
+    const comments = await Comment.findAll({
       where: { postId },
       include: [
         { model: User, attributes: ["id", "name", "avatarUrl", "instrument"] },
+        { model: CommentLike, attributes: ["userId"] },
       ],
       order: [["createdAt", "ASC"]],
+    });
+
+    return comments.map(comment => {
+      const commentLikes = (comment as any).CommentLikes || [];
+      return {
+        ...comment.toJSON(),
+        likesCount: commentLikes.length,
+        likedByMe: commentLikes.some(
+          (like: any) => like.userId === currentUserId,
+        ),
+      };
     });
   }
 

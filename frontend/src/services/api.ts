@@ -100,4 +100,23 @@ export async function markNotificationsAsRead() {
   return response.data;
 }
 
+export async function changeEmail(currentPassword: string, newEmail: string) {
+  const response = await api.put("/account/email", {
+    currentPassword,
+    newEmail,
+  });
+  return response.data;
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+) {
+  const response = await api.put("/account/password", {
+    currentPassword,
+    newPassword,
+  });
+  return response.data;
+}
+
 export default api;

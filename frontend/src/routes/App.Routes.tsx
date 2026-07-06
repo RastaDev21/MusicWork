@@ -9,6 +9,7 @@ import PrivateRoute from "./PrivateRoute";
 import PublicProfile from "../pages/PublicProfile";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
+import Settings from "../pages/Settings";
 
 export default function AppRoutes() {
   return (
@@ -54,6 +55,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <PublicProfile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/configuracoes"
+        element={
+          <PrivateRoute>
+            <Settings />
           </PrivateRoute>
         }
       />

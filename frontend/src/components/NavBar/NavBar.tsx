@@ -27,6 +27,7 @@ import {
   markNotificationsAsRead,
   NotificationItem,
 } from "../../services/api";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 function timeAgo(dateString: string) {
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -323,6 +324,21 @@ export default function Navbar() {
             >
               <PersonIcon fontSize="small" />
               Perfil
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu();
+                navigate("/configuracoes");
+              }}
+              sx={{
+                color: "#aaa",
+                gap: 1,
+                "&:hover": { color: "#fff", backgroundColor: "#2a2a2a" },
+              }}
+            >
+              <SettingsIcon fontSize="small" />
+              Configurações
             </MenuItem>
 
             <MenuItem

@@ -50,6 +50,8 @@ function notificationText(notification: NotificationItem) {
       return `${name} comentou na sua publicação`;
     case "reply":
       return `${name} respondeu seu comentário`;
+    case "comment_like":
+      return `${name} curtiu seu comentário`;
     default:
       return `${name} interagiu com você`;
   }

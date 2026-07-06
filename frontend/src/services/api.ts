@@ -71,7 +71,7 @@ export async function resetPassword(token: string, password: string) {
 }
 export interface NotificationItem {
   id: string;
-  type: "follow" | "like" | "comment" | "reply";
+  type: "follow" | "like" | "comment" | "reply" | "comment_like";
   postId: string | null;
   read: boolean;
   createdAt: string;

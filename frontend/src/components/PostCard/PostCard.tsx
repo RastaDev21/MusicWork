@@ -23,6 +23,8 @@ interface Comment {
   content: string;
   createdAt: string;
   parentId: string | null;
+  likesCount: number;
+  likedByMe: boolean;
   User: {
     id: string;
     name: string;
@@ -130,7 +132,10 @@ export default function PostCard({
       const res = await api.post(`/posts/${id}/comments`, {
         content: newComment,
       });
-      setCommentsList(prev => [...prev, res.data]);
+      setCommentsList(prev => [
+        ...prev,
+        { ...res.data, likesCount: 0, likedByMe: false },
+      ]);
       setCommentsCount(prev => prev + 1);
       setNewComment("");
     } catch (error) {
@@ -148,7 +153,10 @@ export default function PostCard({
         content: replyContent,
         parentId,
       });
-      setCommentsList(prev => [...prev, res.data]);
+      setCommentsList(prev => [
+        ...prev,
+        { ...res.data, likesCount: 0, likedByMe: false },
+      ]);
       setCommentsCount(prev => prev + 1);
       setReplyContent("");
       setReplyingTo(null);
@@ -171,6 +179,26 @@ export default function PostCard({
       setCommentsCount(prev => prev - 1 - repliesRemoved);
     } catch (error) {
       console.error("Erro ao deletar comentário:", error);
+    }
+  }
+
+  async function handleLikeComment(commentId: string) {
+    try {
+      const response = await api.post(`/comment-likes/${commentId}`);
+      const liked = response.data.liked;
+      setCommentsList(prev =>
+        prev.map(c =>
+          c.id === commentId
+            ? {
+                ...c,
+                likedByMe: liked,
+                likesCount: c.likesCount + (liked ? 1 : -1),
+              }
+            : c,
+        ),
+      );
+    } catch (error) {
+      console.error("Erro ao curtir comentário:", error);
     }
   }
 
@@ -388,24 +416,54 @@ export default function PostCard({
                             </Typography>
                           </Box>
 
-                          <Typography
-                            onClick={() =>
-                              setReplyingTo(prev =>
-                                prev === comment.id ? null : comment.id,
-                              )
-                            }
+                          <Box
                             sx={{
-                              color: "#666",
-                              fontSize: 11,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.5,
                               mt: 0.5,
                               ml: 0.5,
-                              cursor: "pointer",
-                              display: "inline-block",
-                              "&:hover": { color: "#7c4dff" },
                             }}
                           >
-                            Responder
-                          </Typography>
+                            <Box
+                              onClick={() => handleLikeComment(comment.id)}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.4,
+                                cursor: "pointer",
+                                color: comment.likedByMe ? "#ff4d6d" : "#666",
+                                "&:hover": { color: "#ff4d6d" },
+                              }}
+                            >
+                              {comment.likedByMe ? (
+                                <FavoriteIcon sx={{ fontSize: 13 }} />
+                              ) : (
+                                <FavoriteBorderIcon sx={{ fontSize: 13 }} />
+                              )}
+                              <Typography sx={{ fontSize: 11 }}>
+                                {comment.likesCount > 0
+                                  ? comment.likesCount
+                                  : ""}
+                              </Typography>
+                            </Box>
+
+                            <Typography
+                              onClick={() =>
+                                setReplyingTo(prev =>
+                                  prev === comment.id ? null : comment.id,
+                                )
+                              }
+                              sx={{
+                                color: "#666",
+                                fontSize: 11,
+                                cursor: "pointer",
+                                "&:hover": { color: "#7c4dff" },
+                              }}
+                            >
+                              Responder
+                            </Typography>
+                          </Box>
 
                           {/* Respostas */}
                           {replies.map(reply => (
@@ -424,52 +482,79 @@ export default function PostCard({
                               >
                                 {reply.User?.name?.charAt(0).toUpperCase()}
                               </Avatar>
-                              <Box
-                                sx={{
-                                  flex: 1,
-                                  backgroundColor: "#1f1f1f",
-                                  borderRadius: 2,
-                                  px: 1.5,
-                                  py: 0.8,
-                                }}
-                              >
+                              <Box sx={{ flex: 1 }}>
                                 <Box
                                   sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
+                                    backgroundColor: "#1f1f1f",
+                                    borderRadius: 2,
+                                    px: 1.5,
+                                    py: 0.8,
                                   }}
                                 >
-                                  <Typography
+                                  <Box
                                     sx={{
-                                      color: "#9c6fe4",
-                                      fontSize: 11,
-                                      fontWeight: 600,
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
                                     }}
                                   >
-                                    {reply.User?.name}
-                                  </Typography>
-                                  {user?.id === reply.User?.id && (
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        handleDeleteComment(reply.id)
-                                      }
+                                    <Typography
                                       sx={{
-                                        color: "#444",
-                                        "&:hover": { color: "#ff4d6d" },
-                                        p: 0.2,
+                                        color: "#9c6fe4",
+                                        fontSize: 11,
+                                        fontWeight: 600,
                                       }}
                                     >
-                                      <DeleteIcon sx={{ fontSize: 12 }} />
-                                    </IconButton>
-                                  )}
+                                      {reply.User?.name}
+                                    </Typography>
+                                    {user?.id === reply.User?.id && (
+                                      <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                          handleDeleteComment(reply.id)
+                                        }
+                                        sx={{
+                                          color: "#444",
+                                          "&:hover": { color: "#ff4d6d" },
+                                          p: 0.2,
+                                        }}
+                                      >
+                                        <DeleteIcon sx={{ fontSize: 12 }} />
+                                      </IconButton>
+                                    )}
+                                  </Box>
+                                  <Typography
+                                    sx={{ color: "#ccc", fontSize: 12 }}
+                                  >
+                                    {reply.content}
+                                  </Typography>
                                 </Box>
-                                <Typography
-                                  sx={{ color: "#ccc", fontSize: 12 }}
+
+                                <Box
+                                  onClick={() => handleLikeComment(reply.id)}
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 0.4,
+                                    mt: 0.4,
+                                    ml: 0.5,
+                                    cursor: "pointer",
+                                    width: "fit-content",
+                                    color: reply.likedByMe ? "#ff4d6d" : "#666",
+                                    "&:hover": { color: "#ff4d6d" },
+                                  }}
                                 >
-                                  {reply.content}
-                                </Typography>
+                                  {reply.likedByMe ? (
+                                    <FavoriteIcon sx={{ fontSize: 12 }} />
+                                  ) : (
+                                    <FavoriteBorderIcon sx={{ fontSize: 12 }} />
+                                  )}
+                                  <Typography sx={{ fontSize: 10 }}>
+                                    {reply.likesCount > 0
+                                      ? reply.likesCount
+                                      : ""}
+                                  </Typography>
+                                </Box>
                               </Box>
                             </Box>
                           ))}

@@ -5,7 +5,7 @@ class Notification extends Model {
   declare id: string;
   declare recipientId: string;
   declare senderId: string;
-  declare type: "follow" | "like" | "comment";
+  declare type: "follow" | "like" | "comment" | "reply";
   declare postId: string | null;
   declare read: boolean;
 }
@@ -26,7 +26,7 @@ Notification.init(
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM("follow", "like", "comment"),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     postId: {

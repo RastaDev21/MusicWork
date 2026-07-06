@@ -2,12 +2,11 @@ import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import { UploadController } from "../controllers/UploadController";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import { upload } from "../middlewares/uploadMiddleware";
+import { upload, uploadVideo } from "../middlewares/uploadMiddleware";
 
 const uploadRouter = Router();
 const uploadController = new UploadController();
 
-// Envolve o multer para capturar erros e devolver JSON
 function handleUpload(field: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     upload.single(field)(req, res, (err: any) => {
@@ -20,7 +19,25 @@ function handleUpload(field: string) {
         return res.status(400).json({ error: err.message });
       }
       if (err) {
-        // erro do fileFilter (formato inválido)
+        return res.status(400).json({ error: err.message });
+      }
+      next();
+    });
+  };
+}
+
+function handleVideoUpload(field: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    uploadVideo.single(field)(req, res, (err: any) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res
+            .status(400)
+            .json({ error: "Vídeo muito grande. O limite é 50MB." });
+        }
+        return res.status(400).json({ error: err.message });
+      }
+      if (err) {
         return res.status(400).json({ error: err.message });
       }
       next();
@@ -40,6 +57,19 @@ uploadRouter.post(
   authMiddleware,
   handleUpload("cover"),
   uploadController.uploadCover,
+);
+
+uploadRouter.post(
+  "/upload/presentation-video",
+  authMiddleware,
+  handleVideoUpload("presentationVideo"),
+  uploadController.uploadPresentationVideo,
+);
+
+uploadRouter.delete(
+  "/upload/presentation-video",
+  authMiddleware,
+  uploadController.deletePresentationVideo,
 );
 
 export default uploadRouter;

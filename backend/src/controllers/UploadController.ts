@@ -35,4 +35,36 @@ export class UploadController {
       return res.status(500).json({ error: "Erro ao fazer upload!" });
     }
   }
+
+  async uploadPresentationVideo(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhum vídeo enviado!" });
+      }
+
+      const userId = req.headers["userId"] || req.headers["userid"];
+      const presentationVideoUrl = req.file.path;
+
+      await User.update({ presentationVideoUrl }, { where: { id: userId } });
+
+      return res.json({ presentationVideoUrl });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao fazer upload do vídeo!" });
+    }
+  }
+
+  async deletePresentationVideo(req: Request, res: Response) {
+    try {
+      const userId = req.headers["userId"] || req.headers["userid"];
+
+      await User.update(
+        { presentationVideoUrl: null },
+        { where: { id: userId } },
+      );
+
+      return res.json({ message: "Vídeo removido" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao remover o vídeo!" });
+    }
+  }
 }

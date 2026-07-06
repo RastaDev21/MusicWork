@@ -64,6 +64,7 @@ class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
+      presentationVideoUrl: user.presentationVideoUrl,
       genre: user.genre,
       instagram: user.instagram,
       youtube: user.youtube,
@@ -82,6 +83,7 @@ class UserService {
       bio?: string;
       avatarUrl?: string | null;
       coverUrl?: string | null;
+      presentationVideoUrl?: string | null;
       genre?: string | null;
       instagram?: string | null;
       youtube?: string | null;
@@ -107,6 +109,7 @@ class UserService {
       bio: user.bio,
       avatarUrl: user.avatarUrl,
       coverUrl: user.coverUrl,
+      presentationVideoUrl: user.presentationVideoUrl,
       genre: user.genre,
       instagram: user.instagram,
       youtube: user.youtube,

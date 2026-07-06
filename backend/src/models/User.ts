@@ -13,6 +13,7 @@ class User extends Model {
   declare bio: string;
   declare avatarUrl: string | null;
   declare coverUrl: string | null;
+  declare presentationVideoUrl: string | null;
   declare genre: string;
   declare instagram: string | null;
   declare youtube: string | null;
@@ -67,6 +68,10 @@ User.init(
       allowNull: true,
     },
     coverUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    presentationVideoUrl: {
       type: DataTypes.STRING,
       allowNull: true,
     },

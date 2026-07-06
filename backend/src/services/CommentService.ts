@@ -4,17 +4,44 @@ import Post from "../models/Post";
 import NotificationService from "./NotificationService";
 
 class CommentService {
-  async create(userId: string, postId: string, content: string) {
-    const comment = await Comment.create({ userId, postId, content });
+  async create(
+    userId: string,
+    postId: string,
+    content: string,
+    parentId?: string | null,
+  ) {
+    const comment = await Comment.create({
+      userId,
+      postId,
+      content,
+      parentId: parentId || null,
+    });
     const withUser = await Comment.findByPk(comment.id, {
       include: [
         { model: User, attributes: ["id", "name", "avatarUrl", "instrument"] },
       ],
     });
 
-    const post = await Post.findByPk(postId);
-    if (post) {
-      await NotificationService.create(post.userId, userId, "comment", postId);
+    if (parentId) {
+      const parentComment = await Comment.findByPk(parentId);
+      if (parentComment) {
+        await NotificationService.create(
+          parentComment.userId,
+          userId,
+          "reply",
+          postId,
+        );
+      }
+    } else {
+      const post = await Post.findByPk(postId);
+      if (post) {
+        await NotificationService.create(
+          post.userId,
+          userId,
+          "comment",
+          postId,
+        );
+      }
     }
 
     return withUser;
@@ -34,6 +61,8 @@ class CommentService {
     const comment = await Comment.findByPk(commentId);
     if (!comment) throw new Error("Comentário não encontrado");
     if (comment.userId !== userId) throw new Error("Sem permissão");
+
+    await Comment.destroy({ where: { parentId: commentId } }); // apaga respostas junto
     await comment.destroy();
     return { message: "Comentário deletado" };
   }

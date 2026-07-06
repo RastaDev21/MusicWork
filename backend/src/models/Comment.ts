@@ -6,6 +6,7 @@ class Comment extends Model {
   declare content: string;
   declare userId: string;
   declare postId: string;
+  declare parentId: string | null;
 }
 
 Comment.init(
@@ -26,6 +27,10 @@ Comment.init(
     postId: {
       type: DataTypes.UUID,
       allowNull: false,
+    },
+    parentId: {
+      type: DataTypes.UUID,
+      allowNull: true,
     },
   },
   {

@@ -6,7 +6,7 @@ class CommentController {
     try {
       const userId = request.headers["userId"] as string;
       const postId = request.params.postId as string;
-      const { content } = request.body;
+      const { content, parentId } = request.body;
 
       if (!content?.trim()) {
         return response
@@ -14,7 +14,12 @@ class CommentController {
           .json({ error: "Comentário não pode ser vazio" });
       }
 
-      const comment = await CommentService.create(userId, postId, content);
+      const comment = await CommentService.create(
+        userId,
+        postId,
+        content,
+        parentId,
+      );
       return response.status(201).json(comment);
     } catch (error: any) {
       return response.status(400).json({ error: error.message });

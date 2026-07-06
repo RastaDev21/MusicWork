@@ -22,6 +22,7 @@ interface Comment {
   id: string;
   content: string;
   createdAt: string;
+  parentId: string | null;
   User: {
     id: string;
     name: string;
@@ -71,6 +72,9 @@ export default function PostCard({
   const [newComment, setNewComment] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
   const [sendingComment, setSendingComment] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -136,11 +140,35 @@ export default function PostCard({
     }
   }
 
+  async function handleSendReply(parentId: string) {
+    if (!replyContent.trim()) return;
+    setSendingReply(true);
+    try {
+      const res = await api.post(`/posts/${id}/comments`, {
+        content: replyContent,
+        parentId,
+      });
+      setCommentsList(prev => [...prev, res.data]);
+      setCommentsCount(prev => prev + 1);
+      setReplyContent("");
+      setReplyingTo(null);
+    } catch (error) {
+      console.error("Erro ao responder:", error);
+    } finally {
+      setSendingReply(false);
+    }
+  }
+
   async function handleDeleteComment(commentId: string) {
     try {
       await api.delete(`/comments/${commentId}`);
-      setCommentsList(prev => prev.filter(c => c.id !== commentId));
-      setCommentsCount(prev => prev - 1);
+      const repliesRemoved = commentsList.filter(
+        c => c.parentId === commentId,
+      ).length;
+      setCommentsList(prev =>
+        prev.filter(c => c.id !== commentId && c.parentId !== commentId),
+      );
+      setCommentsCount(prev => prev - 1 - repliesRemoved);
     } catch (error) {
       console.error("Erro ao deletar comentário:", error);
     }
@@ -293,60 +321,211 @@ export default function PostCard({
                   Nenhum comentário ainda. Seja o primeiro!
                 </Typography>
               )}
-              {commentsList.map(comment => (
-                <Box key={comment.id} sx={{ display: "flex", gap: 1, mb: 1.5 }}>
-                  <Avatar
-                    src={getImageUrl(comment.User?.avatarUrl)}
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      fontSize: 12,
-                      backgroundColor: "#7c4dff",
-                    }}
-                  >
-                    {comment.User?.name?.charAt(0).toUpperCase()}
-                  </Avatar>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      backgroundColor: "#242424",
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography
-                        sx={{ color: "#9c6fe4", fontSize: 12, fontWeight: 600 }}
-                      >
-                        {comment.User?.name}
-                      </Typography>
-                      {user?.id === comment.User?.id && (
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteComment(comment.id)}
+
+              {commentsList
+                .filter(comment => !comment.parentId)
+                .map(comment => {
+                  const replies = commentsList.filter(
+                    r => r.parentId === comment.id,
+                  );
+                  return (
+                    <Box key={comment.id} sx={{ mb: 1.5 }}>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Avatar
+                          src={getImageUrl(comment.User?.avatarUrl)}
                           sx={{
-                            color: "#444",
-                            "&:hover": { color: "#ff4d6d" },
-                            p: 0.2,
+                            width: 28,
+                            height: 28,
+                            fontSize: 12,
+                            backgroundColor: "#7c4dff",
                           }}
                         >
-                          <DeleteIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      )}
+                          {comment.User?.name?.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                          <Box
+                            sx={{
+                              backgroundColor: "#242424",
+                              borderRadius: 2,
+                              px: 1.5,
+                              py: 1,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Typography
+                                sx={{
+                                  color: "#9c6fe4",
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {comment.User?.name}
+                              </Typography>
+                              {user?.id === comment.User?.id && (
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleDeleteComment(comment.id)
+                                  }
+                                  sx={{
+                                    color: "#444",
+                                    "&:hover": { color: "#ff4d6d" },
+                                    p: 0.2,
+                                  }}
+                                >
+                                  <DeleteIcon sx={{ fontSize: 14 }} />
+                                </IconButton>
+                              )}
+                            </Box>
+                            <Typography sx={{ color: "#ccc", fontSize: 13 }}>
+                              {comment.content}
+                            </Typography>
+                          </Box>
+
+                          <Typography
+                            onClick={() =>
+                              setReplyingTo(prev =>
+                                prev === comment.id ? null : comment.id,
+                              )
+                            }
+                            sx={{
+                              color: "#666",
+                              fontSize: 11,
+                              mt: 0.5,
+                              ml: 0.5,
+                              cursor: "pointer",
+                              display: "inline-block",
+                              "&:hover": { color: "#7c4dff" },
+                            }}
+                          >
+                            Responder
+                          </Typography>
+
+                          {/* Respostas */}
+                          {replies.map(reply => (
+                            <Box
+                              key={reply.id}
+                              sx={{ display: "flex", gap: 1, mt: 1, ml: 2 }}
+                            >
+                              <Avatar
+                                src={getImageUrl(reply.User?.avatarUrl)}
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  fontSize: 11,
+                                  backgroundColor: "#7c4dff",
+                                }}
+                              >
+                                {reply.User?.name?.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Box
+                                sx={{
+                                  flex: 1,
+                                  backgroundColor: "#1f1f1f",
+                                  borderRadius: 2,
+                                  px: 1.5,
+                                  py: 0.8,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Typography
+                                    sx={{
+                                      color: "#9c6fe4",
+                                      fontSize: 11,
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {reply.User?.name}
+                                  </Typography>
+                                  {user?.id === reply.User?.id && (
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleDeleteComment(reply.id)
+                                      }
+                                      sx={{
+                                        color: "#444",
+                                        "&:hover": { color: "#ff4d6d" },
+                                        p: 0.2,
+                                      }}
+                                    >
+                                      <DeleteIcon sx={{ fontSize: 12 }} />
+                                    </IconButton>
+                                  )}
+                                </Box>
+                                <Typography
+                                  sx={{ color: "#ccc", fontSize: 12 }}
+                                >
+                                  {reply.content}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          ))}
+
+                          {/* Input de resposta */}
+                          {replyingTo === comment.id && (
+                            <Box sx={{ display: "flex", gap: 1, mt: 1, ml: 2 }}>
+                              <TextField
+                                fullWidth
+                                size="small"
+                                autoFocus
+                                placeholder={`Responder ${comment.User?.name}...`}
+                                value={replyContent}
+                                onChange={e => setReplyContent(e.target.value)}
+                                onKeyDown={e =>
+                                  e.key === "Enter" &&
+                                  !e.shiftKey &&
+                                  handleSendReply(comment.id)
+                                }
+                                disabled={sendingReply}
+                                sx={{
+                                  "& .MuiOutlinedInput-root": {
+                                    color: "#fff",
+                                    fontSize: 12,
+                                    "& fieldset": { borderColor: "#333" },
+                                    "&:hover fieldset": {
+                                      borderColor: "#7c4dff",
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                      borderColor: "#7c4dff",
+                                    },
+                                  },
+                                  "& input::placeholder": { color: "#555" },
+                                }}
+                              />
+                              <IconButton
+                                size="small"
+                                onClick={() => handleSendReply(comment.id)}
+                                disabled={sendingReply || !replyContent.trim()}
+                                sx={{
+                                  color: "#7c4dff",
+                                  "&:hover": {
+                                    backgroundColor: "#7c4dff22",
+                                  },
+                                  "&.Mui-disabled": { color: "#444" },
+                                }}
+                              >
+                                <SendIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
                     </Box>
-                    <Typography sx={{ color: "#ccc", fontSize: 13 }}>
-                      {comment.content}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
+                  );
+                })}
 
               {/* Input novo comentário */}
               <Box sx={{ display: "flex", gap: 1, mt: 1 }}>

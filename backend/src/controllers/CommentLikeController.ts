@@ -19,7 +19,7 @@ export class CommentLikeController {
       } else {
         await CommentLike.create({ userId, commentId });
 
-        const comment = await Comment.findByPk(commentId);
+        const comment = await Comment.findByPk(commentId as string);
         if (comment) {
           await NotificationService.create(
             comment.userId,

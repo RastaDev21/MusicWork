@@ -20,7 +20,13 @@ import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 import PostCard from "../components/PostCard/PostCard";
 import { useEffect, useState } from "react";
-import api, { uploadAvatar, uploadCover, getImageUrl } from "../services/api";
+import api, {
+  uploadAvatar,
+  uploadCover,
+  uploadPresentationVideo,
+  deletePresentationVideo,
+  getImageUrl,
+} from "../services/api";
 import { useSnackbar } from "notistack";
 
 interface Post {
@@ -140,6 +146,10 @@ export default function Profile() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [presentationVideoUrl, setPresentationVideoUrl] = useState<
+    string | null
+  >(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [instagram, setInstagram] = useState("");
   const [youtube, setYoutube] = useState("");
@@ -166,6 +176,7 @@ export default function Profile() {
         setYoutube(profileRes.data.youtube || "");
         setSpotify(profileRes.data.spotify || "");
         setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
+        setPresentationVideoUrl(profileRes.data.presentationVideoUrl || null);
       } catch (error) {
         console.error(error);
       }
@@ -261,12 +272,47 @@ export default function Profile() {
     }
   }
 
+  async function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingVideo(true);
+    try {
+      const data = await uploadPresentationVideo(file);
+      setPresentationVideoUrl(data.presentationVideoUrl);
+      enqueueSnackbar("Vídeo de apresentação atualizado!", {
+        variant: "success",
+      });
+    } catch (error: unknown) {
+      let msg = "Erro ao enviar o vídeo. Tente novamente.";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { error?: string } } };
+        if (err.response?.data?.error) {
+          msg = err.response.data.error;
+        }
+      }
+      enqueueSnackbar(msg, { variant: "error" });
+    } finally {
+      setUploadingVideo(false);
+    }
+  }
+
+  async function handleRemoveVideo() {
+    try {
+      await deletePresentationVideo();
+      setPresentationVideoUrl(null);
+      enqueueSnackbar("Vídeo removido", { variant: "success" });
+    } catch (error) {
+      console.error("Erro ao remover vídeo:", error);
+    }
+  }
+
   return (
     <Layout>
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
         {/* Capa */}
         <Box
-          component="label" // vira um label para o input ficar dentro
+          component="label"
           sx={{
             height: 160,
             backgroundColor: "#2a2a2a",
@@ -277,7 +323,6 @@ export default function Profile() {
             "&:hover .cover-overlay": { opacity: 1 },
           }}
         >
-          {/* Mostra a foto de capa se tiver, senão fundo escuro */}
           {coverUrl && (
             <Box
               component="img"
@@ -286,7 +331,6 @@ export default function Profile() {
             />
           )}
 
-          {/* Overlay com ícone de câmera */}
           <Box
             className="cover-overlay"
             sx={{
@@ -305,7 +349,6 @@ export default function Profile() {
             </Typography>
           </Box>
 
-          {/* Input escondido que abre o seletor de arquivo */}
           <input
             type="file"
             accept="image/*"
@@ -339,7 +382,6 @@ export default function Profile() {
               "&:hover .avatar-overlay": { opacity: 1 },
             }}
           >
-            {/* Foto ou inicial */}
             {avatarUrl ? (
               <Box
                 component="img"
@@ -350,7 +392,6 @@ export default function Profile() {
               user?.name?.charAt(0).toUpperCase()
             )}
 
-            {/* Overlay com câmera */}
             <Box
               className="avatar-overlay"
               sx={{
@@ -370,7 +411,6 @@ export default function Profile() {
               </Typography>
             </Box>
 
-            {/* Input escondido */}
             <input
               type="file"
               accept="image/*"
@@ -410,7 +450,7 @@ export default function Profile() {
                     }}
                   />
                 )}
-                {genre && ( // 👈 adiciona isso
+                {genre && (
                   <Chip
                     label={genre}
                     size="small"
@@ -554,6 +594,7 @@ export default function Profile() {
               </Box>
             ))}
           </Box>
+
           {bio && (
             <Box sx={{ mt: 2 }}>
               <Typography sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}>
@@ -561,6 +602,108 @@ export default function Profile() {
               </Typography>
             </Box>
           )}
+
+          <Box
+            sx={{
+              mt: 2,
+              backgroundColor: "#1a1a1a",
+              border: "1px solid #2a2a2a",
+              borderRadius: 3,
+              p: 2,
+            }}
+          >
+            <Typography
+              sx={{
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 14,
+                mb: 1.5,
+                textAlign: "center",
+              }}
+            >
+              🎥 Vídeo de apresentação
+            </Typography>
+
+            {presentationVideoUrl ? (
+              <Box>
+                <Box
+                  component="video"
+                  src={getImageUrl(presentationVideoUrl)}
+                  controls
+                  sx={{
+                    width: "100%",
+                    maxWidth: 400,
+                    borderRadius: 2,
+                    backgroundColor: "#000",
+                    display: "block",
+                  }}
+                />
+                <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+                  <Button
+                    component="label"
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      color: "#7c4dff",
+                      borderColor: "#7c4dff",
+                      "&:hover": {
+                        borderColor: "#9c6fe4",
+                        backgroundColor: "#7c4dff11",
+                      },
+                    }}
+                  >
+                    {uploadingVideo ? "Enviando..." : "Substituir"}
+                    <input
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm"
+                      hidden
+                      onChange={handleVideoChange}
+                    />
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={handleRemoveVideo}
+                    sx={{
+                      color: "#ff4d6d",
+                      borderColor: "#ff4d6d",
+                      "&:hover": { backgroundColor: "#ff4d6d11" },
+                    }}
+                  >
+                    Remover
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Box
+                component="label"
+                sx={{
+                  display: "block",
+                  border: "1.5px dashed #444",
+                  borderRadius: 2,
+                  p: 3,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  "&:hover": { borderColor: "#7c4dff" },
+                }}
+              >
+                <Typography sx={{ color: "#aaa", fontSize: 13 }}>
+                  {uploadingVideo
+                    ? "Enviando..."
+                    : "Clique para adicionar um vídeo de apresentação"}
+                </Typography>
+                <Typography sx={{ color: "#555", fontSize: 11, mt: 0.5 }}>
+                  MP4, MOV ou WEBM, até 50MB
+                </Typography>
+                <input
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm"
+                  hidden
+                  onChange={handleVideoChange}
+                />
+              </Box>
+            )}
+          </Box>
         </Box>
 
         {/* Conteúdo */}
@@ -770,7 +913,6 @@ export default function Profile() {
             sx={inputSx}
           />
 
-          {/* 👇 ADICIONA AQUI */}
           <Typography sx={{ color: "#aaa", fontSize: 12, mt: 2, mb: 1 }}>
             Links sociais
           </Typography>

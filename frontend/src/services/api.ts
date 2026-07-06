@@ -119,4 +119,17 @@ export async function changePassword(
   return response.data;
 }
 
+export async function uploadPresentationVideo(file: File) {
+  const formData = new FormData();
+  formData.append("presentationVideo", file, file.name);
+
+  const response = await api.post("/upload/presentation-video", formData);
+  return response.data;
+}
+
+export async function deletePresentationVideo() {
+  const response = await api.delete("/upload/presentation-video");
+  return response.data;
+}
+
 export default api;

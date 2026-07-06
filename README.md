@@ -18,7 +18,7 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
 - **DNS:** Cloudflare (musicwork.com.br)
-- **Email sistema:** Resend (pendente verificação de domínio)
+- **Email sistema:** Resend (implementado no código; verificação de domínio pendente — ver Notas importantes)
 
 ## Estrutura
 
@@ -26,18 +26,18 @@ musicwork/
 ├── backend/
 │ └── src/
 │ ├── config/ (cloudinary.ts)
-│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, WorkController, FollowController, CommentController)
+│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, WorkController, FollowController, CommentController, NotificationController)
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
-│ ├── models/ (User, Post, Like, Work, Follow, Comment)
-│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, workRoutes, followRoutes, commentRoutes)
-│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService)
+│ ├── models/ (User, Post, Like, Work, Follow, Comment, Notification)
+│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes)
+│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, EmailService)
 │ └── server.ts
 └── frontend/
 └── src/
-├── components/ (Layout, Navbar, Sidebar, BottomNav, PostCard, NewPost, Logo)
+├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, Logo)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work)
-├── routes/ (AppRoutes, PrivateRoute)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, ForgotPassword, ResetPassword)
+├── routes/ (App.Routes, PrivateRoute)
 └── services/ (api.ts — inclui helper getImageUrl)
 
 ## O que já foi feito
@@ -79,9 +79,11 @@ musicwork/
 - ✅ Curtir e descurtir posts
 - ✅ Contador de curtidas em tempo real
 - ✅ Comentários nos posts (criar, listar, deletar)
-- ✅ Contador de comentários real no feed
+- ✅ Responder comentários (threading, 1 nível de profundidade)
+- ✅ Contador de comentários real no feed (inclui respostas)
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo no perfil público
+- ✅ Notificações (seguir, curtir, comentar, responder) com sino no navbar, badge de não lidas e marcação automática ao abrir
 
 ### Perfil ✅
 
@@ -107,7 +109,7 @@ musicwork/
 - ✅ Validação de formato de email
 - ✅ Validação de senha mínima (6 caracteres) no cadastro
 - ✅ Bloqueio dos campos durante o loading + spinner no botão
-- ✅ Link "Esqueci minha senha" (visual — recuperação real pendente)
+- ✅ Recuperação de senha implementada (backend `/forgot-password` e `/reset-password` + telas no frontend) — envio de email pendente até verificação de domínio no Resend
 
 ### Uploads robustos ✅
 
@@ -122,26 +124,27 @@ musicwork/
 
 ## Próximos passos — ROADMAP
 
-### ⏳ Pendente — Configuração de email (FAZER PRIMEIRO NA PRÓXIMA SESSÃO)
+### ⏳ Bloqueado — aguardando Resend
 
-- [ ] Adicionar registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF)
+- ✅ Implementar recuperação de senha (backend: /forgot-password e /reset-password)
+- ✅ Implementar telas de recuperação de senha no frontend
+- [ ] Adicionar registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF) — **bloqueado, aguardando resposta do suporte do Resend sobre a verificação do domínio musicwork.com.br**
 - [ ] Configurar Cloudflare Email Routing (contato@musicwork.com.br → Gmail)
 - [ ] Criar API key no Resend e adicionar RESEND_API_KEY no Render
-- [ ] Implementar recuperação de senha (backend: /forgot-password e /reset-password)
-- [ ] Implementar telas de recuperação de senha no frontend
 
-### Fase 3 — Conta e segurança
-
-- [ ] Recuperação de senha por email (Resend)
-- [ ] Editar email e senha (configurações)
-- [ ] Verificação real de email no cadastro
-- [ ] Login com Google (OAuth)
+Sem ação a tomar aqui até o Resend responder o ticket.
 
 ### Fase 2.5 — Social avançado
 
+- ✅ Notificações (seguir, curtir, comentar, responder)
+- ✅ Responder comentários (threading)
 - [ ] Curtir comentários
-- [ ] Responder comentários (threading)
-- [ ] Notificações (seguir, curtir, comentar)
+
+### Fase 3 — Conta e segurança
+
+- [ ] Editar email e senha (configurações)
+- [ ] Verificação real de email no cadastro
+- [ ] Login com Google (OAuth)
 
 ### Fase 4 — Features grandes
 
@@ -209,4 +212,5 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Cold start:** o backend no Render free "dorme" após inatividade — primeiro acesso pode levar ~30-50s
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
-- **Email routing:** pendente configuração do Cloudflare Email Routing e verificação do Resend
+- **Email routing:** recuperação de senha já implementada no código, mas o envio real de email está bloqueado até o Resend verificar o domínio musicwork.com.br — ticket de suporte aberto, aguardando resposta
+- **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco

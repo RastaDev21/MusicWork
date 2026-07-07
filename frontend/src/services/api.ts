@@ -164,4 +164,53 @@ export async function getPinnedPost(userId: string) {
   return response.data;
 }
 
+export interface Show {
+  id: string;
+  userId: string;
+  title: string;
+  dateTime: string;
+  city: string;
+  genre: string;
+  venue: string | null;
+  description: string | null;
+  User: {
+    id: string;
+    name: string;
+    instrument: string;
+    city: string;
+    avatarUrl: string | null;
+  };
+}
+
+export async function createShow(data: {
+  title: string;
+  dateTime: string;
+  city: string;
+  genre: string;
+  venue?: string;
+  description?: string;
+}) {
+  const response = await api.post("/shows", data);
+  return response.data;
+}
+
+export async function listShows(filters?: {
+  city?: string;
+  genre?: string;
+  date?: string;
+}) {
+  const response = await api.get("/shows", { params: filters });
+  return response.data;
+}
+
+export async function listShowsByUser(userId: string) {
+  const response = await api.get(`/shows/user/${userId}`);
+  return response.data;
+}
+
+export async function deleteShow(showId: string) {
+  const response = await api.delete(`/shows/${showId}`);
+  return response.data;
+}
+
 export default api;

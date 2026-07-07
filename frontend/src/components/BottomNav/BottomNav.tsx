@@ -1,15 +1,15 @@
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import WorkIcon from "@mui/icons-material/Work";
 import PersonIcon from "@mui/icons-material/Person";
 import { useNavigate, useLocation } from "react-router-dom";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 const navItems = [
   { label: "Feed", icon: <HomeIcon />, path: "/feed" },
   { label: "Buscar", icon: <SearchIcon />, path: "/buscar" },
-  { label: "Postar", icon: <AddCircleIcon />, path: "/postar" },
+  { label: "Agenda", icon: <CalendarMonthIcon />, path: "/agenda" },
   { label: "Work", icon: <WorkIcon />, path: "/work" },
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },
 ];

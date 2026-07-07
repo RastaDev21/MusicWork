@@ -10,6 +10,7 @@ import PublicProfile from "../pages/PublicProfile";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import Settings from "../pages/Settings";
+import Agenda from "../pages/Agenda";
 
 export default function AppRoutes() {
   return (
@@ -63,6 +64,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Settings />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/agenda"
+        element={
+          <PrivateRoute>
+            <Agenda />
           </PrivateRoute>
         }
       />

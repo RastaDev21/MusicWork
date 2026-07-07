@@ -4,10 +4,15 @@ import PostService from "../services/PostService";
 class PostController {
   async create(request: Request, response: Response) {
     try {
-      const { content } = request.body;
+      const { content, videoUrl, imageUrl } = request.body;
       const userId = request.headers["userId"] as string;
 
-      const post = await PostService.createPost(content, userId);
+      const post = await PostService.createPost(
+        content,
+        userId,
+        videoUrl,
+        imageUrl,
+      );
 
       return response.status(201).json(post);
     } catch (error: unknown) {
@@ -23,6 +28,48 @@ class PostController {
       const posts = await PostService.listPosts(userId);
 
       return response.status(200).json(posts);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
+
+  async getPinned(request: Request, response: Response) {
+    try {
+      const targetUserId = request.params.userId as string;
+      const currentUserId = request.headers["userId"] as string;
+
+      const post = await PostService.getPinnedPost(targetUserId, currentUserId);
+
+      return response.status(200).json(post);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
+
+  async pin(request: Request, response: Response) {
+    try {
+      const id = request.params.id as string;
+      const userId = request.headers["userId"] as string;
+
+      const result = await PostService.pinPost(id, userId);
+
+      return response.status(200).json(result);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
+
+  async unpin(request: Request, response: Response) {
+    try {
+      const id = request.params.id as string;
+      const userId = request.headers["userId"] as string;
+
+      const result = await PostService.unpinPost(id, userId);
+
+      return response.status(200).json(result);
     } catch (error: unknown) {
       const err = error as Error;
       return response.status(400).json({ error: err.message });

@@ -5,8 +5,10 @@ import cloudinary from "../config/cloudinary";
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const folder =
-      file.fieldname === "avatar" ? "musicwork/avatars" : "musicwork/covers";
+    let folder = "musicwork/covers";
+    if (file.fieldname === "avatar") folder = "musicwork/avatars";
+    if (file.fieldname === "postImage") folder = "musicwork/post-images";
+
     const userId = (req as any).userId || "user";
     return {
       folder,

@@ -72,4 +72,18 @@ uploadRouter.delete(
   uploadController.deletePresentationVideo,
 );
 
+uploadRouter.post(
+  "/upload/post-video",
+  authMiddleware,
+  handleVideoUpload("postVideo"),
+  uploadController.uploadPostVideo,
+);
+
+uploadRouter.post(
+  "/upload/post-image",
+  authMiddleware,
+  handleUpload("postImage"),
+  uploadController.uploadPostImage,
+);
+
 export default uploadRouter;

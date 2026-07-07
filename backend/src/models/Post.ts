@@ -5,6 +5,9 @@ class Post extends Model {
   declare id: string;
   declare content: string;
   declare userId: string;
+  declare videoUrl: string | null;
+  declare imageUrl: string | null;
+  declare isPinned: boolean;
 }
 
 Post.init(
@@ -16,11 +19,24 @@ Post.init(
     },
     content: {
       type: DataTypes.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
+    },
+    videoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    isPinned: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {

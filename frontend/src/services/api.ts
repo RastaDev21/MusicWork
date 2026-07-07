@@ -132,4 +132,36 @@ export async function deletePresentationVideo() {
   return response.data;
 }
 
+export async function uploadPostImage(file: File) {
+  const compressed = await compressImage(file);
+  const formData = new FormData();
+  formData.append("postImage", compressed, file.name);
+
+  const response = await api.post("/upload/post-image", formData);
+  return response.data;
+}
+
+export async function uploadPostVideo(file: File) {
+  const formData = new FormData();
+  formData.append("postVideo", file, file.name);
+
+  const response = await api.post("/upload/post-video", formData);
+  return response.data;
+}
+
+export async function pinPost(postId: string) {
+  const response = await api.patch(`/posts/${postId}/pin`);
+  return response.data;
+}
+
+export async function unpinPost(postId: string) {
+  const response = await api.patch(`/posts/${postId}/unpin`);
+  return response.data;
+}
+
+export async function getPinnedPost(userId: string) {
+  const response = await api.get(`/posts/pinned/${userId}`);
+  return response.data;
+}
+
 export default api;

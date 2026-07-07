@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import NewPost from "../components/NewPost/NewPost";
-import api from "../services/api";
+import api, { pinPost, unpinPost } from "../services/api";
 
 interface Post {
   id: string;
   userId: string;
   content: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  isPinned?: boolean;
   createdAt: string;
   likesCount: number;
   likedByMe: boolean;
@@ -61,6 +64,22 @@ export default function Feed() {
     }
   }
 
+  async function handleTogglePin(postId: string) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    try {
+      if (post.isPinned) {
+        await unpinPost(postId);
+      } else {
+        await pinPost(postId);
+      }
+      loadPosts();
+    } catch (error) {
+      console.error("Erro ao fixar/desafixar post:", error);
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("musicwork_token");
     if (token) {
@@ -95,11 +114,15 @@ export default function Feed() {
               city={post.User.city}
               time={timeAgo(post.createdAt)}
               content={post.content}
+              imageUrl={post.imageUrl}
+              videoUrl={post.videoUrl}
               likes={post.likesCount}
               likedByMe={post.likedByMe}
               comments={post.commentsCount}
               isOwner={currentUser?.id === post.userId}
+              isPinned={post.isPinned}
               onDelete={handleDelete}
+              onTogglePin={handleTogglePin}
               avatarUrl={post.User.avatarUrl}
             />
           ))

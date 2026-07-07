@@ -7,9 +7,11 @@ import {
   Button,
 } from "@mui/material";
 import Layout from "../components/Layout/Layout";
+import PostCard from "../components/PostCard/PostCard";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api, { getImageUrl } from "../services/api";
+import api, { getImageUrl, getPinnedPost } from "../services/api";
+
 interface Musician {
   id: string;
   name: string;
@@ -26,9 +28,39 @@ interface Musician {
   spotify: string | null;
 }
 
+interface PinnedPost {
+  id: string;
+  userId: string;
+  content: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  createdAt: string;
+  likesCount: number;
+  likedByMe: boolean;
+  commentsCount: number;
+  User: {
+    name: string;
+    instrument: string;
+    secondaryProfession: string;
+    city: string;
+    avatarUrl: string | null;
+  };
+}
+
+function timeAgo(date: string) {
+  const now = new Date();
+  const created = new Date(date);
+  const diff = Math.floor((now.getTime() - created.getTime()) / 1000 / 60);
+  if (diff < 1) return "agora";
+  if (diff < 60) return `${diff}min atrás`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}h atrás`;
+  return `${Math.floor(diff / 1440)}d atrás`;
+}
+
 export default function PublicProfile() {
   const { id } = useParams();
   const [musician, setMusician] = useState<Musician | null>(null);
+  const [pinnedPost, setPinnedPost] = useState<PinnedPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -46,6 +78,11 @@ export default function PublicProfile() {
         setFollowing(followRes.data.following);
         setFollowers(followRes.data.followers);
         setFollowingCount(followRes.data.followingCount);
+
+        if (id) {
+          const pinned = await getPinnedPost(id);
+          setPinnedPost(pinned);
+        }
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
         setNotFound(true);
@@ -289,6 +326,28 @@ export default function PublicProfile() {
               <Typography sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}>
                 {musician.bio}
               </Typography>
+            </Box>
+          )}
+
+          {pinnedPost && (
+            <Box sx={{ mt: 2 }}>
+              <PostCard
+                id={pinnedPost.id}
+                userId={pinnedPost.userId}
+                name={pinnedPost.User.name}
+                instrument={pinnedPost.User.instrument}
+                secondaryProfession={pinnedPost.User.secondaryProfession}
+                city={pinnedPost.User.city}
+                time={timeAgo(pinnedPost.createdAt)}
+                content={pinnedPost.content}
+                imageUrl={pinnedPost.imageUrl}
+                videoUrl={pinnedPost.videoUrl}
+                likes={pinnedPost.likesCount}
+                likedByMe={pinnedPost.likedByMe}
+                comments={pinnedPost.commentsCount}
+                avatarUrl={pinnedPost.User.avatarUrl}
+                isPinned
+              />
             </Box>
           )}
 

@@ -12,6 +12,8 @@ import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
 import { useState } from "react";
 import api, { getImageUrl } from "../../services/api";
 import { useSnackbar } from "notistack";
@@ -46,8 +48,12 @@ interface PostCardProps {
   comments: number;
   likedByMe?: boolean;
   avatarUrl?: string | null;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
   isOwner?: boolean;
+  isPinned?: boolean;
   onDelete?: (id: string) => void;
+  onTogglePin?: (id: string) => void;
 }
 
 export default function PostCard({
@@ -63,8 +69,12 @@ export default function PostCard({
   comments,
   likedByMe = false,
   avatarUrl,
+  imageUrl,
+  videoUrl,
   isOwner,
+  isPinned = false,
   onDelete,
+  onTogglePin,
 }: PostCardProps) {
   const [liked, setLiked] = useState(likedByMe);
   const [likesCount, setLikesCount] = useState(likes);
@@ -207,11 +217,28 @@ export default function PostCard({
       sx={{
         backgroundColor: "#1a1a1a",
         borderRadius: 3,
-        border: "1px solid #2a2a2a",
+        border: isPinned ? "1px solid #7c4dff" : "1px solid #2a2a2a",
         p: 2.5,
         mb: 2,
       }}
     >
+      {isPinned && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            mb: 1,
+            color: "#7c4dff",
+          }}
+        >
+          <PushPinIcon sx={{ fontSize: 14 }} />
+          <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
+            Post fixado
+          </Typography>
+        </Box>
+      )}
+
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
         <Avatar
           src={getImageUrl(avatarUrl)}
@@ -261,6 +288,24 @@ export default function PostCard({
           </Typography>
         </Box>
 
+        {isOwner && onTogglePin && (
+          <IconButton
+            size="small"
+            onClick={() => onTogglePin(id)}
+            title={isPinned ? "Remover do topo do perfil" : "Fixar no perfil"}
+            sx={{
+              color: isPinned ? "#7c4dff" : "#555",
+              "&:hover": { color: "#7c4dff", backgroundColor: "#7c4dff11" },
+            }}
+          >
+            {isPinned ? (
+              <PushPinIcon fontSize="small" />
+            ) : (
+              <PushPinOutlinedIcon fontSize="small" />
+            )}
+          </IconButton>
+        )}
+
         {isOwner && onDelete && (
           <IconButton
             size="small"
@@ -275,9 +320,44 @@ export default function PostCard({
         )}
       </Box>
 
-      <Typography sx={{ color: "#ccc", fontSize: 14, lineHeight: 1.7, mb: 2 }}>
-        {content}
-      </Typography>
+      {content && (
+        <Typography
+          sx={{ color: "#ccc", fontSize: 14, lineHeight: 1.7, mb: 2 }}
+        >
+          {content}
+        </Typography>
+      )}
+
+      {imageUrl && (
+        <Box
+          component="img"
+          src={getImageUrl(imageUrl)}
+          sx={{
+            width: "100%",
+            maxHeight: 500,
+            objectFit: "cover",
+            borderRadius: 2,
+            mb: 2,
+            display: "block",
+          }}
+        />
+      )}
+
+      {videoUrl && (
+        <Box
+          component="video"
+          src={getImageUrl(videoUrl)}
+          controls
+          sx={{
+            width: "100%",
+            maxHeight: 500,
+            borderRadius: 2,
+            mb: 2,
+            display: "block",
+            backgroundColor: "#000",
+          }}
+        />
+      )}
 
       <Box
         sx={{

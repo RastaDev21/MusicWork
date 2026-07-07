@@ -34,6 +34,47 @@ async function compressImage(file: File) {
   }
 }
 
+export function getImageUrl(url: string | null | undefined) {
+  if (!url) return undefined;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `${import.meta.env.VITE_API_URL}${url}`;
+}
+
+// ── Autenticação e conta ──
+
+export async function forgotPassword(email: string) {
+  const response = await api.post("/forgot-password", { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, password: string) {
+  const response = await api.post("/reset-password", { token, password });
+  return response.data;
+}
+
+export async function changeEmail(currentPassword: string, newEmail: string) {
+  const response = await api.put("/account/email", {
+    currentPassword,
+    newEmail,
+  });
+  return response.data;
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+) {
+  const response = await api.put("/account/password", {
+    currentPassword,
+    newPassword,
+  });
+  return response.data;
+}
+
+// ── Perfil / uploads de imagem e vídeo do perfil ──
+
 export async function uploadAvatar(file: File) {
   const compressed = await compressImage(file);
   const formData = new FormData();
@@ -52,23 +93,21 @@ export async function uploadCover(file: File) {
   return response.data;
 }
 
-export function getImageUrl(url: string | null | undefined) {
-  if (!url) return undefined;
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
-  }
-  return `${import.meta.env.VITE_API_URL}${url}`;
-}
+export async function uploadPresentationVideo(file: File) {
+  const formData = new FormData();
+  formData.append("presentationVideo", file, file.name);
 
-export async function forgotPassword(email: string) {
-  const response = await api.post("/forgot-password", { email });
+  const response = await api.post("/upload/presentation-video", formData);
   return response.data;
 }
 
-export async function resetPassword(token: string, password: string) {
-  const response = await api.post("/reset-password", { token, password });
+export async function deletePresentationVideo() {
+  const response = await api.delete("/upload/presentation-video");
   return response.data;
 }
+
+// ── Notificações ──
+
 export interface NotificationItem {
   id: string;
   type: "follow" | "like" | "comment" | "reply" | "comment_like";
@@ -100,37 +139,7 @@ export async function markNotificationsAsRead() {
   return response.data;
 }
 
-export async function changeEmail(currentPassword: string, newEmail: string) {
-  const response = await api.put("/account/email", {
-    currentPassword,
-    newEmail,
-  });
-  return response.data;
-}
-
-export async function changePassword(
-  currentPassword: string,
-  newPassword: string,
-) {
-  const response = await api.put("/account/password", {
-    currentPassword,
-    newPassword,
-  });
-  return response.data;
-}
-
-export async function uploadPresentationVideo(file: File) {
-  const formData = new FormData();
-  formData.append("presentationVideo", file, file.name);
-
-  const response = await api.post("/upload/presentation-video", formData);
-  return response.data;
-}
-
-export async function deletePresentationVideo() {
-  const response = await api.delete("/upload/presentation-video");
-  return response.data;
-}
+// ── Posts (mídia, fixar) ──
 
 export async function uploadPostImage(file: File) {
   const compressed = await compressImage(file);
@@ -163,6 +172,8 @@ export async function getPinnedPost(userId: string) {
   const response = await api.get(`/posts/pinned/${userId}`);
   return response.data;
 }
+
+// ── Shows / Agenda ──
 
 export interface Show {
   id: string;

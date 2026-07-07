@@ -173,6 +173,7 @@ export interface Show {
   genre: string;
   venue: string | null;
   description: string | null;
+  flyerUrl: string | null;
   User: {
     id: string;
     name: string;
@@ -182,6 +183,15 @@ export interface Show {
   };
 }
 
+export async function uploadShowFlyer(file: File) {
+  const compressed = await compressImage(file);
+  const formData = new FormData();
+  formData.append("showFlyer", compressed, file.name);
+
+  const response = await api.post("/upload/show-flyer", formData);
+  return response.data;
+}
+
 export async function createShow(data: {
   title: string;
   dateTime: string;
@@ -189,6 +199,7 @@ export async function createShow(data: {
   genre: string;
   venue?: string;
   description?: string;
+  flyerUrl?: string;
 }) {
   const response = await api.post("/shows", data);
   return response.data;

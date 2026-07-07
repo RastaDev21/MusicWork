@@ -16,6 +16,7 @@ import followRouter from "./routes/followRoutes";
 import commentRouter from "./routes/commentRoutes";
 import notificationRouter from "./routes/notificationRoutes";
 import commentLikeRouter from "./routes/commentLikeRoutes";
+import showRouter from "./routes/showRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
@@ -25,6 +26,7 @@ import Follow from "./models/Follow";
 import Comment from "./models/Comment";
 import Notification from "./models/Notification";
 import CommentLike from "./models/CommentLike";
+import Show from "./models/Show";
 
 const app = express();
 
@@ -62,6 +64,7 @@ app.use(commentRouter);
 app.use(notificationRouter);
 app.use(notificationRouter);
 app.use(commentLikeRouter);
+app.use(showRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -98,6 +101,8 @@ Comment.hasMany(CommentLike, { foreignKey: "commentId" });
 CommentLike.belongsTo(Comment, { foreignKey: "commentId" });
 CommentLike.belongsTo(User, { foreignKey: "userId" });
 
+Show.belongsTo(User, { foreignKey: "userId" });
+
 User.sync({ alter: true }).then(() => {
   console.log("✅ Tabela users sincronizada");
 });
@@ -128,6 +133,10 @@ Notification.sync({ alter: true }).then(() => {
 
 CommentLike.sync({ alter: true }).then(() => {
   console.log("✅ Tabela comment_likes sincronizada");
+});
+
+Show.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela shows sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

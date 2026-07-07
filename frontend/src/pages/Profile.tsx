@@ -19,6 +19,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 import PostCard from "../components/PostCard/PostCard";
+import ShowCard from "../components/ShowCard/ShowCard";
+import ShowDialog from "../components/ShowDialog/ShowDialog";
 import { useEffect, useState } from "react";
 import api, {
   uploadAvatar,
@@ -26,7 +28,10 @@ import api, {
   pinPost,
   unpinPost,
   getPinnedPost,
+  listShowsByUser,
+  deleteShow,
   getImageUrl,
+  Show,
 } from "../services/api";
 import { useSnackbar } from "notistack";
 
@@ -136,6 +141,8 @@ export default function Profile() {
   const { user, updateUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [pinnedPost, setPinnedPost] = useState<Post | null>(null);
+  const [shows, setShows] = useState<Show[]>([]);
+  const [openShowDialog, setOpenShowDialog] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [name, setName] = useState(user?.name || "");
   const [instrument, setInstrument] = useState(user?.instrument || "");
@@ -165,6 +172,16 @@ export default function Profile() {
       setPinnedPost(pinned);
     } catch (error) {
       console.error("Erro ao carregar post fixado:", error);
+    }
+  }
+
+  async function loadShows() {
+    if (!user?.id) return;
+    try {
+      const data = await listShowsByUser(user.id);
+      setShows(data);
+    } catch (error) {
+      console.error("Erro ao carregar shows:", error);
     }
   }
 
@@ -201,6 +218,7 @@ export default function Profile() {
     }
     loadData();
     loadPinned();
+    loadShows();
   }, [user]);
 
   async function handleSave() {
@@ -265,6 +283,15 @@ export default function Profile() {
       loadPinned();
     } catch (error) {
       console.error("Erro ao fixar/desafixar post:", error);
+    }
+  }
+
+  async function handleDeleteShow(showId: string) {
+    try {
+      await deleteShow(showId);
+      setShows(prev => prev.filter(s => s.id !== showId));
+    } catch (error) {
+      console.error("Erro ao deletar show:", error);
     }
   }
 
@@ -671,6 +698,60 @@ export default function Profile() {
             </Box>
           </Box>
 
+          {/* Próximos shows */}
+          <Box
+            sx={{
+              backgroundColor: "#1a1a1a",
+              border: "1px solid #2a2a2a",
+              borderRadius: 3,
+              p: 2,
+              mt: 2,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: shows.length ? 1.5 : 0,
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
+                📅 Próximos shows
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setOpenShowDialog(true)}
+                sx={{
+                  color: "#7c4dff",
+                  borderColor: "#7c4dff",
+                  fontSize: 12,
+                  "&:hover": {
+                    borderColor: "#9c6fe4",
+                    backgroundColor: "#7c4dff11",
+                  },
+                }}
+              >
+                + Adicionar
+              </Button>
+            </Box>
+            {shows.length === 0 ? (
+              <Typography sx={{ color: "#666", fontSize: 13 }}>
+                Nenhum show marcado ainda.
+              </Typography>
+            ) : (
+              shows.map(show => (
+                <ShowCard
+                  key={show.id}
+                  show={show}
+                  isOwner
+                  onDelete={handleDeleteShow}
+                />
+              ))
+            )}
+          </Box>
+
           {/* Post fixado */}
           {pinnedPost && (
             <Box sx={{ mt: 2 }}>
@@ -927,6 +1008,12 @@ export default function Profile() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ShowDialog
+        open={openShowDialog}
+        onClose={() => setOpenShowDialog(false)}
+        onCreated={loadShows}
+      />
     </Layout>
   );
 }

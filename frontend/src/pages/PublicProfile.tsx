@@ -8,9 +8,15 @@ import {
 } from "@mui/material";
 import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
+import ShowCard from "../components/ShowCard/ShowCard";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api, { getImageUrl, getPinnedPost } from "../services/api";
+import api, {
+  getImageUrl,
+  getPinnedPost,
+  listShowsByUser,
+  Show,
+} from "../services/api";
 
 interface Musician {
   id: string;
@@ -61,6 +67,7 @@ export default function PublicProfile() {
   const { id } = useParams();
   const [musician, setMusician] = useState<Musician | null>(null);
   const [pinnedPost, setPinnedPost] = useState<PinnedPost | null>(null);
+  const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -82,6 +89,8 @@ export default function PublicProfile() {
         if (id) {
           const pinned = await getPinnedPost(id);
           setPinnedPost(pinned);
+          const showsData = await listShowsByUser(id);
+          setShows(showsData);
         }
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
@@ -418,6 +427,28 @@ export default function PublicProfile() {
               {detailsCard}
             </Box>
           </Box>
+
+          {/* Próximos shows - só aparece se tiver algum */}
+          {shows.length > 0 && (
+            <Box
+              sx={{
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #2a2a2a",
+                borderRadius: 3,
+                p: 2,
+                mt: 2,
+              }}
+            >
+              <Typography
+                sx={{ color: "#fff", fontWeight: 600, fontSize: 14, mb: 1.5 }}
+              >
+                📅 Próximos shows
+              </Typography>
+              {shows.map(show => (
+                <ShowCard key={show.id} show={show} />
+              ))}
+            </Box>
+          )}
 
           {pinnedPost && (
             <Box sx={{ mt: 2 }}>

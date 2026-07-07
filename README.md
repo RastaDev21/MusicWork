@@ -13,7 +13,7 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Backend:** Node.js + Express + TypeScript + Sequelize + PostgreSQL
 - **Auth:** JWT + bcrypt
 - **Banco produção:** Neon PostgreSQL (São Paulo)
-- **Uploads:** Cloudinary (imagens persistentes)
+- **Uploads:** Cloudinary (imagens e vídeos persistentes)
 - **Deploy:** Render (backend) + Vercel (frontend)
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
@@ -26,17 +26,17 @@ musicwork/
 ├── backend/
 │ └── src/
 │ ├── config/ (cloudinary.ts)
-│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, WorkController, FollowController, CommentController, NotificationController)
+│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController)
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
-│ ├── models/ (User, Post, Like, Work, Follow, Comment, Notification)
-│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes)
+│ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification)
+│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes)
 │ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, EmailService)
 │ └── server.ts
 └── frontend/
 └── src/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, Logo)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, ForgotPassword, ResetPassword)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Settings, ForgotPassword, ResetPassword)
 ├── routes/ (App.Routes, PrivateRoute)
 └── services/ (api.ts — inclui helper getImageUrl)
 
@@ -50,9 +50,15 @@ musicwork/
 - ✅ Foto de perfil e foto de capa (via Cloudinary)
 - ✅ Avatar em todo lugar (navbar, feed, newpost)
 - ✅ Perfil do músico com edição (nome, instrumento, cidade, bio, gênero)
-- ✅ Layout responsivo desktop e mobile
+- ✅ Layout responsivo desktop e mobile, incluindo reordenação de seções do perfil no mobile (botão "Editar perfil" logo abaixo do nome, card de detalhes por último)
 - ✅ Proteção de rotas
 - ✅ Navbar de busca funcional
+
+### Conta e segurança ✅
+
+- ✅ Página de Configurações (`/configuracoes`), acessível pelo menu do avatar
+- ✅ Alterar senha (exige senha atual, com confirmação e olho de mostrar/ocultar em cada campo)
+- ✅ Email exibido como somente leitura (troca de email ainda não implementada nesta versão — backend já suporta via `/account/email`, só não está exposto no frontend)
 
 ### Busca avançada ✅
 
@@ -74,6 +80,15 @@ musicwork/
 - ✅ Tipo Ofereço / Procuro
 - ✅ Clicar no autor do work abre o perfil dele
 
+### Feed e posts ✅
+
+- ✅ Posts com texto, foto **ou** vídeo (nunca as duas mídias juntas — decisão de escopo, ver Convenções abaixo)
+- ✅ Upload de foto (comprimida) ou vídeo (até 50MB) direto ao criar o post
+- ✅ Aviso claro se tentar anexar foto e vídeo ao mesmo tempo
+- ✅ Fixar um post no topo do próprio perfil (ícone de pin) — fixar um novo desfixa o anterior automaticamente, só 1 por vez
+- ✅ Post fixado exibido com destaque visual (borda roxa + selo "Post fixado") no perfil próprio e no perfil público de quem visita
+- ✅ Curtir e comentar funcionam normalmente em posts com mídia, incluindo o fixado
+
 ### Social ✅
 
 - ✅ Curtir e descurtir posts
@@ -83,7 +98,7 @@ musicwork/
 - ✅ Curtir e descurtir comentários e respostas
 - ✅ Contador de comentários real no feed (inclui respostas)
 - ✅ Seguir músicos (persistido no banco)
-- ✅ Contadores reais de seguidores/seguindo no perfil público
+- ✅ Contadores reais de seguidores/seguindo, tanto no perfil público quanto no próprio perfil
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 
 ### Perfil ✅
@@ -91,6 +106,7 @@ musicwork/
 - ✅ Página de perfil público de outros usuários (/musico/:id)
 - ✅ Links sociais no perfil (Instagram, YouTube, Spotify)
 - ✅ Profissão secundária como campo livre
+- ✅ Instrumento principal + instrumentos secundários (múltiplos instrumentos por músico, selecionáveis via busca com chips removíveis)
 - ✅ Novos instrumentos na lista (Trombone, Sanfona, Triângulo, Zabumba, Técnico de som)
 
 ### Deploy e Infraestrutura ✅
@@ -114,12 +130,12 @@ musicwork/
 
 ### Uploads robustos ✅
 
-- ✅ Cloudinary (fotos persistem entre deploys)
+- ✅ Cloudinary (fotos e vídeos persistem entre deploys)
 - ✅ Compressão de imagem no frontend (foto do celular ~1MB)
-- ✅ Limite de 10MB + tratamento de erro
+- ✅ Limite de 10MB (imagem) e 50MB (vídeo) + tratamento de erro
 - ✅ Toasts de sucesso/erro no upload
 - ✅ Upload funciona no mobile
-- ✅ Helper getImageUrl (compatível com fotos antigas e novas do Cloudinary)
+- ✅ Helper getImageUrl (compatível com fotos antigas e novas do Cloudinary, e com vídeos)
 
 ---
 
@@ -136,23 +152,24 @@ musicwork/
 
 Sem ação a tomar aqui até o Resend responder o ticket.
 
-### Fase 2.5 — Social avançado
+### Fase 2.5 — Social avançado ✅ CONCLUÍDA
 
-- ✅ Notificações (seguir, curtir, comentar, responder)
+- ✅ Notificações (seguir, curtir, comentar, responder, curtir comentário)
 - ✅ Responder comentários (threading)
 - ✅ Curtir comentários
 
-### Fase 3 — Conta e segurança
+### Fase 3 — Conta e segurança (parcialmente concluída)
 
-- [ ] Editar email e senha (configurações)
-- [ ] Verificação real de email no cadastro
+- ✅ Alterar senha (Configurações da conta)
+- [ ] Editar email (backend pronto em `/account/email`, falta expor no frontend — decisão consciente de adiar até ter fluxo de confirmação por link, que depende do Resend voltar a funcionar)
+- [ ] Verificação real de email no cadastro (também depende do Resend)
 - [ ] Login com Google (OAuth)
 
-### Fase 4 — Features grandes
+### Fase 4 — Features grandes (parcialmente concluída)
 
+- ✅ Múltiplos instrumentos no perfil
+- ✅ ~~Vídeo/áudio de apresentação no perfil~~ — evoluiu para algo maior: posts agora suportam foto ou vídeo, e qualquer post pode ser **fixado** no topo do perfil (substituiu a ideia original de um campo de vídeo isolado, sem curtir/comentar)
 - [ ] Calendário de shows
-- [ ] Vídeo/áudio de apresentação no perfil
-- [ ] Múltiplos instrumentos no perfil
 
 ### Fase 5 — Real-time (planejado, não iniciado)
 
@@ -160,6 +177,10 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - [ ] Lógica de reconexão no frontend (o backend no Render free hiberna por inatividade, então a conexão persistente vai cair)
 
 **Decisão registrada (jul/2026):** optamos por adiar o WebSocket. Hoje as notificações funcionam por polling (frontend consulta `/notifications/unread-count` a cada 30s), o que não é real-time de verdade mas resolve bem pra um projeto com poucos usuários. WebSocket não vai exigir refazer nada do que já existe — é uma camada adicional em cima do que já temos (o REST continua servindo a lista de notificações, o socket só avisa "tem algo novo"). Faz mais sentido implementar quando: (a) já tivermos uma base de usuários ativa que justifique, e (b) migrarmos pra um plano/host que não hiberne, pra não ter reconexão toda hora.
+
+### Fase 6 — Ideias futuras (não iniciado)
+
+- [ ] Carrossel de múltiplas fotos/vídeos por post (hoje é limitado a 1 mídia por post — decisão de escopo consciente, ver Convenções abaixo)
 
 ---
 
@@ -188,7 +209,6 @@ npm run dev
 
 ### Backend (.env)
 
-```
 PORT=3333
 JWT_SECRET=sua_chave
 NODE_ENV=development
@@ -203,13 +223,10 @@ CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 RESEND_API_KEY=... (pendente)
-```
 
 ### Frontend (.env)
 
-```
 VITE_API_URL=http://localhost:3333
-```
 
 ### Frontend (.env.production)
 
@@ -219,7 +236,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Tipagem de `req.params`:** controllers novos com parâmetro de rota (`:algo` na URL) devem tipar via generic do Express, ex: `Request<{ commentId: string }>`, em vez de usar `as string` depois de desestruturar. Isso evita erros de build no Render por incompatibilidade de tipo (`string | string[]`). Controllers antigos que já funcionam com `as string` (LikeController, CommentController, FollowController etc.) não precisam ser refatorados — a convenção vale só para código novo.
 
-- **Arquitetura mista (Service vs Model direto) é intencional:** `FollowService`, `CommentService`, `PostService`, `NotificationService` usam camada de service entre controller e model. Já `LikeController` e `CommentLikeController` chamam o Model direto, sem service. Isso não é uma inconsistência esquecida — foi mantido de propósito para não gerar refactor desnecessário em código que já funciona. Não "corrigir" isso sem necessidade real.
+- **Arquitetura mista (Service vs Model direto) é intencional:** `FollowService`, `CommentService`, `PostService`, `NotificationService`, `UserService` usam camada de service entre controller e model. Já `LikeController` e `CommentLikeController` chamam o Model direto, sem service. Isso não é uma inconsistência esquecida — foi mantido de propósito para não gerar refactor desnecessário em código que já funciona. Não "corrigir" isso sem necessidade real.
 
 - **Checklist para criar uma tabela/model novo:** sempre que adicionar um `Model` novo, os 3 passos abaixo têm que ser feitos juntos no `server.ts`, ou a tabela não existe em runtime:
   1. Importar o model e registrar sua rota (`app.use(...)`)
@@ -234,6 +251,10 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Threading de comentários tem só 1 nível de profundidade:** uma resposta não pode ser respondida (não existe resposta-de-resposta). É uma escolha de design para manter a UI simples, não uma limitação técnica — se decidir aprofundar no futuro, vai exigir mudança tanto no modelo de dados quanto na renderização em árvore no frontend.
 
+- **Posts suportam no máximo 1 mídia por post (foto OU vídeo, nunca as duas):** decisão de escopo consciente para evitar a complexidade de um carrossel de múltiplas mídias (tabela extra, componente de carrossel, lógica de ordenação). A trava é só no frontend (`NewPost.tsx` avisa e bloqueia se tentar anexar as duas) — o backend tecnicamente aceitaria ambos os campos preenchidos, mas isso nunca acontece na prática. Se decidir implementar carrossel no futuro, ver Fase 6 no roadmap.
+
+- **Post fixado (`isPinned`) substituiu o campo `presentationVideoUrl`:** o campo `presentationVideoUrl` ainda existe na tabela `users` (dormente, sem uso no frontend) — foi mantido por simplicidade em vez de remover a coluna com outro ALTER em produção. A forma atual de destacar conteúdo no perfil é fixar qualquer post (com ou sem mídia) via `PostService.pinPost`.
+
 ## Notas importantes
 
 - **Banco único:** local e produção usam o mesmo banco Neon (ver TECH_DEBT.md)
@@ -243,3 +264,4 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Email routing:** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
 - **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
+- **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)

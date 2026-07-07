@@ -10,6 +10,7 @@ class Show extends Model {
   declare genre: string;
   declare venue: string | null;
   declare description: string | null;
+  declare flyerUrl: string | null;
 }
 
 Show.init(
@@ -45,6 +46,10 @@ Show.init(
     },
     description: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    flyerUrl: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
   },

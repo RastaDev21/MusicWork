@@ -5,7 +5,8 @@ class ShowController {
   async create(request: Request, response: Response) {
     try {
       const userId = request.headers["userId"] as string;
-      const { title, dateTime, city, genre, venue, description } = request.body;
+      const { title, dateTime, city, genre, venue, description, flyerUrl } =
+        request.body;
 
       if (!title || !dateTime || !city || !genre) {
         return response.status(400).json({
@@ -21,6 +22,7 @@ class ShowController {
         genre,
         venue,
         description,
+        flyerUrl,
       });
 
       return response.status(201).json(show);

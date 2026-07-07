@@ -86,4 +86,11 @@ uploadRouter.post(
   uploadController.uploadPostImage,
 );
 
+uploadRouter.post(
+  "/upload/show-flyer",
+  authMiddleware,
+  handleUpload("showFlyer"),
+  uploadController.uploadShowFlyer,
+);
+
 export default uploadRouter;

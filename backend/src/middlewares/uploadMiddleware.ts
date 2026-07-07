@@ -8,6 +8,7 @@ const storage = new CloudinaryStorage({
     let folder = "musicwork/covers";
     if (file.fieldname === "avatar") folder = "musicwork/avatars";
     if (file.fieldname === "postImage") folder = "musicwork/post-images";
+    if (file.fieldname === "showFlyer") folder = "musicwork/show-flyers";
 
     const userId = (req as any).userId || "user";
     return {

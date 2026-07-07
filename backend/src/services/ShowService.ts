@@ -11,6 +11,7 @@ class ShowService {
     genre: string;
     venue?: string;
     description?: string;
+    flyerUrl?: string;
   }) {
     const show = await Show.create(data);
     return show;

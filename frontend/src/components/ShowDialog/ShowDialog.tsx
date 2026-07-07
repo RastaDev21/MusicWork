@@ -10,9 +10,11 @@ import {
   FormControl,
   InputLabel,
   Box,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
-import { createShow } from "../../services/api";
+import { createShow, uploadShowFlyer } from "../../services/api";
 import { useSnackbar } from "notistack";
 
 const genres = [
@@ -84,6 +86,8 @@ export default function ShowDialog({
   const [genre, setGenre] = useState("");
   const [venue, setVenue] = useState("");
   const [description, setDescription] = useState("");
+  const [flyerFile, setFlyerFile] = useState<File | null>(null);
+  const [flyerPreview, setFlyerPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -95,6 +99,21 @@ export default function ShowDialog({
     setGenre("");
     setVenue("");
     setDescription("");
+    setFlyerFile(null);
+    setFlyerPreview(null);
+  }
+
+  function handleSelectFlyer(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFlyerFile(file);
+    setFlyerPreview(URL.createObjectURL(file));
+    e.target.value = "";
+  }
+
+  function handleRemoveFlyer() {
+    setFlyerFile(null);
+    setFlyerPreview(null);
   }
 
   async function handleSubmit() {
@@ -107,6 +126,12 @@ export default function ShowDialog({
 
     setLoading(true);
     try {
+      let flyerUrl: string | undefined;
+      if (flyerFile) {
+        const data = await uploadShowFlyer(flyerFile);
+        flyerUrl = data.flyerUrl;
+      }
+
       const dateTime = new Date(`${date}T${time}`).toISOString();
       await createShow({
         title,
@@ -115,6 +140,7 @@ export default function ShowDialog({
         genre,
         venue: venue || undefined,
         description: description || undefined,
+        flyerUrl,
       });
       enqueueSnackbar("Show adicionado!", { variant: "success" });
       resetForm();
@@ -223,8 +249,57 @@ export default function ShowDialog({
           rows={2}
           value={description}
           onChange={e => setDescription(e.target.value)}
-          sx={inputSx}
+          sx={{ ...inputSx, mb: 2 }}
         />
+
+        <Box sx={{ mb: 1 }}>
+          {flyerPreview ? (
+            <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Box
+                component="img"
+                src={flyerPreview}
+                sx={{ maxHeight: 180, borderRadius: 2, display: "block" }}
+              />
+              <IconButton
+                size="small"
+                onClick={handleRemoveFlyer}
+                sx={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  color: "#fff",
+                  "&:hover": { backgroundColor: "rgba(0,0,0,0.8)" },
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : (
+            <Box
+              component="label"
+              sx={{
+                display: "block",
+                border: "1.5px dashed #444",
+                borderRadius: 2,
+                p: 2,
+                textAlign: "center",
+                cursor: "pointer",
+                "&:hover": { borderColor: "#7c4dff" },
+              }}
+            >
+              <Box sx={{ color: "#aaa", fontSize: 13 }}>
+                🖼️ Adicionar flyer de divulgação (opcional)
+              </Box>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleSelectFlyer}
+              />
+            </Box>
+          )}
+        </Box>
       </DialogContent>
       <DialogActions sx={{ borderTop: "1px solid #2a2a2a", p: 2, gap: 1 }}>
         <Button

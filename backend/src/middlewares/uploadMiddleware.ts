@@ -9,6 +9,7 @@ const storage = new CloudinaryStorage({
     if (file.fieldname === "avatar") folder = "musicwork/avatars";
     if (file.fieldname === "postImage") folder = "musicwork/post-images";
     if (file.fieldname === "showFlyer") folder = "musicwork/show-flyers";
+    if (file.fieldname === "messageImage") folder = "musicwork/message-images";
 
     const userId = (req as any).userId || "user";
     return {
@@ -41,10 +42,14 @@ export const upload = multer({
 
 const videoStorage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, _file) => {
+  params: async (req, file) => {
+    let folder = "musicwork/presentation-videos";
+    if (file.fieldname === "postVideo") folder = "musicwork/post-videos";
+    if (file.fieldname === "messageVideo") folder = "musicwork/message-videos";
+
     const userId = (req as any).userId || "user";
     return {
-      folder: "musicwork/presentation-videos",
+      folder,
       public_id: `${userId}-${Date.now()}`,
       resource_type: "video",
       allowed_formats: ["mp4", "mov", "webm"],

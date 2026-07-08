@@ -93,4 +93,18 @@ uploadRouter.post(
   uploadController.uploadShowFlyer,
 );
 
+uploadRouter.post(
+  "/upload/message-image",
+  authMiddleware,
+  handleUpload("messageImage"),
+  uploadController.uploadMessageImage,
+);
+
+uploadRouter.post(
+  "/upload/message-video",
+  authMiddleware,
+  handleVideoUpload("messageVideo"),
+  uploadController.uploadMessageVideo,
+);
+
 export default uploadRouter;

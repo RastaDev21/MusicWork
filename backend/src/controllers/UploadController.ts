@@ -101,4 +101,28 @@ export class UploadController {
       return res.status(500).json({ error: "Erro ao fazer upload do flyer!" });
     }
   }
+
+  async uploadMessageImage(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhuma imagem enviada!" });
+      }
+
+      return res.json({ imageUrl: req.file.path });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao fazer upload da imagem!" });
+    }
+  }
+
+  async uploadMessageVideo(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhum vídeo enviado!" });
+      }
+
+      return res.json({ videoUrl: req.file.path });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao fazer upload do vídeo!" });
+    }
+  }
 }

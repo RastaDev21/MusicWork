@@ -28,6 +28,8 @@ import {
   NotificationItem,
 } from "../../services/api";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatOutlined";
+import { getUnreadMessageCount } from "../../services/api";
 
 function timeAgo(dateString: string) {
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -64,6 +66,7 @@ export default function Navbar() {
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
@@ -82,6 +85,20 @@ export default function Navbar() {
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
+
+  useEffect(() => {
+    async function fetchUnreadMessages() {
+      try {
+        const count = await getUnreadMessageCount();
+        setUnreadMessages(count);
+      } catch {
+        // silencioso
+      }
+    }
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   async function handleOpenNotifications(event: React.MouseEvent<HTMLElement>) {
     setNotifAnchorEl(event.currentTarget);
@@ -174,6 +191,22 @@ export default function Navbar() {
           />
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <IconButton
+            sx={{ color: "#aaa" }}
+            onClick={() => navigate("/mensagens")}
+          >
+            <Badge
+              badgeContent={unreadMessages}
+              max={9}
+              color="error"
+              sx={{
+                "& .MuiBadge-badge": { fontSize: 10, height: 16, minWidth: 16 },
+              }}
+            >
+              <ChatBubbleOutlineIcon />
+            </Badge>
+          </IconButton>
+
           <IconButton sx={{ color: "#aaa" }} onClick={handleOpenNotifications}>
             <Badge
               badgeContent={unreadCount}

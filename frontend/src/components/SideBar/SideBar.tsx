@@ -7,10 +7,12 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatOutlined";
 
 const menuItems = [
   { label: "Feed", icon: <HomeIcon />, path: "/feed" },
   { label: "Buscar", icon: <SearchIcon />, path: "/buscar" },
+  { label: "Mensagens", icon: <ChatBubbleOutlineIcon />, path: "/mensagens" },
   { label: "Agenda", icon: <CalendarMonthIcon />, path: "/agenda" },
   { label: "Work", icon: <WorkIcon />, path: "/work" },
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },

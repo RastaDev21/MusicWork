@@ -10,13 +10,14 @@ import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import ShowCard from "../components/ShowCard/ShowCard";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api, {
   getImageUrl,
   getPinnedPost,
   listShowsByUser,
   Show,
 } from "../services/api";
+import { startConversation } from "../services/api";
 
 interface Musician {
   id: string;
@@ -108,6 +109,14 @@ export default function PublicProfile() {
     setFollowers(prev => (res.data.following ? prev + 1 : prev - 1));
   }
 
+  const navigate = useNavigate();
+
+  async function handleMessage() {
+    if (!id) return;
+    const conversation = await startConversation(id);
+    navigate(`/mensagens/${conversation.id}`);
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -145,6 +154,20 @@ export default function PublicProfile() {
       }}
     >
       {following ? "Seguindo" : "Seguir"}
+    </Button>
+  );
+
+  const messageButton = (
+    <Button
+      variant="outlined"
+      onClick={handleMessage}
+      sx={{
+        color: "#7c4dff",
+        borderColor: "#7c4dff",
+        "&:hover": { borderColor: "#9c6fe4", backgroundColor: "#7c4dff11" },
+      }}
+    >
+      Mensagem
     </Button>
   );
 
@@ -291,8 +314,11 @@ export default function PublicProfile() {
               </Box>
 
               {/* Botão de seguir - só no mobile, logo abaixo dos chips */}
-              <Box sx={{ display: { xs: "block", md: "none" }, mb: 1.5 }}>
+              <Box
+                sx={{ display: { xs: "flex", md: "none" }, gap: 1, mb: 1.5 }}
+              >
                 {followButton}
+                {messageButton}
               </Box>
 
               <Typography sx={{ color: "#666", fontSize: 13 }}>
@@ -423,7 +449,10 @@ export default function PublicProfile() {
                 minWidth: 200,
               }}
             >
-              {followButton}
+              <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+                {followButton}
+                {messageButton}
+              </Box>
               {detailsCard}
             </Box>
           </Box>

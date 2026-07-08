@@ -235,4 +235,85 @@ export async function deleteShow(showId: string) {
   return response.data;
 }
 
+// ── Chat ──
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string | null;
+  imageUrl: string | null;
+  videoUrl: string | null;
+  read: boolean;
+  createdAt: string;
+  sender: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+}
+
+export interface ConversationSummary {
+  id: string;
+  otherUser: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  lastMessage: ChatMessage | null;
+  unreadCount: number;
+}
+
+export async function startConversation(otherUserId: string) {
+  const response = await api.post("/conversations", { otherUserId });
+  return response.data;
+}
+
+export async function listConversations() {
+  const response = await api.get<ConversationSummary[]>("/conversations");
+  return response.data;
+}
+
+export async function getMessages(conversationId: string) {
+  const response = await api.get<ChatMessage[]>(
+    `/conversations/${conversationId}/messages`,
+  );
+  return response.data;
+}
+
+export async function sendMessage(
+  conversationId: string,
+  data: { content?: string; imageUrl?: string; videoUrl?: string },
+) {
+  const response = await api.post(
+    `/conversations/${conversationId}/messages`,
+    data,
+  );
+  return response.data;
+}
+
+export async function getUnreadMessageCount() {
+  const response = await api.get<{ count: number }>(
+    "/conversations/unread-count",
+  );
+  return response.data.count;
+}
+
+export async function uploadMessageImage(file: File) {
+  const compressed = await compressImage(file);
+  const formData = new FormData();
+  formData.append("messageImage", compressed, file.name);
+
+  const response = await api.post("/upload/message-image", formData);
+  return response.data;
+}
+
+export async function uploadMessageVideo(file: File) {
+  const formData = new FormData();
+  formData.append("messageVideo", file, file.name);
+
+  const response = await api.post("/upload/message-video", formData);
+  return response.data;
+}
+
 export default api;

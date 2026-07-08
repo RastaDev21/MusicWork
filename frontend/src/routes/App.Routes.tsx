@@ -11,6 +11,8 @@ import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import Settings from "../pages/Settings";
 import Agenda from "../pages/Agenda";
+import Messages from "../pages/Messages";
+import Chat from "../pages/Chat";
 
 export default function AppRoutes() {
   return (
@@ -73,6 +75,23 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Agenda />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/mensagens"
+        element={
+          <PrivateRoute>
+            <Messages />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/mensagens/:id"
+        element={
+          <PrivateRoute>
+            <Chat />
           </PrivateRoute>
         }
       />

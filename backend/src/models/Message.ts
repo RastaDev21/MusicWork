@@ -9,6 +9,7 @@ class Message extends Model {
   declare imageUrl: string | null;
   declare videoUrl: string | null;
   declare read: boolean;
+  declare createdAt: Date;
 }
 
 Message.init(

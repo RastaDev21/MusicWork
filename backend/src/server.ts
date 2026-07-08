@@ -17,6 +17,7 @@ import commentRouter from "./routes/commentRoutes";
 import notificationRouter from "./routes/notificationRoutes";
 import commentLikeRouter from "./routes/commentLikeRoutes";
 import showRouter from "./routes/showRoutes";
+import conversationRouter from "./routes/conversationRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
@@ -27,6 +28,8 @@ import Comment from "./models/Comment";
 import Notification from "./models/Notification";
 import CommentLike from "./models/CommentLike";
 import Show from "./models/Show";
+import Conversation from "./models/Conversation";
+import Message from "./models/Message";
 
 const app = express();
 
@@ -65,6 +68,7 @@ app.use(notificationRouter);
 app.use(notificationRouter);
 app.use(commentLikeRouter);
 app.use(showRouter);
+app.use(conversationRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -100,6 +104,12 @@ Notification.belongsTo(User, { foreignKey: "recipientId", as: "recipient" });
 Comment.hasMany(CommentLike, { foreignKey: "commentId" });
 CommentLike.belongsTo(Comment, { foreignKey: "commentId" });
 CommentLike.belongsTo(User, { foreignKey: "userId" });
+
+Conversation.belongsTo(User, { foreignKey: "user1Id", as: "user1" });
+Conversation.belongsTo(User, { foreignKey: "user2Id", as: "user2" });
+Conversation.hasMany(Message, { foreignKey: "conversationId" });
+Message.belongsTo(Conversation, { foreignKey: "conversationId" });
+Message.belongsTo(User, { foreignKey: "senderId", as: "sender" });
 
 Show.belongsTo(User, { foreignKey: "userId" });
 
@@ -137,6 +147,13 @@ CommentLike.sync({ alter: true }).then(() => {
 
 Show.sync({ alter: true }).then(() => {
   console.log("✅ Tabela shows sincronizada");
+});
+
+Conversation.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela conversations sincronizada");
+});
+Message.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela messages sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

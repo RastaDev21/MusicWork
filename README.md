@@ -26,19 +26,19 @@ musicwork/
 ├── backend/
 │ └── src/
 │ ├── config/ (cloudinary.ts)
-│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController)
+│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController, ShowController)
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
-│ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification)
-│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes)
-│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, EmailService)
+│ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification, Show)
+│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes, showRoutes)
+│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, ShowService, EmailService)
 │ └── server.ts
 └── frontend/
 └── src/
-├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, Logo)
+├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Settings, ForgotPassword, ResetPassword)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Settings, ForgotPassword, ResetPassword)
 ├── routes/ (App.Routes, PrivateRoute)
-└── services/ (api.ts — inclui helper getImageUrl)
+└── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows)
 
 ## O que já foi feito
 
@@ -137,6 +137,17 @@ musicwork/
 - ✅ Upload funciona no mobile
 - ✅ Helper getImageUrl (compatível com fotos antigas e novas do Cloudinary, e com vídeos)
 
+### Calendário de shows ✅
+
+- ✅ Página "Agenda" (menu lateral e navbar mobile), listando shows futuros de todos os músicos
+- ✅ Filtros por cidade, gênero musical e data
+- ✅ Criar show com título, data, horário, cidade, gênero, local (opcional) e descrição (opcional)
+- ✅ Flyer de divulgação opcional (upload de imagem via Cloudinary)
+- ✅ Modal de detalhes ao clicar no show, com flyer em tamanho grande e lightbox (clique para ampliar sem cortar a imagem)
+- ✅ Só o dono do show pode editar/deletar (botão de deletar no card e dentro do modal)
+- ✅ Seção "Próximos shows" no perfil próprio (com botão de adicionar) e no perfil público (somente visualização) de cada músico
+- ✅ Shows passados somem automaticamente das listagens (Agenda e perfil só mostram futuros)
+
 ---
 
 ## Próximos passos — ROADMAP
@@ -168,8 +179,8 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 ### Fase 4 — Features grandes (parcialmente concluída)
 
 - ✅ Múltiplos instrumentos no perfil
-- ✅ ~~Vídeo/áudio de apresentação no perfil~~ — evoluiu para algo maior: posts agora suportam foto ou vídeo, e qualquer post pode ser **fixado** no topo do perfil (substituiu a ideia original de um campo de vídeo isolado, sem curtir/comentar)
-- [ ] Calendário de shows
+- ✅ Vídeo/áudio de apresentação no perfil ~ — evoluiu para posts com foto ou vídeo + sistema de fixar post no perfil
+- ✅ Calendário de shows
 
 ### Fase 5 — Real-time (planejado, não iniciado)
 
@@ -254,6 +265,12 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Posts suportam no máximo 1 mídia por post (foto OU vídeo, nunca as duas):** decisão de escopo consciente para evitar a complexidade de um carrossel de múltiplas mídias (tabela extra, componente de carrossel, lógica de ordenação). A trava é só no frontend (`NewPost.tsx` avisa e bloqueia se tentar anexar as duas) — o backend tecnicamente aceitaria ambos os campos preenchidos, mas isso nunca acontece na prática. Se decidir implementar carrossel no futuro, ver Fase 6 no roadmap.
 
 - **Post fixado (`isPinned`) substituiu o campo `presentationVideoUrl`:** o campo `presentationVideoUrl` ainda existe na tabela `users` (dormente, sem uso no frontend) — foi mantido por simplicidade em vez de remover a coluna com outro ALTER em produção. A forma atual de destacar conteúdo no perfil é fixar qualquer post (com ou sem mídia) via `PostService.pinPost`.
+
+- **Gênero musical do show é independente do gênero do perfil do músico:** cada show tem seu próprio campo `genre`, não herda do perfil de quem cria. Decisão consciente: permite que um músico toque em um evento de estilo diferente do seu gênero usual sem ficar inconsistente no filtro da Agenda.
+
+- **`api.ts` organizado em seções por assunto:** o arquivo cresceu bastante e foi reagrupado em blocos comentados (Autenticação e conta / Perfil e uploads / Notificações / Posts / Shows e Agenda), sem alterar nenhum comportamento — só facilita encontrar funções relacionadas ao adicionar código novo.
+
+- **Pasta `backend/dist` no `.gitignore`:** é a saída compilada do TypeScript (gerada automaticamente pelo `npm run build`), não deve ser versionada — o Render compila sozinho no deploy.
 
 ## Notas importantes
 

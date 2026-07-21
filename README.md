@@ -1,5 +1,17 @@
 # MusicWork 🎵
 
+## 🔄 Onde paramos (última atualização: 08/07/2026)
+
+**Última feature entregue:** Chat (mensagens diretas entre músicos) — backend e frontend completos, commitados e testados localmente (texto, foto e vídeo funcionando, incluindo trava de botões durante o envio).
+
+**Status:** Nenhum commit pendente. Repositório limpo, tudo sincronizado com o GitHub.
+
+**Próximo passo sugerido:** Testar o chat em produção (depois do deploy do Render/Vercel). Depois disso, as opções em aberto são: Login com Google (OAuth), ou aguardar resposta do Resend pra fechar o resto da Fase 3 (editar email, verificação de email).
+
+**Como usar esta seção:** atualizar sempre no fim de uma sessão de trabalho, com a data, o que foi feito por último, e o que falta ou vem a seguir. Serve como "cola rápida" pra saber onde retomar, sem precisar reconstruir o histórico inteiro de conversa.
+
+---
+
 Plataforma para músicos se conectarem, compartilharem posts e trocarem serviços musicais.
 
 **🌐 Produção:**
@@ -26,21 +38,32 @@ musicwork/
 ├── backend/
 │ └── src/
 │ ├── config/ (cloudinary.ts)
-│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController, ShowController)
+│ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController, ShowController, ConversationController)
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
-│ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification, Show)
-│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes, showRoutes)
-│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, ShowService, EmailService)
+│ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification, Show, Conversation, Message)
+│ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes, showRoutes, conversationRoutes)
+│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, ShowService, ConversationService, EmailService)
 │ └── server.ts
 └── frontend/
 └── src/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Settings, ForgotPassword, ResetPassword)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
 ├── routes/ (App.Routes, PrivateRoute)
-└── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows)
+└── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows, chat)
 
 ## O que já foi feito
+
+### Chat (mensagens diretas) ✅
+
+- ✅ Conversas 1-para-1 entre qualquer músico (sem restrição de seguir/ser seguido)
+- ✅ Mensagens com texto, foto ou vídeo (mesma trava de "só uma mídia por vez" dos posts)
+- ✅ Lista de conversas (`/mensagens`) com prévia da última mensagem, horário e badge de não lidas
+- ✅ Tela de chat aberta (`/mensagens/:id`) com histórico completo, balões enviados/recebidos
+- ✅ Botão "Mensagem" no perfil público de outros músicos, ao lado do "Seguir"
+- ✅ Ícone de chat no navbar com badge de não lidas (ao lado do sino de notificações)
+- ✅ Atualização por polling (mensagens a cada 4s dentro do chat aberto, contador de não lidas a cada 10s) — mesmo padrão das notificações
+- ✅ Botões de anexar mídia travados durante o envio, evitando clique duplo/estado inconsistente
 
 ### Base ✅
 
@@ -169,6 +192,11 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Responder comentários (threading)
 - ✅ Curtir comentários
 
+### Chat (mensagens diretas) ✅ CONCLUÍDO — não estava no roadmap original
+
+- ✅ Conversas e mensagens (texto, foto, vídeo)
+- ✅ Sem restrição de quem pode iniciar conversa (decisão consciente, ver Convenções abaixo)
+
 ### Fase 3 — Conta e segurança (parcialmente concluída)
 
 - ✅ Alterar senha (Configurações da conta)
@@ -179,7 +207,7 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 ### Fase 4 — Features grandes (parcialmente concluída)
 
 - ✅ Múltiplos instrumentos no perfil
-- ✅ Vídeo/áudio de apresentação no perfil ~ — evoluiu para posts com foto ou vídeo + sistema de fixar post no perfil
+- ✅ Vídeo/áudio de apresentação no perfil — evoluiu para posts com foto ou vídeo + sistema de fixar post no perfil
 - ✅ Calendário de shows
 
 ### Fase 5 — Real-time (planejado, não iniciado)
@@ -271,6 +299,10 @@ VITE_API_URL=https://api.musicwork.com.br
 - **`api.ts` organizado em seções por assunto:** o arquivo cresceu bastante e foi reagrupado em blocos comentados (Autenticação e conta / Perfil e uploads / Notificações / Posts / Shows e Agenda), sem alterar nenhum comportamento — só facilita encontrar funções relacionadas ao adicionar código novo.
 
 - **Pasta `backend/dist` no `.gitignore`:** é a saída compilada do TypeScript (gerada automaticamente pelo `npm run build`), não deve ser versionada — o Render compila sozinho no deploy.
+
+- **Chat sem restrição de quem pode conversar:** qualquer músico pode mandar mensagem pra qualquer outro, sem precisar seguir ou ser seguido. Decisão consciente: o MusicWork tem uma pegada de rede profissional (parecido com o Work), onde um contratante pode querer chamar um músico que nunca seguiu. Diferente de redes mais "fechadas" (ex: LinkedIn). Se no futuro isso virar problema de spam, dá pra adicionar uma caixa de "solicitações" separada, sem quebrar o que já existe.
+
+- **Chat usa polling, não WebSocket:** mesma decisão já tomada pras notificações (ver Fase 5). Mensagens dentro do chat aberto atualizam a cada 4 segundos; o contador de não lidas no navbar atualiza a cada 10 segundos.
 
 ## Notas importantes
 

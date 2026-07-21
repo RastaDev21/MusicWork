@@ -221,6 +221,17 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 
 - [ ] Carrossel de múltiplas fotos/vídeos por post (hoje é limitado a 1 mídia por post — decisão de escopo consciente, ver Convenções abaixo)
 
+### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões
+
+- [ ] Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
+- [ ] Facebook e TikTok como links sociais (mesmo padrão de Instagram/YouTube/Spotify)
+- [ ] Adicionar "Ukulele" à lista de instrumentos — aproveitar pra unificar a lista duplicada em 4 arquivos num só (`constants.ts`)
+- [ ] Revisar duplicação de informações no perfil (instrumento/gênero/cidade aparecem repetidos entre os chips, a linha de cidade solta, e o card de detalhes)
+- [ ] Player de música no perfil — decisão: usar embed do Spotify (campo que já existe) em vez de upload de áudio com autoplay, que é bloqueado pela maioria dos navegadores
+- [ ] Filtro de "Professor" na busca — decisão pendente entre (A) reaproveitar Work categoria "Aula" como sinal, ou (B) campo explícito no perfil
+- [ ] Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
+- [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte
+
 ---
 
 ## Como rodar localmente

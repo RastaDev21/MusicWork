@@ -34,6 +34,8 @@ import api, {
   Show,
 } from "../services/api";
 import { useSnackbar } from "notistack";
+import { instruments, genres } from "../constants/musicOptions";
+import { countries, countryCodeToFlag } from "../constants/countries";
 
 interface Post {
   id: string;
@@ -54,46 +56,6 @@ interface Post {
     avatarUrl: string | null;
   };
 }
-
-const instruments = [
-  "Guitarra",
-  "Baixo",
-  "Bateria",
-  "Teclado",
-  "Violão",
-  "Voz",
-  "Saxofone",
-  "Trompete",
-  "Trombone",
-  "Violino",
-  "Percussão",
-  "Triângulo",
-  "Zabumba",
-  "Sanfona / Acordeon",
-  "DJ",
-  "Produtor Musical",
-  "Técnico de som",
-  "Outro",
-];
-
-const genres = [
-  "Rock",
-  "Samba",
-  "Jazz",
-  "MPB",
-  "Reggae",
-  "Funk",
-  "Forró",
-  "Pagode",
-  "Blues",
-  "Metal",
-  "Pop",
-  "Gospel",
-  "Eletrônico",
-  "Clássico",
-  "Bossa Nova",
-  "Outro",
-];
 
 function timeAgo(date: string) {
   const now = new Date();
@@ -153,6 +115,8 @@ export default function Profile() {
   const [secondaryProfession, setSecondaryProfession] = useState("");
   const [bio, setBio] = useState("");
   const [genre, setGenre] = useState(user?.genre || "");
+  const [secondaryGenres, setSecondaryGenres] = useState<string[]>([]);
+  const [nationality, setNationality] = useState("");
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -164,6 +128,8 @@ export default function Profile() {
   const [instagram, setInstagram] = useState("");
   const [youtube, setYoutube] = useState("");
   const [spotify, setSpotify] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [tiktok, setTiktok] = useState("");
 
   async function loadPinned() {
     if (!user?.id) return;
@@ -206,7 +172,11 @@ export default function Profile() {
         setInstagram(profileRes.data.instagram || "");
         setYoutube(profileRes.data.youtube || "");
         setSpotify(profileRes.data.spotify || "");
+        setFacebook(profileRes.data.facebook || "");
+        setTiktok(profileRes.data.tiktok || "");
         setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
+        setSecondaryGenres(profileRes.data.secondaryGenres || []);
+        setNationality(profileRes.data.nationality || "");
 
         if (followRes) {
           setFollowers(followRes.data.followers);
@@ -232,9 +202,13 @@ export default function Profile() {
         city,
         bio,
         genre,
+        secondaryGenres,
+        nationality,
         instagram,
         youtube,
         spotify,
+        facebook,
+        tiktok,
       });
 
       updateUser({ name, instrument, secondaryInstruments, city, genre });
@@ -244,6 +218,10 @@ export default function Profile() {
       setGenre(profileRes.data.genre || "");
       setSecondaryProfession(profileRes.data.secondaryProfession || "");
       setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
+      setSecondaryGenres(profileRes.data.secondaryGenres || []);
+      setNationality(profileRes.data.nationality || "");
+      setFacebook(profileRes.data.facebook || "");
+      setTiktok(profileRes.data.tiktok || "");
 
       setOpenEdit(false);
     } catch (error) {
@@ -557,6 +535,18 @@ export default function Profile() {
                     }}
                   />
                 ))}
+                {secondaryGenres.map(g => (
+                  <Chip
+                    key={g}
+                    label={g}
+                    size="small"
+                    sx={{
+                      backgroundColor: "#ff4d6d15",
+                      color: "#ff9baf",
+                      fontSize: 11,
+                    }}
+                  />
+                ))}
               </Box>
 
               {/* Botão de editar - só no mobile, logo abaixo dos chips */}
@@ -566,9 +556,14 @@ export default function Profile() {
 
               <Typography sx={{ color: "#666", fontSize: 13 }}>
                 {user?.city}
+                {nationality && (
+                  <Box component="span" sx={{ ml: 1 }}>
+                    {countryCodeToFlag(nationality)}
+                  </Box>
+                )}
               </Typography>
 
-              {(instagram || youtube || spotify) && (
+              {(instagram || youtube || spotify || facebook || tiktok) && (
                 <Box sx={{ display: "flex", gap: 1.5, mt: 1.5 }}>
                   {instagram && (
                     <Box
@@ -642,6 +637,56 @@ export default function Profile() {
                         fill="currentColor"
                       >
                         <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                      </svg>
+                    </Box>
+                  )}
+                  {facebook && (
+                    <Box
+                      component="a"
+                      href={
+                        facebook.startsWith("http")
+                          ? facebook
+                          : `https://facebook.com/${facebook}`
+                      }
+                      target="_blank"
+                      sx={{
+                        display: "flex",
+                        color: "#1877F2",
+                        "&:hover": { opacity: 0.8 },
+                      }}
+                    >
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                      </svg>
+                    </Box>
+                  )}
+                  {tiktok && (
+                    <Box
+                      component="a"
+                      href={
+                        tiktok.startsWith("http")
+                          ? tiktok
+                          : `https://tiktok.com/@${tiktok.replace("@", "")}`
+                      }
+                      target="_blank"
+                      sx={{
+                        display: "flex",
+                        color: "#fff",
+                        "&:hover": { opacity: 0.8 },
+                      }}
+                    >
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.43 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
                       </svg>
                     </Box>
                   )}
@@ -949,6 +994,72 @@ export default function Profile() {
             </Select>
           </FormControl>
 
+          <Autocomplete
+            multiple
+            options={genres.filter(
+              g => g !== genre && !secondaryGenres.includes(g),
+            )}
+            value={secondaryGenres}
+            onChange={(_, newValue) => setSecondaryGenres(newValue)}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="Outros gêneros (opcional)"
+                placeholder={secondaryGenres.length === 0 ? "Selecione..." : ""}
+                sx={inputSx}
+              />
+            )}
+            slotProps={{
+              paper: {
+                sx: {
+                  backgroundColor: "#1a1a1a",
+                  border: "1px solid #2a2a2a",
+                  "& .MuiAutocomplete-option": {
+                    color: "#fff",
+                    '&[aria-selected="true"]': {
+                      backgroundColor: "#7c4dff33",
+                    },
+                    "&:hover": { backgroundColor: "#7c4dff22" },
+                  },
+                },
+              },
+            }}
+            sx={{
+              mb: 2,
+              "& .MuiAutocomplete-tag": {
+                backgroundColor: "#ff4d6d",
+                color: "#fff",
+                fontWeight: 600,
+              },
+              "& .MuiAutocomplete-tag .MuiChip-deleteIcon": {
+                color: "#fff",
+                opacity: 0.85,
+                "&:hover": { opacity: 1 },
+              },
+            }}
+          />
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel
+              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+            >
+              Nacionalidade
+            </InputLabel>
+            <Select
+              value={nationality}
+              label="Nacionalidade"
+              onChange={e => setNationality(e.target.value)}
+              sx={selectSx}
+              MenuProps={{ sx: menuSx }}
+            >
+              {countries.map(c => (
+                <MenuItem key={c.code} value={c.code} sx={menuItemSx}>
+                  {countryCodeToFlag(c.code)} {c.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             fullWidth
             label="Bio"
@@ -957,7 +1068,7 @@ export default function Profile() {
             value={bio}
             onChange={e => setBio(e.target.value)}
             placeholder="Conta um pouco sobre você..."
-            sx={inputSx}
+            sx={{ ...inputSx, mb: 2 }}
           />
 
           <Typography sx={{ color: "#aaa", fontSize: 12, mt: 2, mb: 1 }}>
@@ -985,6 +1096,22 @@ export default function Profile() {
             value={spotify}
             onChange={e => setSpotify(e.target.value)}
             placeholder="Ex: open.spotify.com/artist/..."
+            sx={{ ...inputSx, mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Facebook (link ou usuário)"
+            value={facebook}
+            onChange={e => setFacebook(e.target.value)}
+            placeholder="Ex: facebook.com/seuusuario"
+            sx={{ ...inputSx, mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="TikTok (@usuário)"
+            value={tiktok}
+            onChange={e => setTiktok(e.target.value)}
+            placeholder="Ex: @seuusuario"
             sx={inputSx}
           />
         </DialogContent>

@@ -1,17 +1,23 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 21/07/2026)
+## 🔄 Onde paramos (última atualização: 22/07/2026)
 
-**Última feature entregue:** Backlog de sugestões do professor Fábio — implementados os itens rápidos: múltiplos gêneros musicais, Facebook/TikTok como links sociais, Ukulele + unificação da lista de instrumentos/gêneros duplicada (`constants/musicOptions.ts`, `constants/countries.ts`), e nacionalidade com bandeira via emoji.
+**Última feature entregue:** Seguimos o backlog de sugestões do professor Fábio — entregamos os itens médios que faltavam: `PublicProfile.tsx` recebeu as mesmas mudanças do `Profile.tsx` (múltiplos gêneros, Facebook/TikTok, bandeira), opção "Todos os estilos" no gênero principal, player de música do perfil via embed do Spotify (`favoriteSongUrl`, separado do link de artista já existente), filtro de país na busca, e o campo "Professor" (`isProfessor`) com filtro dedicado na busca.
 
-**Status:** Todos os commits já foram enviados (backend: model/service/controller do User; frontend: Profile.tsx, Register.tsx, Search.tsx, ShowDialog.tsx, e os 2 arquivos de constants novos). Backend e frontend compilam sem erros (confirmado via `tsc --noEmit` direto no terminal).
+**Decisões tomadas hoje:**
 
-**Pendente:**
+- O "Todos" pra selecionar todos os gêneros de uma vez ficou só como ideia descartada — em vez disso, "Todos os estilos" virou uma opção normal de gênero principal (evita conflito com o "Todos" que já existia no filtro de busca, que significa "sem filtro").
+- Player do perfil usa um campo novo (`favoriteSongUrl`), separado do campo `spotify` (que continua sendo só o link do artista pra divulgação). São conceitos diferentes: um é "quem eu sou" no Spotify, o outro é "uma música que estou destacando agora".
+- Ponto 6 do backlog (filtro de Professor): decidimos pela Opção B — campo explícito `isProfessor` no perfil, em vez de reaproveitar a categoria "Aula" do Work. Mantém Busca e Work como sistemas independentes, sem acoplar identidade do músico a um item de marketplace.
 
-- `PublicProfile.tsx` ainda não recebeu as mesmas mudanças (múltiplos gêneros, Facebook/TikTok, bandeira) — só o `Profile.tsx` (perfil próprio) foi atualizado até agora.
-- Do backlog do professor, ainda faltam: revisar duplicação de informações no perfil (ponto 4), player de música via embed do Spotify (ponto 5), filtro de "Professor" na busca — decisão pendente (ponto 6), chat de suporte reaproveitando o sistema de chat (ponto 8).
+**Status:** Todos os commits já foram enviados e testados localmente (backend: model/service/controller do User; frontend: Profile.tsx, PublicProfile.tsx, Search.tsx, musicOptions.ts, e o novo constants/spotify.ts). Backend e frontend compilam sem erros (`tsc --noEmit`).
 
-**Próximo passo sugerido:** Aplicar no `PublicProfile.tsx` as mesmas mudanças que já foram feitas no `Profile.tsx`, depois seguir pros itens médios do backlog do professor.
+**Pendente do backlog do professor:**
+
+- Revisar duplicação de informações no perfil (ponto 4) — instrumento/gênero/secundários/professor todos numa linha só de chips, ficou bem cheia; card de detalhes repete algumas dessas infos.
+- Chat de suporte reaproveitando o sistema de chat existente, com conta fixa de suporte (ponto 8).
+
+**Próximo passo sugerido:** Começar pelo ponto 4 (reorganizar os chips do cabeçalho do perfil), já que os pontos 5 e 6 aumentaram a quantidade de informação ali e deixaram mais evidente a bagunça visual.
 
 ---
 
@@ -50,6 +56,7 @@ musicwork/
 └── frontend/
 └── src/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo)
+├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; spotify.ts — helper de embed)
 ├── contexts/ (AuthContext)
 ├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
 ├── routes/ (App.Routes, PrivateRoute)
@@ -90,9 +97,9 @@ musicwork/
 
 - ✅ Busca de músicos por nome, instrumento, cidade e gênero
 - ✅ Busca ignora acentos e maiúsculas (Postgres unaccent)
-- ✅ Filtros avançados (instrumento, gênero, cidade)
+- ✅ Filtros avançados (instrumento, gênero, cidade, país, professor)
 - ✅ Limpar filtros
-- ✅ Busca combinada (texto + filtros)
+- ✅ Busca combinada (texto + filtros, todos os filtros se combinam com E lógico)
 - ✅ Clicar no resultado abre o perfil público do músico
 
 ### Work (marketplace) ✅
@@ -130,10 +137,14 @@ musicwork/
 ### Perfil ✅
 
 - ✅ Página de perfil público de outros usuários (/musico/:id)
-- ✅ Links sociais no perfil (Instagram, YouTube, Spotify)
+- ✅ Links sociais no perfil (Instagram, YouTube, Spotify, Facebook, TikTok)
 - ✅ Profissão secundária como campo livre
 - ✅ Instrumento principal + instrumentos secundários (múltiplos instrumentos por músico, selecionáveis via busca com chips removíveis)
-- ✅ Novos instrumentos na lista (Trombone, Sanfona, Triângulo, Zabumba, Técnico de som)
+- ✅ Novos instrumentos na lista (Trombone, Sanfona, Triângulo, Zabumba, Técnico de som, Ukulele)
+- ✅ Gênero principal + gêneros secundários (múltiplos gêneros por músico, mesmo padrão dos instrumentos), incluindo opção "Todos os estilos"
+- ✅ Nacionalidade no perfil, exibida com bandeira via emoji Unicode
+- ✅ Música do perfil — player embutido do Spotify (`favoriteSongUrl`), separado do link de artista, trocável a qualquer momento
+- ✅ Campo "Professor" (`isProfessor`) — chip "🎓 Professor" no cabeçalho do perfil quando marcado
 
 ### Deploy e Infraestrutura ✅
 
@@ -226,13 +237,13 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 
 ### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões
 
-- [ ] Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
-- [ ] Facebook e TikTok como links sociais (mesmo padrão de Instagram/YouTube/Spotify)
-- [ ] Adicionar "Ukulele" à lista de instrumentos — aproveitar pra unificar a lista duplicada em 4 arquivos num só (`constants.ts`)
+- ✅ Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
+- ✅ Facebook e TikTok como links sociais (mesmo padrão de Instagram/YouTube/Spotify)
+- ✅ Adicionar "Ukulele" à lista de instrumentos — unificada a lista duplicada em `constants/musicOptions.ts`
 - [ ] Revisar duplicação de informações no perfil (instrumento/gênero/cidade aparecem repetidos entre os chips, a linha de cidade solta, e o card de detalhes)
-- [ ] Player de música no perfil — decisão: usar embed do Spotify (campo que já existe) em vez de upload de áudio com autoplay, que é bloqueado pela maioria dos navegadores
-- [ ] Filtro de "Professor" na busca — decisão pendente entre (A) reaproveitar Work categoria "Aula" como sinal, ou (B) campo explícito no perfil
-- [ ] Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
+- ✅ Player de música no perfil — embed do Spotify via campo novo `favoriteSongUrl`, separado do link de artista (`spotify`)
+- ✅ Filtro de "Professor" na busca — decisão: Opção B, campo explícito `isProfessor` no perfil (mantém Busca e Work independentes)
+- ✅ Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
 - [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte
 
 ---
@@ -317,6 +328,18 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Chat sem restrição de quem pode conversar:** qualquer músico pode mandar mensagem pra qualquer outro, sem precisar seguir ou ser seguido. Decisão consciente: o MusicWork tem uma pegada de rede profissional (parecido com o Work), onde um contratante pode querer chamar um músico que nunca seguiu. Diferente de redes mais "fechadas" (ex: LinkedIn). Se no futuro isso virar problema de spam, dá pra adicionar uma caixa de "solicitações" separada, sem quebrar o que já existe.
 
 - **Chat usa polling, não WebSocket:** mesma decisão já tomada pras notificações (ver Fase 5). Mensagens dentro do chat aberto atualizam a cada 4 segundos; o contador de não lidas no navbar atualiza a cada 10 segundos.
+
+- **`spotify` (link do artista) e `favoriteSongUrl` (música do perfil) são campos diferentes, de propósito:** `spotify` é o link do perfil do artista no Spotify, exibido só como ícone clicável (divulgação). `favoriteSongUrl` é o link de uma faixa específica que a pessoa escolhe pra tocar direto no perfil, num player embutido — trocável a qualquer momento, sem relação com o link de artista. Não confundir os dois nem tentar unificá-los.
+
+- **Helper `getSpotifyEmbedUrl` (`constants/spotify.ts`) reconhece links com prefixo de idioma:** o Spotify às vezes gera links no formato `open.spotify.com/intl-pt/track/...` (com locale) em vez do formato simples `open.spotify.com/track/...`. O regex do helper aceita os dois formatos. Se o Spotify mudar o formato de link novamente no futuro, é só ajustar esse regex num lugar só.
+
+- **Autoplay no player do Spotify não é garantido:** o embed tem o parâmetro `autoplay=1` na URL e o iframe tem `allow="autoplay"`, mas a maioria dos navegadores bloqueia autoplay com som até a pessoa já ter interagido com aquele domínio antes. Foi uma decisão consciente adicionar mesmo assim (não atrapalha, e funciona em parte dos casos) — não é bug se não tocar sozinho ao abrir o perfil.
+
+- **"Todos os estilos" é uma opção normal dentro da lista `genres`, não um valor especial:** foi cogitado um atalho "selecionar todos os gêneros de uma vez" dentro do campo de "Outros gêneros", mas foi descartado — ficaria conflitando com o "Todos" que já existe no filtro de busca (que ali significa "sem filtro"). Em vez disso, "Todos os estilos" é só mais um item da lista `genres`, pensado pra quem realmente toca de tudo.
+
+- **Filtro de país na busca é exato, não por texto:** ao contrário de `city` (que usa `unaccentLike`, busca parcial ignorando acento/maiúscula), o filtro de `nationality` compara o código do país direto (ex: `"BR"`), igual um dropdown de opção única — não faz sentido busca parcial num código de país.
+
+- **`isProfessor` é campo explícito no perfil, não derivado do Work:** decisão consciente (ponto 6 do backlog do professor) de manter Busca e Work como sistemas independentes. Um músico pode ser professor sem nunca ter criado um Work de categoria "Aula", e vice-versa — são conceitos diferentes (identidade do músico vs. oferta pontual de serviço). Não cruzar as duas tabelas pra derivar esse campo.
 
 ## Notas importantes
 

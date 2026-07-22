@@ -1,14 +1,17 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 08/07/2026)
+## 🔄 Onde paramos (última atualização: 21/07/2026)
 
-**Última feature entregue:** Chat (mensagens diretas entre músicos) — backend e frontend completos, commitados e testados localmente (texto, foto e vídeo funcionando, incluindo trava de botões durante o envio).
+**Última feature entregue:** Backlog de sugestões do professor Fábio — implementados os itens rápidos: múltiplos gêneros musicais, Facebook/TikTok como links sociais, Ukulele + unificação da lista de instrumentos/gêneros duplicada (`constants/musicOptions.ts`, `constants/countries.ts`), e nacionalidade com bandeira via emoji.
 
-**Status:** Nenhum commit pendente. Repositório limpo, tudo sincronizado com o GitHub.
+**Status:** Todos os commits já foram enviados (backend: model/service/controller do User; frontend: Profile.tsx, Register.tsx, Search.tsx, ShowDialog.tsx, e os 2 arquivos de constants novos). Backend e frontend compilam sem erros (confirmado via `tsc --noEmit` direto no terminal).
 
-**Próximo passo sugerido:** Testar o chat em produção (depois do deploy do Render/Vercel). Depois disso, as opções em aberto são: Login com Google (OAuth), ou aguardar resposta do Resend pra fechar o resto da Fase 3 (editar email, verificação de email).
+**Pendente:**
 
-**Como usar esta seção:** atualizar sempre no fim de uma sessão de trabalho, com a data, o que foi feito por último, e o que falta ou vem a seguir. Serve como "cola rápida" pra saber onde retomar, sem precisar reconstruir o histórico inteiro de conversa.
+- `PublicProfile.tsx` ainda não recebeu as mesmas mudanças (múltiplos gêneros, Facebook/TikTok, bandeira) — só o `Profile.tsx` (perfil próprio) foi atualizado até agora.
+- Do backlog do professor, ainda faltam: revisar duplicação de informações no perfil (ponto 4), player de música via embed do Spotify (ponto 5), filtro de "Professor" na busca — decisão pendente (ponto 6), chat de suporte reaproveitando o sistema de chat (ponto 8).
+
+**Próximo passo sugerido:** Aplicar no `PublicProfile.tsx` as mesmas mudanças que já foram feitas no `Profile.tsx`, depois seguir pros itens médios do backlog do professor.
 
 ---
 

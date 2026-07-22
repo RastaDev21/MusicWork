@@ -36,5 +36,6 @@ export const genres = [
   "Eletrônico",
   "Clássico",
   "Bossa Nova",
+  "Todos os estilos",
   "Outro",
 ];

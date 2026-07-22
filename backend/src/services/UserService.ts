@@ -66,9 +66,13 @@ class UserService {
       coverUrl: user.coverUrl,
       presentationVideoUrl: user.presentationVideoUrl,
       genre: user.genre,
+      secondaryGenres: user.secondaryGenres,
+      nationality: user.nationality,
       instagram: user.instagram,
       youtube: user.youtube,
       spotify: user.spotify,
+      facebook: user.facebook,
+      tiktok: user.tiktok,
     };
   }
 
@@ -85,9 +89,13 @@ class UserService {
       coverUrl?: string | null;
       presentationVideoUrl?: string | null;
       genre?: string | null;
+      secondaryGenres?: string[];
+      nationality?: string | null;
       instagram?: string | null;
       youtube?: string | null;
       spotify?: string | null;
+      facebook?: string | null;
+      tiktok?: string | null;
     },
   ) {
     const user = await User.findByPk(id);
@@ -111,9 +119,13 @@ class UserService {
       coverUrl: user.coverUrl,
       presentationVideoUrl: user.presentationVideoUrl,
       genre: user.genre,
+      secondaryGenres: user.secondaryGenres,
+      nationality: user.nationality,
       instagram: user.instagram,
       youtube: user.youtube,
       spotify: user.spotify,
+      facebook: user.facebook,
+      tiktok: user.tiktok,
     };
   }
 
@@ -161,6 +173,7 @@ class UserService {
         "bio",
         "avatarUrl",
         "genre",
+        "nationality",
       ],
       limit: 20,
     });

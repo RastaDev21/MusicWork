@@ -15,9 +15,13 @@ class User extends Model {
   declare coverUrl: string | null;
   declare presentationVideoUrl: string | null;
   declare genre: string;
+  declare secondaryGenres: string[];
+  declare nationality: string | null;
   declare instagram: string | null;
   declare youtube: string | null;
   declare spotify: string | null;
+  declare facebook: string | null;
+  declare tiktok: string | null;
   declare resetPasswordToken: string | null;
   declare resetPasswordExpires: Date | null;
 }
@@ -79,6 +83,15 @@ User.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    secondaryGenres: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: [],
+    },
+    nationality: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     instagram: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -88,6 +101,14 @@ User.init(
       allowNull: true,
     },
     spotify: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    facebook: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    tiktok: {
       type: DataTypes.STRING,
       allowNull: true,
     },

@@ -60,9 +60,13 @@ class UserController {
         city,
         bio,
         genre,
+        secondaryGenres,
+        nationality,
         instagram,
         youtube,
         spotify,
+        facebook,
+        tiktok,
       } = request.body;
 
       const user = await UserService.updateUser(userId, {
@@ -73,9 +77,13 @@ class UserController {
         city,
         bio,
         genre,
+        secondaryGenres,
+        nationality,
         instagram,
         youtube,
         spotify,
+        facebook,
+        tiktok,
       });
 
       return response.status(200).json(user);
@@ -84,6 +92,7 @@ class UserController {
       return response.status(400).json({ error: err.message });
     }
   }
+
   async search(request: Request, response: Response) {
     try {
       const { q, instrument, genre, city } = request.query;

@@ -10,6 +10,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -18,6 +20,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api, { getImageUrl } from "../services/api";
 import { instruments, genres } from "../constants/musicOptions";
+import { countries, countryCodeToFlag } from "../constants/countries";
 interface Musician {
   id: string;
   name: string;
@@ -27,6 +30,8 @@ interface Musician {
   bio: string;
   avatarUrl: string | null;
   genre: string;
+  nationality?: string | null;
+  isProfessor?: boolean;
 }
 
 const selectSx = {
@@ -58,6 +63,8 @@ export default function Search() {
   const [instrument, setInstrument] = useState("");
   const [genre, setGenre] = useState("");
   const [city, setCity] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [isProfessor, setIsProfessor] = useState(false);
   const [results, setResults] = useState<Musician[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -67,9 +74,11 @@ export default function Search() {
     inst = instrument,
     gen = genre,
     cit = city,
+    nat = nationality,
+    prof = isProfessor,
   ) {
     // Busca se tiver texto OU algum filtro ativo
-    if (q.trim().length < 2 && !inst && !gen && !cit) {
+    if (q.trim().length < 2 && !inst && !gen && !cit && !nat && !prof) {
       setResults([]);
       setSearched(false);
       return;
@@ -82,6 +91,8 @@ export default function Search() {
       if (inst) params.append("instrument", inst);
       if (gen) params.append("genre", gen);
       if (cit.trim()) params.append("city", cit);
+      if (nat) params.append("nationality", nat);
+      if (prof) params.append("isProfessor", "true");
 
       const response = await api.get(`/users/search?${params.toString()}`);
       setResults(response.data);
@@ -103,24 +114,39 @@ export default function Search() {
 
   // Busca automática quando muda filtro
   function handleFilterChange(
-    type: "instrument" | "genre" | "city",
+    type: "instrument" | "genre" | "city" | "nationality",
     value: string,
   ) {
     if (type === "instrument") {
       setInstrument(value);
-      handleSearch(query, value, genre, city);
+      handleSearch(query, value, genre, city, nationality, isProfessor);
     }
     if (type === "genre") {
       setGenre(value);
-      handleSearch(query, instrument, value, city);
+      handleSearch(query, instrument, value, city, nationality, isProfessor);
     }
     if (type === "city") {
       setCity(value);
     }
+    if (type === "nationality") {
+      setNationality(value);
+      handleSearch(query, instrument, genre, city, value, isProfessor);
+    }
+  }
+
+  function handleProfessorChange(checked: boolean) {
+    setIsProfessor(checked);
+    handleSearch(query, instrument, genre, city, nationality, checked);
   }
 
   // Conta filtros ativos para mostrar badge
-  const activeFilters = [instrument, genre, city].filter(Boolean).length;
+  const activeFilters = [
+    instrument,
+    genre,
+    city,
+    nationality,
+    isProfessor ? "1" : "",
+  ].filter(Boolean).length;
 
   return (
     <Layout>
@@ -223,7 +249,47 @@ export default function Search() {
               "& input::placeholder": { color: "#666" },
             }}
           />
+
+          <FormControl size="small" sx={{ flex: 1, minWidth: 130 }}>
+            <InputLabel
+              sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}
+            >
+              País
+            </InputLabel>
+            <Select
+              value={nationality}
+              label="País"
+              onChange={e => handleFilterChange("nationality", e.target.value)}
+              sx={selectSx}
+              MenuProps={{ sx: menuSx }}
+            >
+              <MenuItem value="" sx={menuItemSx}>
+                Todos
+              </MenuItem>
+              {countries.map(c => (
+                <MenuItem key={c.code} value={c.code} sx={menuItemSx}>
+                  {countryCodeToFlag(c.code)} {c.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
+
+        {/* Filtro de professor - checkbox separado */}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isProfessor}
+              onChange={e => handleProfessorChange(e.target.checked)}
+              sx={{
+                color: "#666",
+                "&.Mui-checked": { color: "#7c4dff" },
+              }}
+            />
+          }
+          label="Só professores"
+          sx={{ color: "#ccc", mb: 1 }}
+        />
 
         {/* Limpar filtros — linha separada */}
         {activeFilters > 0 && (
@@ -234,7 +300,9 @@ export default function Search() {
                 setInstrument("");
                 setGenre("");
                 setCity("");
-                handleSearch(query, "", "", "");
+                setNationality("");
+                setIsProfessor(false);
+                handleSearch(query, "", "", "", "", false);
               }}
               sx={{
                 backgroundColor: "#ff4d6d22",
@@ -344,11 +412,28 @@ export default function Search() {
                       }}
                     />
                   )}
+                  {musician.isProfessor && (
+                    <Chip
+                      label="🎓 Professor"
+                      size="small"
+                      sx={{
+                        backgroundColor: "#4caf5022",
+                        color: "#4caf50",
+                        fontSize: 11,
+                        height: 20,
+                      }}
+                    />
+                  )}
                 </Box>
                 <Typography sx={{ color: "#666", fontSize: 12, mb: 0.5 }}>
                   {[musician.secondaryProfession, musician.city]
                     .filter(Boolean)
                     .join(" · ")}
+                  {musician.nationality && (
+                    <Box component="span" sx={{ ml: 0.5 }}>
+                      {countryCodeToFlag(musician.nationality)}
+                    </Box>
+                  )}
                 </Typography>
                 {musician.bio && (
                   <Typography

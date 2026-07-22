@@ -72,6 +72,7 @@ class UserService {
       youtube: user.youtube,
       spotify: user.spotify,
       favoriteSongUrl: user.favoriteSongUrl,
+      isProfessor: user.isProfessor,
       facebook: user.facebook,
       tiktok: user.tiktok,
     };
@@ -96,6 +97,7 @@ class UserService {
       youtube?: string | null;
       spotify?: string | null;
       favoriteSongUrl?: string | null;
+      isProfessor?: boolean;
       facebook?: string | null;
       tiktok?: string | null;
     },
@@ -127,6 +129,7 @@ class UserService {
       youtube: user.youtube,
       spotify: user.spotify,
       favoriteSongUrl: user.favoriteSongUrl,
+      isProfessor: user.isProfessor,
       facebook: user.facebook,
       tiktok: user.tiktok,
     };
@@ -137,9 +140,11 @@ class UserService {
     instrument?: string;
     genre?: string;
     city?: string;
+    nationality?: string;
+    isProfessor?: boolean;
   }) {
     const { Op, fn, col, where: sqlWhere } = require("sequelize");
-    const { query, instrument, genre, city } = params;
+    const { query, instrument, genre, city, nationality, isProfessor } = params;
 
     const conditions: any[] = [];
 
@@ -163,6 +168,8 @@ class UserService {
     if (instrument) conditions.push(unaccentLike("instrument", instrument));
     if (genre) conditions.push(unaccentLike("genre", genre));
     if (city) conditions.push(unaccentLike("city", city));
+    if (nationality) conditions.push({ nationality });
+    if (isProfessor) conditions.push({ isProfessor: true });
 
     const users = await User.findAll({
       where: conditions.length ? { [Op.and]: conditions } : {},
@@ -177,6 +184,7 @@ class UserService {
         "avatarUrl",
         "genre",
         "nationality",
+        "isProfessor",
       ],
       limit: 20,
     });

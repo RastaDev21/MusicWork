@@ -66,6 +66,7 @@ class UserController {
         youtube,
         spotify,
         favoriteSongUrl,
+        isProfessor,
         facebook,
         tiktok,
       } = request.body;
@@ -84,6 +85,7 @@ class UserController {
         youtube,
         spotify,
         favoriteSongUrl,
+        isProfessor,
         facebook,
         tiktok,
       });
@@ -97,13 +99,16 @@ class UserController {
 
   async search(request: Request, response: Response) {
     try {
-      const { q, instrument, genre, city } = request.query;
+      const { q, instrument, genre, city, nationality, isProfessor } =
+        request.query;
 
       const users = await UserService.searchUsers({
         query: q as string,
         instrument: instrument as string,
         genre: genre as string,
         city: city as string,
+        nationality: nationality as string,
+        isProfessor: isProfessor === "true",
       });
 
       return response.status(200).json(users);

@@ -14,6 +14,8 @@ import {
   FormControl,
   InputLabel,
   Autocomplete,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Layout from "../components/Layout/Layout";
@@ -130,6 +132,7 @@ export default function Profile() {
   const [youtube, setYoutube] = useState("");
   const [spotify, setSpotify] = useState("");
   const [favoriteSongUrl, setFavoriteSongUrl] = useState("");
+  const [isProfessor, setIsProfessor] = useState(false);
   const [facebook, setFacebook] = useState("");
   const [tiktok, setTiktok] = useState("");
 
@@ -175,6 +178,7 @@ export default function Profile() {
         setYoutube(profileRes.data.youtube || "");
         setSpotify(profileRes.data.spotify || "");
         setFavoriteSongUrl(profileRes.data.favoriteSongUrl || "");
+        setIsProfessor(profileRes.data.isProfessor || false);
         setFacebook(profileRes.data.facebook || "");
         setTiktok(profileRes.data.tiktok || "");
         setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
@@ -211,6 +215,7 @@ export default function Profile() {
         youtube,
         spotify,
         favoriteSongUrl,
+        isProfessor,
         facebook,
         tiktok,
       });
@@ -225,6 +230,7 @@ export default function Profile() {
       setSecondaryGenres(profileRes.data.secondaryGenres || []);
       setNationality(profileRes.data.nationality || "");
       setFavoriteSongUrl(profileRes.data.favoriteSongUrl || "");
+      setIsProfessor(profileRes.data.isProfessor || false);
       setFacebook(profileRes.data.facebook || "");
       setTiktok(profileRes.data.tiktok || "");
 
@@ -524,6 +530,17 @@ export default function Profile() {
                     sx={{
                       backgroundColor: "#ff4d6d22",
                       color: "#ff4d6d",
+                      fontSize: 11,
+                    }}
+                  />
+                )}
+                {isProfessor && (
+                  <Chip
+                    label="🎓 Professor"
+                    size="small"
+                    sx={{
+                      backgroundColor: "#4caf5022",
+                      color: "#4caf50",
                       fontSize: 11,
                     }}
                   />
@@ -995,6 +1012,22 @@ export default function Profile() {
             placeholder="Ex: Fotógrafo, Designer, Professor..."
             sx={{ ...inputSx, mb: 2 }}
           />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isProfessor}
+                onChange={e => setIsProfessor(e.target.checked)}
+                sx={{
+                  color: "#666",
+                  "&.Mui-checked": { color: "#7c4dff" },
+                }}
+              />
+            }
+            label="Dou aulas (aparecer como Professor na busca)"
+            sx={{ color: "#ccc", mb: 2, display: "flex" }}
+          />
+
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel
               sx={{ color: "#aaa", "&.Mui-focused": { color: "#7c4dff" } }}

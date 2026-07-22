@@ -40,6 +40,7 @@ interface Musician {
   facebook?: string | null;
   tiktok?: string | null;
   favoriteSongUrl?: string | null;
+  isProfessor?: boolean;
 }
 
 interface PinnedPost {
@@ -302,6 +303,17 @@ export default function PublicProfile() {
                     sx={{
                       backgroundColor: "#ff4d6d22",
                       color: "#ff4d6d",
+                      fontSize: 11,
+                    }}
+                  />
+                )}
+                {musician.isProfessor && (
+                  <Chip
+                    label="🎓 Professor"
+                    size="small"
+                    sx={{
+                      backgroundColor: "#4caf5022",
+                      color: "#4caf50",
                       fontSize: 11,
                     }}
                   />

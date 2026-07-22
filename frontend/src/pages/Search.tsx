@@ -17,6 +17,7 @@ import Layout from "../components/Layout/Layout";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api, { getImageUrl } from "../services/api";
+import { instruments, genres } from "../constants/musicOptions";
 interface Musician {
   id: string;
   name: string;
@@ -27,41 +28,6 @@ interface Musician {
   avatarUrl: string | null;
   genre: string;
 }
-
-const instruments = [
-  "Guitarra",
-  "Baixo",
-  "Bateria",
-  "Teclado",
-  "Violão",
-  "Voz",
-  "Saxofone",
-  "Trompete",
-  "Violino",
-  "Percussão",
-  "DJ",
-  "Produtor Musical",
-  "Outro",
-];
-
-const genres = [
-  "Rock",
-  "Samba",
-  "Jazz",
-  "MPB",
-  "Reggae",
-  "Funk",
-  "Forró",
-  "Pagode",
-  "Blues",
-  "Metal",
-  "Pop",
-  "Gospel",
-  "Eletrônico",
-  "Clássico",
-  "Bossa Nova",
-  "Outro",
-];
 
 const selectSx = {
   color: "#fff",

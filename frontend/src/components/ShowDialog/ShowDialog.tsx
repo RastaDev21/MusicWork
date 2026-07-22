@@ -15,26 +15,8 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { createShow, uploadShowFlyer } from "../../services/api";
+import { genres } from "../../constants/musicOptions";
 import { useSnackbar } from "notistack";
-
-const genres = [
-  "Rock",
-  "Samba",
-  "Jazz",
-  "MPB",
-  "Reggae",
-  "Funk",
-  "Forró",
-  "Pagode",
-  "Blues",
-  "Metal",
-  "Pop",
-  "Gospel",
-  "Eletrônico",
-  "Clássico",
-  "Bossa Nova",
-  "Outro",
-];
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {

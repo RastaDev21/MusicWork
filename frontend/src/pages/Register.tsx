@@ -19,27 +19,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../components/Logo/Logo";
 import { useAuth } from "../contexts/AuthContext";
-
-const instruments = [
-  "Guitarra",
-  "Baixo",
-  "Bateria",
-  "Teclado",
-  "Violão",
-  "Voz",
-  "Saxofone",
-  "Trompete",
-  "Trombone",
-  "Violino",
-  "Percussão",
-  "Triângulo",
-  "Zabumba",
-  "Sanfona / Acordeon",
-  "DJ",
-  "Produtor Musical",
-  "Técnico de som",
-  "Outro",
-];
+import { instruments } from "../constants/musicOptions";
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {

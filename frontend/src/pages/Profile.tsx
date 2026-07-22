@@ -36,6 +36,7 @@ import api, {
 import { useSnackbar } from "notistack";
 import { instruments, genres } from "../constants/musicOptions";
 import { countries, countryCodeToFlag } from "../constants/countries";
+import { getSpotifyEmbedUrl } from "../constants/spotify";
 
 interface Post {
   id: string;
@@ -128,6 +129,7 @@ export default function Profile() {
   const [instagram, setInstagram] = useState("");
   const [youtube, setYoutube] = useState("");
   const [spotify, setSpotify] = useState("");
+  const [favoriteSongUrl, setFavoriteSongUrl] = useState("");
   const [facebook, setFacebook] = useState("");
   const [tiktok, setTiktok] = useState("");
 
@@ -172,6 +174,7 @@ export default function Profile() {
         setInstagram(profileRes.data.instagram || "");
         setYoutube(profileRes.data.youtube || "");
         setSpotify(profileRes.data.spotify || "");
+        setFavoriteSongUrl(profileRes.data.favoriteSongUrl || "");
         setFacebook(profileRes.data.facebook || "");
         setTiktok(profileRes.data.tiktok || "");
         setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
@@ -207,6 +210,7 @@ export default function Profile() {
         instagram,
         youtube,
         spotify,
+        favoriteSongUrl,
         facebook,
         tiktok,
       });
@@ -220,6 +224,7 @@ export default function Profile() {
       setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
       setSecondaryGenres(profileRes.data.secondaryGenres || []);
       setNationality(profileRes.data.nationality || "");
+      setFavoriteSongUrl(profileRes.data.favoriteSongUrl || "");
       setFacebook(profileRes.data.facebook || "");
       setTiktok(profileRes.data.tiktok || "");
 
@@ -693,6 +698,23 @@ export default function Profile() {
                 </Box>
               )}
 
+              {getSpotifyEmbedUrl(favoriteSongUrl) && (
+                <Box
+                  component="iframe"
+                  src={getSpotifyEmbedUrl(favoriteSongUrl) || undefined}
+                  sx={{
+                    width: "100%",
+                    maxWidth: 400,
+                    height: 152,
+                    border: "none",
+                    borderRadius: 3,
+                    mt: 1.5,
+                  }}
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                />
+              )}
+
               <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
                 {[
                   { label: "Posts", value: posts.length },
@@ -1098,6 +1120,24 @@ export default function Profile() {
             placeholder="Ex: open.spotify.com/artist/..."
             sx={{ ...inputSx, mb: 2 }}
           />
+
+          <Typography sx={{ color: "#aaa", fontSize: 12, mt: 1, mb: 1 }}>
+            Música do perfil
+          </Typography>
+          <TextField
+            fullWidth
+            label="Link da faixa no Spotify"
+            value={favoriteSongUrl}
+            onChange={e => setFavoriteSongUrl(e.target.value)}
+            placeholder="Ex: open.spotify.com/track/..."
+            helperText="Toca direto no seu perfil. Troque quando quiser."
+            sx={{
+              ...inputSx,
+              mb: 2,
+              "& .MuiFormHelperText-root": { color: "#666" },
+            }}
+          />
+
           <TextField
             fullWidth
             label="Facebook (link ou usuário)"

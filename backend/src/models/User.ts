@@ -20,6 +20,7 @@ class User extends Model {
   declare instagram: string | null;
   declare youtube: string | null;
   declare spotify: string | null;
+  declare favoriteSongUrl: string | null;
   declare facebook: string | null;
   declare tiktok: string | null;
   declare resetPasswordToken: string | null;
@@ -101,6 +102,10 @@ User.init(
       allowNull: true,
     },
     spotify: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    favoriteSongUrl: {
       type: DataTypes.STRING,
       allowNull: true,
     },

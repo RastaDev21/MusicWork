@@ -65,6 +65,7 @@ class UserController {
         instagram,
         youtube,
         spotify,
+        favoriteSongUrl,
         facebook,
         tiktok,
       } = request.body;
@@ -82,6 +83,7 @@ class UserController {
         instagram,
         youtube,
         spotify,
+        favoriteSongUrl,
         facebook,
         tiktok,
       });

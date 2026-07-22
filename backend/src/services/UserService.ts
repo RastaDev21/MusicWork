@@ -71,6 +71,7 @@ class UserService {
       instagram: user.instagram,
       youtube: user.youtube,
       spotify: user.spotify,
+      favoriteSongUrl: user.favoriteSongUrl,
       facebook: user.facebook,
       tiktok: user.tiktok,
     };
@@ -94,6 +95,7 @@ class UserService {
       instagram?: string | null;
       youtube?: string | null;
       spotify?: string | null;
+      favoriteSongUrl?: string | null;
       facebook?: string | null;
       tiktok?: string | null;
     },
@@ -124,6 +126,7 @@ class UserService {
       instagram: user.instagram,
       youtube: user.youtube,
       spotify: user.spotify,
+      favoriteSongUrl: user.favoriteSongUrl,
       facebook: user.facebook,
       tiktok: user.tiktok,
     };

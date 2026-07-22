@@ -19,6 +19,7 @@ import api, {
 } from "../services/api";
 import { startConversation } from "../services/api";
 import { countryCodeToFlag } from "../constants/countries";
+import { getSpotifyEmbedUrl } from "../constants/spotify";
 
 interface Musician {
   id: string;
@@ -38,6 +39,7 @@ interface Musician {
   spotify: string | null;
   facebook?: string | null;
   tiktok?: string | null;
+  favoriteSongUrl?: string | null;
 }
 
 interface PinnedPost {
@@ -480,6 +482,26 @@ export default function PublicProfile() {
                   )}
                 </Box>
               )}
+
+              {musician.favoriteSongUrl &&
+                getSpotifyEmbedUrl(musician.favoriteSongUrl) && (
+                  <Box
+                    component="iframe"
+                    src={
+                      getSpotifyEmbedUrl(musician.favoriteSongUrl) || undefined
+                    }
+                    sx={{
+                      width: "100%",
+                      maxWidth: 400,
+                      height: 152,
+                      border: "none",
+                      borderRadius: 3,
+                      mt: 1.5,
+                    }}
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  />
+                )}
 
               <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
                 {[

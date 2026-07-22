@@ -8,5 +8,5 @@ export function getSpotifyEmbedUrl(spotify: string): string | null {
   if (!match) return null;
 
   const [, type, id] = match;
-  return `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
+  return `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0&autoplay=1`;
 }

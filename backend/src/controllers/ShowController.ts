@@ -4,7 +4,7 @@ import ShowService from "../services/ShowService";
 class ShowController {
   async create(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const { title, dateTime, city, genre, venue, description, flyerUrl } =
         request.body;
 
@@ -63,7 +63,7 @@ class ShowController {
   async update(request: Request<{ id: string }>, response: Response) {
     try {
       const { id } = request.params;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const { title, dateTime, city, genre, venue, description } = request.body;
 
       const show = await ShowService.updateShow(id, userId, {
@@ -85,7 +85,7 @@ class ShowController {
   async delete(request: Request<{ id: string }>, response: Response) {
     try {
       const { id } = request.params;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const result = await ShowService.deleteShow(id, userId);
       return response.status(200).json(result);

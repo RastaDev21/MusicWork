@@ -6,7 +6,7 @@ import NotificationService from "../services/NotificationService";
 export class CommentLikeController {
   async toggle(req: Request, res: Response) {
     try {
-      const userId = req.headers["userId"] as string;
+      const userId = req.userId as string;
       const { commentId } = req.params;
 
       const existingLike = await CommentLike.findOne({

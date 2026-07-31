@@ -4,7 +4,7 @@ import FollowService from "../services/FollowService";
 class FollowController {
   async toggle(request: Request, response: Response) {
     try {
-      const followerId = request.headers["userId"] as string;
+      const followerId = request.userId as string;
       const followingId = request.params.id as string;
       const result = await FollowService.toggle(followerId, followingId);
       return response.status(200).json(result);
@@ -15,7 +15,7 @@ class FollowController {
 
   async status(request: Request, response: Response) {
     try {
-      const followerId = request.headers["userId"] as string;
+      const followerId = request.userId as string;
       const followingId = request.params.id as string;
       const following = await FollowService.isFollowing(
         followerId,

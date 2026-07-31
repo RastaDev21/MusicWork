@@ -5,10 +5,12 @@ import WorkIcon from "@mui/icons-material/Work";
 import PersonIcon from "@mui/icons-material/Person";
 import { useNavigate, useLocation } from "react-router-dom";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatOutlined";
 
 const navItems = [
   { label: "Feed", icon: <HomeIcon />, path: "/feed" },
   { label: "Buscar", icon: <SearchIcon />, path: "/buscar" },
+  { label: "Mensagens", icon: <ChatBubbleOutlineIcon />, path: "/mensagens" },
   { label: "Agenda", icon: <CalendarMonthIcon />, path: "/agenda" },
   { label: "Work", icon: <WorkIcon />, path: "/work" },
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },

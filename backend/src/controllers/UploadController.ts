@@ -8,7 +8,7 @@ export class UploadController {
         return res.status(400).json({ error: "Nenhuma imagem enviada!" });
       }
 
-      const userId = req.headers["userId"] || req.headers["userid"];
+      const userId = req.userId;
       const avatarUrl = req.file.path;
 
       await User.update({ avatarUrl }, { where: { id: userId } });
@@ -25,7 +25,7 @@ export class UploadController {
         return res.status(400).json({ error: "Nenhuma imagem enviada!" });
       }
 
-      const userId = req.headers["userId"] || req.headers["userid"];
+      const userId = req.userId;
       const coverUrl = req.file.path;
 
       await User.update({ coverUrl }, { where: { id: userId } });
@@ -42,7 +42,7 @@ export class UploadController {
         return res.status(400).json({ error: "Nenhum vídeo enviado!" });
       }
 
-      const userId = req.headers["userId"] || req.headers["userid"];
+      const userId = req.userId;
       const presentationVideoUrl = req.file.path;
 
       await User.update({ presentationVideoUrl }, { where: { id: userId } });
@@ -55,7 +55,7 @@ export class UploadController {
 
   async deletePresentationVideo(req: Request, res: Response) {
     try {
-      const userId = req.headers["userId"] || req.headers["userid"];
+      const userId = req.userId;
       await User.update(
         { presentationVideoUrl: null },
         { where: { id: userId } },

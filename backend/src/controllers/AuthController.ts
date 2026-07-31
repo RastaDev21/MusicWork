@@ -67,7 +67,7 @@ class AuthController {
 
   async changeEmail(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const { currentPassword, newEmail } = request.body;
 
       if (!currentPassword || !newEmail) {
@@ -89,7 +89,7 @@ class AuthController {
 
   async changePassword(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const { currentPassword, newPassword } = request.body;
 
       if (!currentPassword || !newPassword) {

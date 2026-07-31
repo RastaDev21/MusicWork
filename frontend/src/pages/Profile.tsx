@@ -38,7 +38,9 @@ import api, {
 import { useSnackbar } from "notistack";
 import { instruments, genres } from "../constants/musicOptions";
 import { countries, countryCodeToFlag } from "../constants/countries";
-import { getSpotifyEmbedUrl } from "../constants/spotify";
+import SocialLinks from "../components/profile/SocialLinks";
+import SpotifyEmbed from "../components/profile/SpotifyEmbed";
+import ProfessorChip from "../components/profile/ProfessorChip";
 
 interface Post {
   id: string;
@@ -160,15 +162,14 @@ export default function Profile() {
     async function loadData() {
       try {
         const [postsRes, profileRes, followRes] = await Promise.all([
-          api.get("/posts"),
+          user?.id
+            ? api.get(`/posts/user/${user.id}`)
+            : Promise.resolve({ data: [] as Post[] }),
           api.get("/profile"),
           user?.id ? api.get(`/follows/${user.id}`) : Promise.resolve(null),
         ]);
 
-        const myPosts = postsRes.data.filter(
-          (post: Post) => post.User.name === user?.name,
-        );
-        setPosts(myPosts);
+        setPosts(postsRes.data);
         setBio(profileRes.data.bio || "");
         setAvatarUrl(profileRes.data.avatarUrl || null);
         setCoverUrl(profileRes.data.coverUrl || null);
@@ -264,11 +265,8 @@ export default function Profile() {
       } else {
         await pinPost(postId);
       }
-      const postsRes = await api.get("/posts");
-      const myPosts = postsRes.data.filter(
-        (post: Post) => post.User.name === user?.name,
-      );
-      setPosts(myPosts);
+      const postsRes = await api.get(`/posts/user/${user?.id}`);
+      setPosts(postsRes.data);
       loadPinned();
     } catch (error) {
       console.error("Erro ao fixar/desafixar post:", error);
@@ -534,17 +532,7 @@ export default function Profile() {
                     }}
                   />
                 )}
-                {isProfessor && (
-                  <Chip
-                    label="🎓 Professor"
-                    size="small"
-                    sx={{
-                      backgroundColor: "#4caf5022",
-                      color: "#4caf50",
-                      fontSize: 11,
-                    }}
-                  />
-                )}
+                {isProfessor && <ProfessorChip />}
                 {secondaryInstruments.map(inst => (
                   <Chip
                     key={inst}
@@ -585,152 +573,15 @@ export default function Profile() {
                 )}
               </Typography>
 
-              {(instagram || youtube || spotify || facebook || tiktok) && (
-                <Box sx={{ display: "flex", gap: 1.5, mt: 1.5 }}>
-                  {instagram && (
-                    <Box
-                      component="a"
-                      href={
-                        instagram.startsWith("http")
-                          ? instagram
-                          : `https://instagram.com/${instagram.replace("@", "")}`
-                      }
-                      target="_blank"
-                      sx={{
-                        display: "flex",
-                        color: "#E1306C",
-                        "&:hover": { opacity: 0.8 },
-                      }}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                      </svg>
-                    </Box>
-                  )}
-                  {youtube && (
-                    <Box
-                      component="a"
-                      href={
-                        youtube.startsWith("http")
-                          ? youtube
-                          : `https://youtube.com/${youtube}`
-                      }
-                      target="_blank"
-                      sx={{
-                        display: "flex",
-                        color: "#FF0000",
-                        "&:hover": { opacity: 0.8 },
-                      }}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z" />
-                      </svg>
-                    </Box>
-                  )}
-                  {spotify && (
-                    <Box
-                      component="a"
-                      href={
-                        spotify.startsWith("http")
-                          ? spotify
-                          : `https://open.spotify.com/artist/${spotify}`
-                      }
-                      target="_blank"
-                      sx={{
-                        display: "flex",
-                        color: "#1DB954",
-                        "&:hover": { opacity: 0.8 },
-                      }}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                      </svg>
-                    </Box>
-                  )}
-                  {facebook && (
-                    <Box
-                      component="a"
-                      href={
-                        facebook.startsWith("http")
-                          ? facebook
-                          : `https://facebook.com/${facebook}`
-                      }
-                      target="_blank"
-                      sx={{
-                        display: "flex",
-                        color: "#1877F2",
-                        "&:hover": { opacity: 0.8 },
-                      }}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-                      </svg>
-                    </Box>
-                  )}
-                  {tiktok && (
-                    <Box
-                      component="a"
-                      href={
-                        tiktok.startsWith("http")
-                          ? tiktok
-                          : `https://tiktok.com/@${tiktok.replace("@", "")}`
-                      }
-                      target="_blank"
-                      sx={{
-                        display: "flex",
-                        color: "#fff",
-                        "&:hover": { opacity: 0.8 },
-                      }}
-                    >
-                      <svg
-                        width="22"
-                        height="22"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.43 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-                      </svg>
-                    </Box>
-                  )}
-                </Box>
-              )}
+              <SocialLinks
+                instagram={instagram}
+                youtube={youtube}
+                spotify={spotify}
+                facebook={facebook}
+                tiktok={tiktok}
+              />
 
-              {getSpotifyEmbedUrl(favoriteSongUrl) && (
-                <Box
-                  component="iframe"
-                  src={getSpotifyEmbedUrl(favoriteSongUrl) || undefined}
-                  sx={{
-                    width: "100%",
-                    maxWidth: 400,
-                    height: 152,
-                    border: "none",
-                    borderRadius: 3,
-                    mt: 1.5,
-                  }}
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                />
-              )}
+              <SpotifyEmbed url={favoriteSongUrl} />
 
               <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
                 {[

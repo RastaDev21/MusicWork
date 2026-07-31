@@ -1,9 +1,10 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import NewPost from "../components/NewPost/NewPost";
 import api, { pinPost, unpinPost } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Post {
   id: string;
@@ -37,22 +38,40 @@ function timeAgo(date: string) {
 }
 
 export default function Feed() {
+  const PAGE_SIZE = 20;
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const currentUser = JSON.parse(
-    localStorage.getItem("musicwork_user") || "{}",
-  );
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const { user: currentUser } = useAuth();
+
   async function loadPosts() {
     const token = localStorage.getItem("musicwork_token");
     if (!token) return;
 
     try {
-      const response = await api.get("/posts");
+      const response = await api.get(`/posts?limit=${PAGE_SIZE}&offset=0`);
       setPosts(response.data);
+      setHasMore(response.data.length === PAGE_SIZE);
     } catch (error) {
       console.error("Erro ao carregar posts:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const response = await api.get(
+        `/posts?limit=${PAGE_SIZE}&offset=${posts.length}`,
+      );
+      setPosts(prev => [...prev, ...response.data]);
+      setHasMore(response.data.length === PAGE_SIZE);
+    } catch (error) {
+      console.error("Erro ao carregar mais posts:", error);
+    } finally {
+      setLoadingMore(false);
     }
   }
   async function handleDelete(postId: string) {
@@ -126,6 +145,22 @@ export default function Feed() {
               avatarUrl={post.User.avatarUrl}
             />
           ))
+        )}
+
+        {!loading && hasMore && posts.length > 0 && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 1, mb: 2 }}>
+            <Button
+              onClick={loadMore}
+              disabled={loadingMore}
+              sx={{
+                color: "#7c4dff",
+                border: "1px solid #7c4dff",
+                "&:hover": { backgroundColor: "#7c4dff11" },
+              }}
+            >
+              {loadingMore ? "Carregando..." : "Carregar mais"}
+            </Button>
+          </Box>
         )}
       </Box>
     </Layout>

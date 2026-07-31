@@ -31,6 +31,7 @@ const genreColors: Record<string, string> = {
   Eletrônico: "#4361ee",
   Clássico: "#7209b7",
   "Bossa Nova": "#2a9d8f",
+  "Todos os estilos": "#7c4dff",
   Outro: "#7c4dff",
 };
 

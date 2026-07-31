@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import Work from "../models/Work";
 import User from "../models/User";
 
@@ -17,8 +18,24 @@ class WorkService {
     return work;
   }
 
-  async listWorks() {
+  async listWorks(
+    filters: {
+      type?: string;
+      category?: string;
+      city?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) {
+    const { type, category, city, limit = 20, offset = 0 } = filters;
+
+    const where: any = {};
+    if (type && type !== "all") where.type = type;
+    if (category) where.category = category;
+    if (city) where.city = { [Op.iLike]: `%${city}%` };
+
     const works = await Work.findAll({
+      where,
       include: [
         {
           model: User,
@@ -26,6 +43,8 @@ class WorkService {
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
     });
     return works;
   }

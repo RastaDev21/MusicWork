@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
@@ -239,7 +240,11 @@ export default function Register() {
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Link href="/" sx={{ color: "#7c4dff", fontSize: 14 }}>
+            <Link
+              component={RouterLink}
+              to="/"
+              sx={{ color: "#7c4dff", fontSize: 14 }}
+            >
               Já tem conta? Entrar
             </Link>
           </Box>

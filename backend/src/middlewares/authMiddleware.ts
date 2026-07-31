@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../config/auth";
 
 interface TokenPayload {
   id: string;
@@ -21,11 +22,8 @@ export function authMiddleware(
   const token = parts[1];
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "default_secret",
-    ) as TokenPayload;
-    request.headers["userId"] = decoded.id;
+    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    request.userId = decoded.id;
     return next();
   } catch {
     return response.status(401).json({ error: "Token inválido" });

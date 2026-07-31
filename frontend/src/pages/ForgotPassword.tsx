@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
@@ -144,7 +144,11 @@ export default function ForgotPassword() {
               </Button>
 
               <Box sx={{ textAlign: "center", mt: 2 }}>
-                <Link href="/" sx={{ color: "#7c4dff", fontSize: 14 }}>
+                <Link
+                  component={RouterLink}
+                  to="/"
+                  sx={{ color: "#7c4dff", fontSize: 14 }}
+                >
                   Voltar ao login
                 </Link>
               </Box>

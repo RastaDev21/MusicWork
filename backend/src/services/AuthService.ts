@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Op } from "sequelize";
 import EmailService from "./EmailService";
+import { JWT_SECRET } from "../config/auth";
 
 class AuthService {
   async login(email: string, password: string) {
@@ -21,11 +22,9 @@ class AuthService {
       throw new Error("Email ou senha inválidos");
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "default_secret",
-      { expiresIn: "7d" },
-    );
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     return {
       token,
@@ -41,7 +40,6 @@ class AuthService {
 
   async forgotPassword(email: string) {
     const user = await User.findOne({ where: { email } });
-    console.log("Usuário encontrado?", user ? user.email : "NÃO ENCONTRADO");
 
     if (!user) {
       return {
@@ -57,14 +55,8 @@ class AuthService {
     user.resetPasswordExpires = expires;
     await user.save();
 
-    console.log("Tentando enviar email via Resend...");
     try {
-      const result = await EmailService.sendPasswordReset(
-        user.email,
-        user.name,
-        token,
-      );
-      console.log("Resend respondeu:", result);
+      await EmailService.sendPasswordReset(user.email, user.name, token);
     } catch (emailError) {
       console.error("ERRO AO ENVIAR EMAIL:", emailError);
     }

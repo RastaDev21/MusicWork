@@ -4,7 +4,7 @@ import CommentService from "../services/CommentService";
 class CommentController {
   async create(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const postId = request.params.postId as string;
       const { content, parentId } = request.body;
 
@@ -29,7 +29,7 @@ class CommentController {
   async list(request: Request, response: Response) {
     try {
       const postId = request.params.postId as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const comments = await CommentService.listByPost(postId, userId);
       return response.status(200).json(comments);
     } catch (error: any) {
@@ -39,7 +39,7 @@ class CommentController {
 
   async delete(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const commentId = request.params.id as string;
       const result = await CommentService.delete(commentId, userId);
       return response.status(200).json(result);

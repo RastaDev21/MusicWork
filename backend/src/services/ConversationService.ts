@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, fn, col } from "sequelize";
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import User from "../models/User";
@@ -39,19 +39,34 @@ class ConversationService {
       ],
     });
 
-    const result = await Promise.all(
-      conversations.map(async conv => {
-        const lastMessage = await Message.findOne({
-          where: { conversationId: conv.id },
-          order: [["createdAt", "DESC"]],
-        });
+    const conversationIds = conversations.map(c => c.id);
 
-        const unreadCount = await Message.count({
+    // Uma única query agregada para todas as contagens de não lidas (evita N+1).
+    const unreadRows = conversationIds.length
+      ? ((await Message.findAll({
           where: {
-            conversationId: conv.id,
+            conversationId: { [Op.in]: conversationIds },
             senderId: { [Op.ne]: userId },
             read: false,
           },
+          attributes: ["conversationId", [fn("COUNT", col("id")), "count"]],
+          group: ["conversationId"],
+          raw: true,
+        })) as unknown as { conversationId: string; count: string }[])
+      : [];
+
+    const unreadByConversation = new Map<string, number>();
+    for (const row of unreadRows) {
+      unreadByConversation.set(row.conversationId, Number(row.count));
+    }
+
+    const result = await Promise.all(
+      conversations.map(async conv => {
+        // Última mensagem ainda é por conversa (LIMIT 1 indexado);
+        // pode virar um DISTINCT ON único se um dia for gargalo.
+        const lastMessage = await Message.findOne({
+          where: { conversationId: conv.id },
+          order: [["createdAt", "DESC"]],
         });
 
         const otherUser =
@@ -63,7 +78,7 @@ class ConversationService {
           id: conv.id,
           otherUser,
           lastMessage,
-          unreadCount,
+          unreadCount: unreadByConversation.get(conv.id) || 0,
         };
       }),
     );

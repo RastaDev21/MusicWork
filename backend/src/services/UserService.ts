@@ -1,5 +1,33 @@
+import { Op, fn, col, where as sqlWhere } from "sequelize";
 import User from "../models/User";
 import bcrypt from "bcrypt";
+
+// Projeção pública do perfil (sem email nem campos sensíveis).
+// Usada no endpoint /users/:id, consumido por qualquer usuário autenticado.
+function toPublicProfile(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    instrument: user.instrument,
+    secondaryInstruments: user.secondaryInstruments,
+    secondaryProfession: user.secondaryProfession,
+    city: user.city,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+    coverUrl: user.coverUrl,
+    presentationVideoUrl: user.presentationVideoUrl,
+    genre: user.genre,
+    secondaryGenres: user.secondaryGenres,
+    nationality: user.nationality,
+    instagram: user.instagram,
+    youtube: user.youtube,
+    spotify: user.spotify,
+    favoriteSongUrl: user.favoriteSongUrl,
+    isProfessor: user.isProfessor,
+    facebook: user.facebook,
+    tiktok: user.tiktok,
+  };
+}
 
 class UserService {
   async createUser(data: {
@@ -46,6 +74,7 @@ class UserService {
     };
   }
 
+  // Perfil próprio (autenticado): inclui email.
   async findById(id: string) {
     const user = await User.findByPk(id);
 
@@ -53,29 +82,18 @@ class UserService {
       throw new Error("Usuário não encontrado");
     }
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      instrument: user.instrument,
-      secondaryInstruments: user.secondaryInstruments,
-      secondaryProfession: user.secondaryProfession,
-      city: user.city,
-      bio: user.bio,
-      avatarUrl: user.avatarUrl,
-      coverUrl: user.coverUrl,
-      presentationVideoUrl: user.presentationVideoUrl,
-      genre: user.genre,
-      secondaryGenres: user.secondaryGenres,
-      nationality: user.nationality,
-      instagram: user.instagram,
-      youtube: user.youtube,
-      spotify: user.spotify,
-      favoriteSongUrl: user.favoriteSongUrl,
-      isProfessor: user.isProfessor,
-      facebook: user.facebook,
-      tiktok: user.tiktok,
-    };
+    return { ...toPublicProfile(user), email: user.email };
+  }
+
+  // Perfil de terceiros (/users/:id): sem email.
+  async findPublicById(id: string) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return toPublicProfile(user);
   }
 
   async updateUser(
@@ -143,7 +161,6 @@ class UserService {
     nationality?: string;
     isProfessor?: boolean;
   }) {
-    const { Op, fn, col, where: sqlWhere } = require("sequelize");
     const { query, instrument, genre, city, nationality, isProfessor } = params;
 
     const conditions: any[] = [];

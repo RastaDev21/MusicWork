@@ -39,7 +39,7 @@ class UserController {
   }
   async profile(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const user = await UserService.findById(userId);
 
@@ -51,7 +51,7 @@ class UserController {
 
   async update(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const {
         name,
         instrument,
@@ -119,7 +119,7 @@ class UserController {
   async show(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const user = await UserService.findById(id);
+      const user = await UserService.findPublicById(id);
       return response.status(200).json(user);
     } catch (error: any) {
       return response.status(404).json({ error: error.message });

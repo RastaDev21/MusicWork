@@ -4,7 +4,7 @@ import WorkService from "../services/WorkService";
 class WorkController {
   async create(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const {
         type,
         title,
@@ -42,7 +42,14 @@ class WorkController {
 
   async list(request: Request, response: Response) {
     try {
-      const works = await WorkService.listWorks();
+      const { type, category, city, limit, offset } = request.query;
+      const works = await WorkService.listWorks({
+        type: type as string,
+        category: category as string,
+        city: city as string,
+        limit: Math.min(Number(limit) || 20, 50),
+        offset: Number(offset) || 0,
+      });
       return response.status(200).json(works);
     } catch (error: any) {
       return response.status(400).json({ error: error.message });
@@ -52,7 +59,7 @@ class WorkController {
   async delete(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const result = await WorkService.deleteWork(id, userId);
       return response.status(200).json(result);
@@ -64,7 +71,7 @@ class WorkController {
   async update(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const {
         type,
         title,
@@ -75,10 +82,8 @@ class WorkController {
         subcategory,
         contact,
       } = request.body;
-      request.body;
 
-      const work = await WorkService.createWork({
-        userId,
+      const work = await WorkService.updateWork(id, userId, {
         type,
         title,
         description,

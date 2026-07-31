@@ -22,6 +22,7 @@ import {
   uploadMessageImage,
   uploadMessageVideo,
   getImageUrl,
+  listConversations,
   ChatMessage,
 } from "../services/api";
 
@@ -45,7 +46,13 @@ export default function Chat() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [otherUser, setOtherUser] = useState<{
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(0);
 
   async function loadMessages() {
     if (!id) return;
@@ -66,8 +73,28 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Identidade do interlocutor vem da conversa, não das mensagens —
+  // assim o cabeçalho aparece mesmo antes de o outro lado responder.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    async function loadOtherUser() {
+      if (!id) return;
+      try {
+        const convs = await listConversations();
+        const conv = convs.find(c => c.id === id);
+        if (conv) setOtherUser(conv.otherUser);
+      } catch (error) {
+        console.error("Erro ao carregar conversa:", error);
+      }
+    }
+    loadOtherUser();
+  }, [id]);
+
+  // Só rola pro fim quando chega mensagem nova, não a cada refresh do polling.
+  useEffect(() => {
+    if (messages.length > prevCountRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevCountRef.current = messages.length;
   }, [messages]);
 
   function handleSelectImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -131,8 +158,6 @@ export default function Chat() {
       setSending(false);
     }
   }
-
-  const otherUser = messages.find(m => m.senderId !== user?.id)?.sender;
 
   return (
     <Layout>

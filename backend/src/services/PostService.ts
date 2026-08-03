@@ -3,6 +3,34 @@ import User from "../models/User";
 import Like from "../models/Like";
 import Comment from "../models/Comment";
 
+// Include e formatação compartilhados pelas 3 consultas de post
+// (feed, perfil, post fixado) — evita repetir a mesma projeção.
+const POST_INCLUDE = [
+  {
+    model: User,
+    attributes: [
+      "id",
+      "name",
+      "instrument",
+      "secondaryProfession",
+      "city",
+      "avatarUrl",
+    ],
+  },
+  { model: Like, attributes: ["userId"] },
+  { model: Comment, attributes: ["id"] },
+];
+
+function formatPost(post: any, currentUserId?: string) {
+  const likes = post.Likes || [];
+  return {
+    ...post.toJSON(),
+    likesCount: likes.length,
+    likedByMe: likes.some((like: any) => like.userId === currentUserId),
+    commentsCount: (post.Comments || []).length,
+  };
+}
+
 class PostService {
   async createPost(
     content: string,
@@ -28,78 +56,37 @@ class PostService {
     return post;
   }
 
-  async listPosts(currentUserId?: string) {
+  async listPosts(currentUserId?: string, limit = 20, offset = 0) {
     const posts = await Post.findAll({
-      include: [
-        {
-          model: User,
-          attributes: [
-            "id",
-            "name",
-            "instrument",
-            "secondaryProfession",
-            "city",
-            "avatarUrl",
-          ],
-        },
-        {
-          model: Like,
-          attributes: ["userId"],
-        },
-        {
-          model: Comment,
-          attributes: ["id"],
-        },
-      ],
+      include: POST_INCLUDE,
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+    });
+
+    return posts.map(post => formatPost(post, currentUserId));
+  }
+
+  // Posts de um usuário específico (perfil próprio e público).
+  async listByUser(userId: string, currentUserId?: string) {
+    const posts = await Post.findAll({
+      where: { userId },
+      include: POST_INCLUDE,
       order: [["createdAt", "DESC"]],
     });
 
-    return posts.map(post => {
-      const likes = (post as any).Likes || [];
-      return {
-        ...post.toJSON(),
-        likesCount: likes.length,
-        likedByMe: likes.some((like: any) => like.userId === currentUserId),
-        commentsCount: ((post as any).Comments || []).length,
-      };
-    });
+    return posts.map(post => formatPost(post, currentUserId));
   }
 
   async getPinnedPost(userId: string, currentUserId?: string) {
     const post = await Post.findOne({
       where: { userId, isPinned: true },
-      include: [
-        {
-          model: User,
-          attributes: [
-            "id",
-            "name",
-            "instrument",
-            "secondaryProfession",
-            "city",
-            "avatarUrl",
-          ],
-        },
-        {
-          model: Like,
-          attributes: ["userId"],
-        },
-        {
-          model: Comment,
-          attributes: ["id"],
-        },
-      ],
+      include: POST_INCLUDE,
     });
 
     if (!post) return null;
 
-    const likes = (post as any).Likes || [];
-    return {
-      ...post.toJSON(),
-      likesCount: likes.length,
-      likedByMe: likes.some((like: any) => like.userId === currentUserId),
-      commentsCount: ((post as any).Comments || []).length,
-    };
+    return formatPost(post, currentUserId);
   }
 
   async pinPost(postId: string, userId: string) {

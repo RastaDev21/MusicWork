@@ -1,23 +1,41 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 22/07/2026)
+## 🔄 Onde paramos (última atualização: 31/07/2026)
 
-**Última feature entregue:** Seguimos o backlog de sugestões do professor Fábio — entregamos os itens médios que faltavam: `PublicProfile.tsx` recebeu as mesmas mudanças do `Profile.tsx` (múltiplos gêneros, Facebook/TikTok, bandeira), opção "Todos os estilos" no gênero principal, player de música do perfil via embed do Spotify (`favoriteSongUrl`, separado do link de artista já existente), filtro de país na busca, e o campo "Professor" (`isProfessor`) com filtro dedicado na busca.
+**Última sessão:** Revisão de código do projeto inteiro (auditoria estática dos 82 arquivos, ~11k linhas) + correção dos achados nas 4 categorias — bugs/edge cases, arquitetura, nitpicks e decisões. Não teve feature nova: foi uma rodada de qualidade e hardening. Detalhes de cada decisão estão nas Convenções de código lá embaixo.
 
-**Decisões tomadas hoje:**
+**Bugs corrigidos:**
 
-- O "Todos" pra selecionar todos os gêneros de uma vez ficou só como ideia descartada — em vez disso, "Todos os estilos" virou uma opção normal de gênero principal (evita conflito com o "Todos" que já existia no filtro de busca, que significa "sem filtro").
-- Player do perfil usa um campo novo (`favoriteSongUrl`), separado do campo `spotify` (que continua sendo só o link do artista pra divulgação). São conceitos diferentes: um é "quem eu sou" no Spotify, o outro é "uma música que estou destacando agora".
-- Ponto 6 do backlog (filtro de Professor): decidimos pela Opção B — campo explícito `isProfessor` no perfil, em vez de reaproveitar a categoria "Aula" do Work. Mantém Busca e Work como sistemas independentes, sem acoplar identidade do músico a um item de marketplace.
+- 🛑 **Editar um Work criava um duplicado** — `WorkController.update` chamava `createWork` em vez de `updateWork` (o `id` da rota era ignorado). Agora atualiza de verdade.
+- 🛑 **`GET /users/:id` vazava o email** — o perfil público reusava a projeção do perfil próprio. Criada projeção pública (`findPublicById` / `toPublicProfile`, sem email); o `/profile` do próprio usuário mantém o email.
+- ⚠️ **Perfil filtrava os próprios posts por nome** (quebrava com homônimos/rename) → agora por `userId`, via endpoint dedicado `/posts/user/:id`.
+- ⚠️ **Chat sem cabeçalho** quando só você tinha mandado mensagem → nome/avatar vêm da conversa (`listConversations`), não das mensagens.
+- ⚠️ **Chat forçava scroll pro fim a cada 4s** (polling) → só rola quando chega mensagem nova.
+- ⚠️ **"Novo work" abria poluído após cancelar uma edição** → reset centralizado (`resetForm` / `handleCloseDialog`).
+- ⚠️ **Compartilhar post gerava link morto** (`/post/:id` não existe) → copia o link do perfil do autor via `window.location.origin`.
 
-**Status:** Todos os commits já foram enviados e testados localmente (backend: model/service/controller do User; frontend: Profile.tsx, PublicProfile.tsx, Search.tsx, musicOptions.ts, e o novo constants/spotify.ts). Backend e frontend compilam sem erros (`tsc --noEmit`).
+**Arquitetura / manutenção:**
 
-**Pendente do backlog do professor:**
+- Removidas as rotas duplicadas (`app.use` repetido de follow/comment/notification) no `server.ts`.
+- **Paginação** no Feed e no Work (`limit`/`offset` no backend, botão "Carregar mais" no frontend) — acabou o `findAll` na tabela inteira. Filtros do Work passaram a ser server-side (debounce na cidade).
+- **Componentes de perfil compartilhados** (`SocialLinks`, `SpotifyEmbed`, `ProfessorChip`) — antes o JSX era copiado entre `Profile` e `PublicProfile`.
+- Lista de gêneros unificada de vez (o `Agenda.tsx` ainda mantinha cópia própria).
+- `Feed`/`Work` passaram a usar `useAuth()` em vez de ler o `localStorage` direto.
+- **`userId` agora fica em `req.userId`** (augmentation em `@types/express.d.ts`), não mais em `req.headers`.
+- N+1 na lista de conversas reduzido (contagem de não lidas numa query agregada).
 
-- Revisar duplicação de informações no perfil (ponto 4) — instrumento/gênero/secundários/professor todos numa linha só de chips, ficou bem cheia; card de detalhes repete algumas dessas infos.
-- Chat de suporte reaproveitando o sistema de chat existente, com conta fixa de suporte (ponto 8).
+**Nitpicks / decisões:**
 
-**Próximo passo sugerido:** Começar pelo ponto 4 (reorganizar os chips do cabeçalho do perfil), já que os pontos 5 e 6 aumentaram a quantidade de informação ali e deixaram mais evidente a bagunça visual.
+- Links das telas de auth viraram `RouterLink` (sem full reload); logs de debug removidos do `forgotPassword`; `require("sequelize")` inline virou import de topo.
+- **`JWT_SECRET` agora é obrigatório no boot** (`config/auth.ts` aborta o servidor se faltar — acabou o fallback `default_secret`).
+- Contato do Work trata **números internacionais** (respeita `+`/código de país).
+- "Mensagens" adicionado ao menu inferior do mobile (6 abas).
+
+**Status:** Backend e frontend compilam sem erros (`tsc --noEmit`). As mudanças ainda **não foram commitadas** — estão no working tree, aguardando teste manual. Pontos que dependem do banco (paginação/filtros do Work, `/posts/user/:id`, contagem de não lidas) pedem um smoke-test em runtime.
+
+**Pendente do backlog do professor:** ponto 4 (revisar duplicação de infos no perfil) e ponto 8 (chat de suporte com conta fixa) — ver seção "Feedback do professor Fábio".
+
+**Próximo passo sugerido:** Testar localmente as mudanças da revisão e, na sequência, atacar o ponto 4 do backlog (reorganizar os chips do cabeçalho do perfil).
 
 ---
 
@@ -46,7 +64,8 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 musicwork/
 ├── backend/
 │ └── src/
-│ ├── config/ (cloudinary.ts)
+│ ├── @types/ (express.d.ts — tipa req.userId no Request do Express)
+│ ├── config/ (cloudinary.ts; auth.ts — valida JWT_SECRET no boot)
 │ ├── controllers/ (AuthController, UserController, PostController, UploadController, LikeController, CommentLikeController, WorkController, FollowController, CommentController, NotificationController, ShowController, ConversationController)
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
 │ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification, Show, Conversation, Message)
@@ -55,7 +74,7 @@ musicwork/
 │ └── server.ts
 └── frontend/
 └── src/
-├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo)
+├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, SpotifyEmbed, ProfessorChip compartilhados entre Profile/PublicProfile/Search)
 ├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; spotify.ts — helper de embed)
 ├── contexts/ (AuthContext)
 ├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
@@ -274,7 +293,7 @@ npm run dev
 ### Backend (.env)
 
 PORT=3333
-JWT_SECRET=sua_chave
+JWT_SECRET=sua_chave  # obrigatória — o servidor não sobe sem ela (config/auth.ts)
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173,https://musicwork.com.br,https://www.musicwork.com.br,https://music-work.vercel.app
 DATABASE_URL=postgresql://...
@@ -309,7 +328,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
   Esquecer qualquer um desses passos é a causa mais comum de bug tipo "por que essa tabela não existe?" ou "por que essa relação não carrega?". Não usamos `sequelize-cli` / pasta `migrations/` (que existe mas está obsoleta) — o schema é gerenciado só pelo `sync({ alter: true })` direto no server.ts.
 
-- **Autenticação via `request.headers["userId"]`:** o `authMiddleware` decodifica o JWT e injeta o ID do usuário logado em `request.headers["userId"]` (não em `req.user.id`, que seria o padrão mais comum em outros projetos Express). Todos os controllers que precisam saber quem está logado leem daí.
+- **Autenticação via `request.userId`:** o `authMiddleware` decodifica o JWT e injeta o ID do usuário logado em `request.userId`, tipado por augmentation em `backend/src/@types/express.d.ts`. Todos os controllers que precisam saber quem está logado leem daí. (Até jul/2026 isso ficava em `request.headers["userId"]`; foi migrado para `req.userId` por ser dado de aplicação, não header HTTP — e isso passou a alimentar corretamente o `public_id` dos uploads no `uploadMiddleware`, que já lia `req.userId`.)
 
 - **Notificações nunca disparam para si mesmo:** regra centralizada em `NotificationService.create` (`if (recipientId === senderId) return null`). Qualquer novo tipo de notificação que for criado no futuro já herda essa proteção automaticamente, sem precisar reimplementar a checagem em cada lugar que dispara notificação.
 
@@ -341,6 +360,24 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **`isProfessor` é campo explícito no perfil, não derivado do Work:** decisão consciente (ponto 6 do backlog do professor) de manter Busca e Work como sistemas independentes. Um músico pode ser professor sem nunca ter criado um Work de categoria "Aula", e vice-versa — são conceitos diferentes (identidade do músico vs. oferta pontual de serviço). Não cruzar as duas tabelas pra derivar esse campo.
 
+### Convenções vindas da revisão de código (jul/2026)
+
+- **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
+
+- **Filtros do Work são server-side:** tipo, categoria e cidade vão como query params pro `/works` (cidade usa `Op.iLike` — "contém" ignorando caixa, mas **não** acento). O `Work.tsx` refaz a busca ao mudar filtro, com debounce de 300ms na cidade (texto livre). Antes tudo era filtrado no frontend sobre a lista inteira.
+
+- **Posts de um usuário via `/posts/user/:id`:** o perfil (próprio e público) puxa os posts desse endpoint dedicado, em vez de baixar `/posts` inteiro e filtrar no cliente. O `/posts` (feed) é global e paginado. Filtrar posts por nome de usuário no frontend era bug (quebrava com homônimos/rename) — sempre usar o `userId`.
+
+- **`GET /users/:id` não retorna email:** o perfil de terceiros usa `UserService.findPublicById` (projeção `toPublicProfile`, sem email nem campos sensíveis). Só o `/profile` do próprio usuário autenticado (`findById`) inclui email. Não voltar a reusar o `findById` no endpoint público.
+
+- **Componentes de perfil compartilhados (`frontend/src/components/profile/`):** `SocialLinks` (ícones de rede social + lógica de href), `SpotifyEmbed` (player da música do perfil) e `ProfessorChip` são usados por `Profile`, `PublicProfile` e `Search`. Antes esse JSX (com os SVGs inline) era copiado entre as telas — ao mexer no visual, mexer no componente, não em cada página.
+
+- **`JWT_SECRET` é obrigatório no boot:** `backend/src/config/auth.ts` valida a env e **aborta o servidor** se ela faltar (com mensagem clara). Não existe mais o fallback `"default_secret"` (que tornava tokens forjáveis). O middleware e o `AuthService` importam `JWT_SECRET` desse módulo, nunca lêem `process.env` direto.
+
+- **Contato do Work trata número internacional:** `toWhatsappNumber` (`Work.tsx`) só prefixa `55` quando o contato parece um número brasileiro local; se já vier com `+` ou 12+ dígitos (código de país incluso), usa como está. Evita link errado de WhatsApp pra músicos de fora.
+
+- **Contagem de não lidas do chat é agregada:** `ConversationService.listConversations` busca todas as contagens de não lidas numa query só (`GROUP BY conversationId`), em vez de um `count` por conversa. A última mensagem por conversa ainda é um `findOne` por conversa — se um dia virar gargalo, dá pra trocar por um `DISTINCT ON`.
+
 ## Notas importantes
 
 - **Banco único:** local e produção usam o mesmo banco Neon (ver TECH_DEBT.md)
@@ -351,3 +388,5 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
 - **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
 - **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)
+- **`JWT_SECRET` obrigatório:** desde a revisão de jul/2026 o backend aborta o boot se a variável não estiver definida (sem fallback `default_secret`) — garantir que ela esteja no Render e no `.env` local. Ver Convenções de código.
+- **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.

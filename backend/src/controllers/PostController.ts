@@ -5,7 +5,7 @@ class PostController {
   async create(request: Request, response: Response) {
     try {
       const { content, videoUrl, imageUrl } = request.body;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const post = await PostService.createPost(
         content,
@@ -23,9 +23,25 @@ class PostController {
 
   async list(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
+      const limit = Math.min(Number(request.query.limit) || 20, 50);
+      const offset = Number(request.query.offset) || 0;
 
-      const posts = await PostService.listPosts(userId);
+      const posts = await PostService.listPosts(userId, limit, offset);
+
+      return response.status(200).json(posts);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
+
+  async listByUser(request: Request, response: Response) {
+    try {
+      const targetUserId = request.params.userId as string;
+      const currentUserId = request.userId as string;
+
+      const posts = await PostService.listByUser(targetUserId, currentUserId);
 
       return response.status(200).json(posts);
     } catch (error: unknown) {
@@ -37,7 +53,7 @@ class PostController {
   async getPinned(request: Request, response: Response) {
     try {
       const targetUserId = request.params.userId as string;
-      const currentUserId = request.headers["userId"] as string;
+      const currentUserId = request.userId as string;
 
       const post = await PostService.getPinnedPost(targetUserId, currentUserId);
 
@@ -51,7 +67,7 @@ class PostController {
   async pin(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const result = await PostService.pinPost(id, userId);
 
@@ -65,7 +81,7 @@ class PostController {
   async unpin(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const result = await PostService.unpinPost(id, userId);
 
@@ -79,7 +95,7 @@ class PostController {
   async delete(request: Request, response: Response) {
     try {
       const id = request.params.id as string;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
 
       const result = await PostService.deletePost(id, userId);
 

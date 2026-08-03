@@ -11,6 +11,11 @@ postRouter.get(
   authMiddleware,
   PostController.getPinned,
 );
+postRouter.get(
+  "/posts/user/:userId",
+  authMiddleware,
+  PostController.listByUser,
+);
 postRouter.patch("/posts/:id/pin", authMiddleware, PostController.pin);
 postRouter.patch("/posts/:id/unpin", authMiddleware, PostController.unpin);
 postRouter.delete("/posts/:id", authMiddleware, PostController.delete);

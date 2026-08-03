@@ -6,7 +6,7 @@ import NotificationService from "../services/NotificationService";
 export class LikeController {
   async toggle(req: Request, res: Response) {
     try {
-      const userId = req.headers["userId"] || (req.headers["userid"] as string);
+      const userId = req.userId as string;
       const { postId } = req.params;
 
       const existingLike = await Like.findOne({

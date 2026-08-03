@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Box,
@@ -119,7 +120,11 @@ export default function Login() {
           />
 
           <Box sx={{ textAlign: "right", mb: 2 }}>
-            <Link href="/forgot-password" sx={{ color: "#888", fontSize: 13 }}>
+            <Link
+              component={RouterLink}
+              to="/forgot-password"
+              sx={{ color: "#888", fontSize: 13 }}
+            >
               Esqueci minha senha
             </Link>
           </Box>
@@ -149,7 +154,11 @@ export default function Login() {
           </Button>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Link href="/register" sx={{ color: "#7c4dff", fontSize: 14 }}>
+            <Link
+              component={RouterLink}
+              to="/register"
+              sx={{ color: "#7c4dff", fontSize: 14 }}
+            >
               Não tem conta? Cadastre-se
             </Link>
           </Box>

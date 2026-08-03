@@ -4,7 +4,7 @@ import ConversationService from "../services/ConversationService";
 class ConversationController {
   async start(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const { otherUserId } = request.body;
 
       const conversation = await ConversationService.findOrCreateConversation(
@@ -21,7 +21,7 @@ class ConversationController {
 
   async list(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const conversations = await ConversationService.listConversations(userId);
       return response.status(200).json(conversations);
     } catch (error: unknown) {
@@ -33,7 +33,7 @@ class ConversationController {
   async getMessages(request: Request<{ id: string }>, response: Response) {
     try {
       const { id } = request.params;
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const messages = await ConversationService.getMessages(id, userId);
       return response.status(200).json(messages);
     } catch (error: unknown) {
@@ -45,7 +45,7 @@ class ConversationController {
   async sendMessage(request: Request<{ id: string }>, response: Response) {
     try {
       const { id } = request.params;
-      const senderId = request.headers["userId"] as string;
+      const senderId = request.userId as string;
       const { content, imageUrl, videoUrl } = request.body;
 
       const message = await ConversationService.sendMessage(
@@ -65,7 +65,7 @@ class ConversationController {
 
   async unreadCount(request: Request, response: Response) {
     try {
-      const userId = request.headers["userId"] as string;
+      const userId = request.userId as string;
       const count = await ConversationService.getUnreadCount(userId);
       return response.status(200).json({ count });
     } catch (error: unknown) {

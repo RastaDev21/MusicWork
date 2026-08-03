@@ -100,9 +100,11 @@ export default function PostCard({
   }
 
   function handleShare() {
-    const url = `https://music-work.vercel.app/post/${id}`;
+    // Não há página de post individual (nem rota /post/:id nem GET /posts/:id),
+    // então compartilhamos o perfil do autor — um link real e alcançável.
+    const url = `${window.location.origin}/musico/${userId}`;
     navigator.clipboard.writeText(url);
-    enqueueSnackbar("Link copiado!", { variant: "success" });
+    enqueueSnackbar("Link do perfil copiado!", { variant: "success" });
   }
 
   async function handleLike() {

@@ -14,25 +14,7 @@ import ShowCard from "../components/ShowCard/ShowCard";
 import ShowDialog from "../components/ShowDialog/ShowDialog";
 import { listShows, deleteShow, Show } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-
-const genres = [
-  "Rock",
-  "Samba",
-  "Jazz",
-  "MPB",
-  "Reggae",
-  "Funk",
-  "Forró",
-  "Pagode",
-  "Blues",
-  "Metal",
-  "Pop",
-  "Gospel",
-  "Eletrônico",
-  "Clássico",
-  "Bossa Nova",
-  "Outro",
-];
+import { genres } from "../constants/musicOptions";
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {

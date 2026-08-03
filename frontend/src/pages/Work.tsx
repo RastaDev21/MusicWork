@@ -25,6 +25,7 @@ import Layout from "../components/Layout/Layout";
 import { useEffect, useState } from "react";
 import api, { getImageUrl } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 interface Work {
   id: string;
   userId: string;
@@ -74,6 +75,15 @@ function isWhatsApp(contact: string) {
   return /^[+\d\s()-]{8,}$/.test(contact);
 }
 
+// Se o contato já traz código de país ('+' ou 12+ dígitos), usa como está;
+// senão assume Brasil (DDD + número). Evita link errado para músicos de fora.
+function toWhatsappNumber(contact: string) {
+  const hasCountryCode = contact.trim().startsWith("+");
+  const digits = contact.replace(/\D/g, "");
+  if (hasCountryCode || digits.length >= 12) return digits;
+  return `55${digits}`;
+}
+
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     color: "#fff",
@@ -109,6 +119,8 @@ const menuItemSx = {
 export default function WorkPage() {
   const [works, setWorks] = useState<Work[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState<"all" | "offer" | "request">("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -125,15 +137,49 @@ export default function WorkPage() {
   const [editingWork, setEditingWork] = useState<Work | null>(null);
   const [locationType, setLocationType] = useState("presencial");
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
 
-  const currentUser = JSON.parse(
-    localStorage.getItem("musicwork_user") || "{}",
-  );
+  function resetForm() {
+    setType("offer");
+    setTitle("");
+    setDescription("");
+    setPrice("");
+    setCity("");
+    setCategory("");
+    setSubcategory("");
+    setContact("");
+    setLocationType("presencial");
+    setEditingWork(null);
+  }
+
+  function handleOpenNew() {
+    resetForm();
+    setOpenNew(true);
+  }
+
+  function handleCloseDialog() {
+    setOpenNew(false);
+    resetForm();
+  }
+
+  const PAGE_SIZE = 20;
+
+  function buildWorkParams(offset: number) {
+    const params = new URLSearchParams();
+    if (filter !== "all") params.append("type", filter);
+    if (categoryFilter) params.append("category", categoryFilter);
+    if (cityFilter.trim()) params.append("city", cityFilter.trim());
+    params.append("limit", String(PAGE_SIZE));
+    params.append("offset", String(offset));
+    return params.toString();
+  }
 
   async function loadWorks() {
+    setLoading(true);
     try {
-      const response = await api.get("/works");
+      const response = await api.get(`/works?${buildWorkParams(0)}`);
       setWorks(response.data);
+      setHasMore(response.data.length === PAGE_SIZE);
     } catch (error) {
       console.error(error);
     } finally {
@@ -141,9 +187,25 @@ export default function WorkPage() {
     }
   }
 
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const response = await api.get(`/works?${buildWorkParams(works.length)}`);
+      setWorks(prev => [...prev, ...response.data]);
+      setHasMore(response.data.length === PAGE_SIZE);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  // Recarrega (server-side) ao mudar qualquer filtro; o debounce cobre a cidade (texto livre).
   useEffect(() => {
-    loadWorks();
-  }, []);
+    const t = setTimeout(loadWorks, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, categoryFilter, cityFilter]);
 
   async function handleCreate() {
     if (!title.trim()) return;
@@ -174,16 +236,7 @@ export default function WorkPage() {
           contact,
         });
       }
-      setTitle("");
-      setDescription("");
-      setPrice("");
-      setCity("");
-      setCategory("");
-      setSubcategory("");
-      setContact("");
-      setType("offer");
-      setLocationType("presencial");
-      setEditingWork(null);
+      resetForm();
       setOpenNew(false);
       loadWorks();
     } catch (error) {
@@ -204,23 +257,15 @@ export default function WorkPage() {
 
   function handleContact(contact: string, name: string) {
     if (isWhatsApp(contact)) {
-      const phone = contact.replace(/\D/g, "");
+      const phone = toWhatsappNumber(contact);
       window.open(
-        `https://wa.me/55${phone}?text=Olá ${name}, vi seu anúncio no MusicWork!`,
+        `https://wa.me/${phone}?text=Olá ${name}, vi seu anúncio no MusicWork!`,
         "_blank",
       );
     } else {
       window.open(`mailto:${contact}?subject=MusicWork - ${name}`, "_blank");
     }
   }
-
-  const filtered = works.filter(w => {
-    if (filter !== "all" && w.type !== filter) return false;
-    if (categoryFilter && w.category !== categoryFilter) return false;
-    if (cityFilter && !w.city?.toLowerCase().includes(cityFilter.toLowerCase()))
-      return false;
-    return true;
-  });
 
   const activeFilters = [categoryFilter, cityFilter].filter(Boolean).length;
 
@@ -268,7 +313,7 @@ export default function WorkPage() {
           <Button
             startIcon={<AddIcon />}
             variant="contained"
-            onClick={() => setOpenNew(true)}
+            onClick={handleOpenNew}
             sx={{
               backgroundColor: "#7c4dff",
               "&:hover": { backgroundColor: "#6a3de8" },
@@ -373,7 +418,7 @@ export default function WorkPage() {
         )}
 
         {/* Vazio */}
-        {!loading && filtered.length === 0 && (
+        {!loading && works.length === 0 && (
           <Typography sx={{ color: "#aaa", textAlign: "center", mt: 6 }}>
             Nenhum work encontrado. 💼
           </Typography>
@@ -381,7 +426,7 @@ export default function WorkPage() {
 
         {/* Lista */}
         {!loading &&
-          filtered.map(work => {
+          works.map(work => {
             const isOffer = work.type === "offer";
             const isOwner = currentUser?.id === work.userId;
             const accentColor = isOffer ? "#1D9E75" : "#7c4dff";
@@ -592,23 +637,28 @@ export default function WorkPage() {
               </Box>
             );
           })}
+
+        {!loading && hasMore && works.length > 0 && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 1, mb: 2 }}>
+            <Button
+              onClick={loadMore}
+              disabled={loadingMore}
+              sx={{
+                color: "#7c4dff",
+                border: "1px solid #7c4dff",
+                "&:hover": { backgroundColor: "#7c4dff11" },
+              }}
+            >
+              {loadingMore ? "Carregando..." : "Carregar mais"}
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Modal novo work */}
       <Dialog
         open={openNew}
-        onClose={() => {
-          setOpenNew(false);
-          setEditingWork(null);
-          setTitle("");
-          setDescription("");
-          setPrice("");
-          setCity("");
-          setCategory("");
-          setContact("");
-          setType("offer");
-          setLocationType("presencial");
-        }}
+        onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
         slotProps={{
@@ -806,7 +856,7 @@ export default function WorkPage() {
           />
         </DialogContent>
         <DialogActions sx={{ borderTop: "1px solid #2a2a2a", p: 2, gap: 1 }}>
-          <Button onClick={() => setOpenNew(false)} sx={{ color: "#aaa" }}>
+          <Button onClick={handleCloseDialog} sx={{ color: "#aaa" }}>
             Cancelar
           </Button>
           <Button

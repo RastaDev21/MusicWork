@@ -21,6 +21,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import api, { getImageUrl } from "../services/api";
 import { instruments, genres } from "../constants/musicOptions";
 import { countries, countryCodeToFlag } from "../constants/countries";
+import ProfessorChip from "../components/profile/ProfessorChip";
 interface Musician {
   id: string;
   name: string;
@@ -412,18 +413,7 @@ export default function Search() {
                       }}
                     />
                   )}
-                  {musician.isProfessor && (
-                    <Chip
-                      label="🎓 Professor"
-                      size="small"
-                      sx={{
-                        backgroundColor: "#4caf5022",
-                        color: "#4caf50",
-                        fontSize: 11,
-                        height: 20,
-                      }}
-                    />
-                  )}
+                  {musician.isProfessor && <ProfessorChip height={20} />}
                 </Box>
                 <Typography sx={{ color: "#666", fontSize: 12, mb: 0.5 }}>
                   {[musician.secondaryProfession, musician.city]

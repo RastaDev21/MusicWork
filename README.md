@@ -1,9 +1,23 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 31/07/2026)
+## 🔄 Onde paramos (última atualização: 04/08/2026)
 
-**Última sessão:** Revisão de código do projeto inteiro (auditoria estática dos 82 arquivos, ~11k linhas) + correção dos achados nas 4 categorias — bugs/edge cases, arquitetura, nitpicks e decisões. Não teve feature nova: foi uma rodada de qualidade e hardening. Detalhes de cada decisão estão nas Convenções de código lá embaixo.
+**Última sessão:** 4 melhorias pedidas pelo professor Fábio depois de olhar o app: texto do filtro de busca, vídeo do YouTube embutido nos posts, criar post direto do perfil, e troca do player de música do perfil (Spotify) por upload de áudio próprio.
 
+**O que foi feito:**
+
+- ✅ Checkbox da busca renomeado de "Só professores" para "Buscar professores".
+- ✅ Posts com link do YouTube no texto agora mostram o vídeo embutido (`constants/youtube.ts` + `PostCard.tsx`), nos formatos `watch?v=`, `youtu.be/` e `/shorts/`.
+- ✅ Dá pra criar post direto da página de perfil (`<NewPost>` embutido em `Profile.tsx`, recarrega via `/posts/user/:id`).
+- ✅ **Música do perfil trocou de motor:** era embed do Spotify (`favoriteSongUrl`, link de faixa) — o professor achou redundante, já que o link do artista já existe. Agora é upload de áudio próprio (`profileAudioUrl`, arquivo MP3/WAV/M4A/OGG até 20MB no Cloudinary), com player customizado (`AudioPlayer.tsx`) em loop. `SpotifyEmbed.tsx` e `constants/spotify.ts` foram removidos (sem uso). `favoriteSongUrl` ficou dormente no banco, mesmo padrão do `presentationVideoUrl`.
+
+**Decisão registrada:** autoplay do áudio próprio tem a mesma limitação que já valia pro Spotify — navegador bloqueia som automático até a pessoa interagir com o site antes. Trocar a fonte do áudio não resolve isso; é comportamento do navegador, não da origem do arquivo.
+
+**Status:** Backend e frontend compilam sem erros (`tsc --noEmit`). Testado manualmente: checkbox, embed do YouTube, postar do perfil e upload/troca/remoção do áudio, incluindo loop e visualização no perfil público.
+
+**Pendente do backlog do professor:** ponto 4 (revisar duplicação de infos no perfil) e ponto 8 (chat de suporte com conta fixa).
+
+**Próximo passo sugerido:** Atacar o ponto 4 do backlog (reorganizar os chips do cabeçalho do perfil) — ficou mais evidente a bagunça visual depois de tantos elementos novos (gêneros extras, chip de Professor, player).
 **Bugs corrigidos:**
 
 - 🛑 **Editar um Work criava um duplicado** — `WorkController.update` chamava `createWork` em vez de `updateWork` (o `id` da rota era ignorado). Agora atualiza de verdade.
@@ -74,8 +88,8 @@ musicwork/
 │ └── server.ts
 └── frontend/
 └── src/
-├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, SpotifyEmbed, ProfessorChip compartilhados entre Profile/PublicProfile/Search)
-├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; spotify.ts — helper de embed)
+├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip compartilhados entre Profile/PublicProfile/Search)
+├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; youtube.ts — helper de embed de vídeo em posts)
 ├── contexts/ (AuthContext)
 ├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
 ├── routes/ (App.Routes, PrivateRoute)
@@ -140,6 +154,8 @@ musicwork/
 - ✅ Fixar um post no topo do próprio perfil (ícone de pin) — fixar um novo desfixa o anterior automaticamente, só 1 por vez
 - ✅ Post fixado exibido com destaque visual (borda roxa + selo "Post fixado") no perfil próprio e no perfil público de quem visita
 - ✅ Curtir e comentar funcionam normalmente em posts com mídia, incluindo o fixado
+- ✅ Vídeo do YouTube embutido automaticamente quando o post tem um link no texto
+- ✅ Criar post direto da página de perfil, além do Feed
 
 ### Social ✅
 
@@ -162,7 +178,7 @@ musicwork/
 - ✅ Novos instrumentos na lista (Trombone, Sanfona, Triângulo, Zabumba, Técnico de som, Ukulele)
 - ✅ Gênero principal + gêneros secundários (múltiplos gêneros por músico, mesmo padrão dos instrumentos), incluindo opção "Todos os estilos"
 - ✅ Nacionalidade no perfil, exibida com bandeira via emoji Unicode
-- ✅ Música do perfil — player embutido do Spotify (`favoriteSongUrl`), separado do link de artista, trocável a qualquer momento
+- ✅ Música do perfil — upload de áudio próprio (`profileAudioUrl`, via Cloudinary), player customizado em loop, trocável a qualquer momento (substituiu o embed do Spotify)
 - ✅ Campo "Professor" (`isProfessor`) — chip "🎓 Professor" no cabeçalho do perfil quando marcado
 
 ### Deploy e Infraestrutura ✅
@@ -265,6 +281,13 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
 - [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte
 
+### 📋 Feedback do professor Fábio (revisão ago/2026) — segunda rodada
+
+- ✅ Renomear checkbox "Só professores" → "Buscar professores" na busca
+- ✅ Vídeo do YouTube embutido nos posts (antes só aparecia o link em texto)
+- ✅ Criar post direto da página de perfil (antes só dava pra postar pelo Feed)
+- ✅ Player de música do perfil trocado de embed do Spotify pra upload de áudio próprio (decisão: o link do artista já cobria a divulgação; o player devia tocar áudio de verdade, não outro link)
+
 ---
 
 ## Como rodar localmente
@@ -293,7 +316,7 @@ npm run dev
 ### Backend (.env)
 
 PORT=3333
-JWT_SECRET=sua_chave  # obrigatória — o servidor não sobe sem ela (config/auth.ts)
+JWT_SECRET=sua_chave # obrigatória — o servidor não sobe sem ela (config/auth.ts)
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173,https://musicwork.com.br,https://www.musicwork.com.br,https://music-work.vercel.app
 DATABASE_URL=postgresql://...
@@ -348,11 +371,13 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Chat usa polling, não WebSocket:** mesma decisão já tomada pras notificações (ver Fase 5). Mensagens dentro do chat aberto atualizam a cada 4 segundos; o contador de não lidas no navbar atualiza a cada 10 segundos.
 
-- **`spotify` (link do artista) e `favoriteSongUrl` (música do perfil) são campos diferentes, de propósito:** `spotify` é o link do perfil do artista no Spotify, exibido só como ícone clicável (divulgação). `favoriteSongUrl` é o link de uma faixa específica que a pessoa escolhe pra tocar direto no perfil, num player embutido — trocável a qualquer momento, sem relação com o link de artista. Não confundir os dois nem tentar unificá-los.
+- **`spotify` (link do artista) e `profileAudioUrl` (música do perfil) são campos diferentes, de propósito:** `spotify` é o link do perfil do artista no Spotify, exibido só como ícone clicável (divulgação). `profileAudioUrl` é um arquivo de áudio (upload próprio via Cloudinary) que toca direto no perfil, em loop — trocável a qualquer momento, sem relação com o link de artista. Não confundir os dois nem tentar unificá-los.
 
-- **Helper `getSpotifyEmbedUrl` (`constants/spotify.ts`) reconhece links com prefixo de idioma:** o Spotify às vezes gera links no formato `open.spotify.com/intl-pt/track/...` (com locale) em vez do formato simples `open.spotify.com/track/...`. O regex do helper aceita os dois formatos. Se o Spotify mudar o formato de link novamente no futuro, é só ajustar esse regex num lugar só.
+- **`favoriteSongUrl` ficou dormente (ago/2026):** era o campo antigo (link de faixa do Spotify) usado pelo `SpotifyEmbed`, removido a pedido do professor Fábio (redundante com o link de artista já existente). A coluna continua na tabela `users`, sem uso no frontend — mesmo padrão do `presentationVideoUrl`. `SpotifyEmbed.tsx` e `constants/spotify.ts` foram deletados por não terem mais uso; o componente compartilhado agora é `AudioPlayer.tsx` (`components/profile/`), usado por `Profile.tsx` e `PublicProfile.tsx`.
 
-- **Autoplay no player do Spotify não é garantido:** o embed tem o parâmetro `autoplay=1` na URL e o iframe tem `allow="autoplay"`, mas a maioria dos navegadores bloqueia autoplay com som até a pessoa já ter interagido com aquele domínio antes. Foi uma decisão consciente adicionar mesmo assim (não atrapalha, e funciona em parte dos casos) — não é bug se não tocar sozinho ao abrir o perfil.
+- **Upload de áudio segue o mesmo padrão do `presentationVideoUrl`:** endpoint dedicado (`POST`/`DELETE /upload/profile-audio`), fora do form geral de edição — igual avatar/capa/vídeo de apresentação, não passa pelo `PUT /users`. Cloudinary trata áudio como `resource_type: "video"` (não existe tipo "audio" separado); formatos aceitos: MP3, WAV, M4A, OGG, limite 20MB.
+
+- **Autoplay não é garantido, seja Spotify ou upload próprio:** a limitação é do navegador (bloqueia som automático até a pessoa interagir com o site antes), não da origem do áudio. Trocar de embed pra upload próprio não resolve isso — não é bug se o áudio não tocar sozinho ao abrir o perfil.
 
 - **"Todos os estilos" é uma opção normal dentro da lista `genres`, não um valor especial:** foi cogitado um atalho "selecionar todos os gêneros de uma vez" dentro do campo de "Outros gêneros", mas foi descartado — ficaria conflitando com o "Todos" que já existe no filtro de busca (que ali significa "sem filtro"). Em vez disso, "Todos os estilos" é só mais um item da lista `genres`, pensado pra quem realmente toca de tudo.
 

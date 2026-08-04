@@ -66,6 +66,33 @@ export class UploadController {
     }
   }
 
+  async uploadProfileAudio(req: Request, res: Response) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Nenhum áudio enviado!" });
+      }
+
+      const userId = req.userId;
+      const profileAudioUrl = req.file.path;
+
+      await User.update({ profileAudioUrl }, { where: { id: userId } });
+
+      return res.json({ profileAudioUrl });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao fazer upload do áudio!" });
+    }
+  }
+
+  async deleteProfileAudio(req: Request, res: Response) {
+    try {
+      const userId = req.userId;
+      await User.update({ profileAudioUrl: null }, { where: { id: userId } });
+      return res.json({ message: "Áudio removido com sucesso" });
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao remover o áudio!" });
+    }
+  }
+
   async uploadPostVideo(req: Request, res: Response) {
     try {
       if (!req.file) {

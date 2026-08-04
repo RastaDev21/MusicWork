@@ -26,6 +26,7 @@ function toPublicProfile(user: User) {
     isProfessor: user.isProfessor,
     facebook: user.facebook,
     tiktok: user.tiktok,
+    profileAudioUrl: user.profileAudioUrl,
   };
 }
 
@@ -118,6 +119,7 @@ class UserService {
       isProfessor?: boolean;
       facebook?: string | null;
       tiktok?: string | null;
+      profileAudioUrl?: string | null;
     },
   ) {
     const user = await User.findByPk(id);
@@ -150,6 +152,7 @@ class UserService {
       isProfessor: user.isProfessor,
       facebook: user.facebook,
       tiktok: user.tiktok,
+      profileAudioUrl: user.profileAudioUrl,
     };
   }
 

@@ -19,6 +19,7 @@ import api, { getImageUrl } from "../../services/api";
 import { useSnackbar } from "notistack";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getYoutubeEmbedUrl } from "../../constants/youtube";
 
 interface Comment {
   id: string;
@@ -328,6 +329,35 @@ export default function PostCard({
         >
           {content}
         </Typography>
+      )}
+
+      {content && getYoutubeEmbedUrl(content) && (
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            pt: "56.25%",
+            mb: 2,
+            borderRadius: 2,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            component="iframe"
+            src={getYoutubeEmbedUrl(content) || undefined}
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              border: "none",
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          />
+        </Box>
       )}
 
       {imageUrl && (

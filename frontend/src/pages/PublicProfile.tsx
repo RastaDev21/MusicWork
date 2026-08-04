@@ -20,9 +20,8 @@ import api, {
 import { startConversation } from "../services/api";
 import { countryCodeToFlag } from "../constants/countries";
 import SocialLinks from "../components/profile/SocialLinks";
-import SpotifyEmbed from "../components/profile/SpotifyEmbed";
 import ProfessorChip from "../components/profile/ProfessorChip";
-
+import AudioPlayer from "../components/profile/AudioPlayer";
 interface Musician {
   id: string;
   name: string;
@@ -43,6 +42,7 @@ interface Musician {
   tiktok?: string | null;
   favoriteSongUrl?: string | null;
   isProfessor?: boolean;
+  profileAudioUrl?: string | null;
 }
 
 interface PinnedPost {
@@ -361,7 +361,7 @@ export default function PublicProfile() {
                 tiktok={musician.tiktok}
               />
 
-              <SpotifyEmbed url={musician.favoriteSongUrl} />
+              <AudioPlayer url={musician.profileAudioUrl} />
 
               <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
                 {[

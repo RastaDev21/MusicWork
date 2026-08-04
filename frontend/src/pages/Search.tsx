@@ -288,7 +288,7 @@ export default function Search() {
               }}
             />
           }
-          label="Só professores"
+          label="Buscar professores"
           sx={{ color: "#ccc", mb: 1 }}
         />
 

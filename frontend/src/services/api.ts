@@ -106,6 +106,19 @@ export async function deletePresentationVideo() {
   return response.data;
 }
 
+export async function uploadProfileAudio(file: File) {
+  const formData = new FormData();
+  formData.append("profileAudio", file, file.name);
+
+  const response = await api.post("/upload/profile-audio", formData);
+  return response.data;
+}
+
+export async function deleteProfileAudio() {
+  const response = await api.delete("/upload/profile-audio");
+  return response.data;
+}
+
 // ── Notificações ──
 
 export interface NotificationItem {

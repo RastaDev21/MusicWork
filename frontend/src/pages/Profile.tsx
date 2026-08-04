@@ -27,6 +27,8 @@ import { useEffect, useState } from "react";
 import api, {
   uploadAvatar,
   uploadCover,
+  uploadProfileAudio,
+  deleteProfileAudio,
   pinPost,
   unpinPost,
   getPinnedPost,
@@ -39,9 +41,9 @@ import { useSnackbar } from "notistack";
 import { instruments, genres } from "../constants/musicOptions";
 import { countries, countryCodeToFlag } from "../constants/countries";
 import SocialLinks from "../components/profile/SocialLinks";
-import SpotifyEmbed from "../components/profile/SpotifyEmbed";
 import ProfessorChip from "../components/profile/ProfessorChip";
-
+import NewPost from "../components/NewPost/NewPost";
+import AudioPlayer from "../components/profile/AudioPlayer";
 interface Post {
   id: string;
   userId: string;
@@ -133,10 +135,12 @@ export default function Profile() {
   const [instagram, setInstagram] = useState("");
   const [youtube, setYoutube] = useState("");
   const [spotify, setSpotify] = useState("");
-  const [favoriteSongUrl, setFavoriteSongUrl] = useState("");
-  const [isProfessor, setIsProfessor] = useState(false);
   const [facebook, setFacebook] = useState("");
   const [tiktok, setTiktok] = useState("");
+  const [favoriteSongUrl, setFavoriteSongUrl] = useState("");
+  const [profileAudioUrl, setProfileAudioUrl] = useState<string | null>(null);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [isProfessor, setIsProfessor] = useState(false);
 
   async function loadPinned() {
     if (!user?.id) return;
@@ -158,6 +162,15 @@ export default function Profile() {
     }
   }
 
+  async function loadPosts() {
+    if (!user?.id) return;
+    try {
+      const postsRes = await api.get(`/posts/user/${user.id}`);
+      setPosts(postsRes.data);
+    } catch (error) {
+      console.error("Erro ao carregar posts:", error);
+    }
+  }
   useEffect(() => {
     async function loadData() {
       try {
@@ -185,6 +198,9 @@ export default function Profile() {
         setSecondaryInstruments(profileRes.data.secondaryInstruments || []);
         setSecondaryGenres(profileRes.data.secondaryGenres || []);
         setNationality(profileRes.data.nationality || "");
+        setFavoriteSongUrl(profileRes.data.favoriteSongUrl || "");
+        setProfileAudioUrl(profileRes.data.profileAudioUrl || null);
+        setIsProfessor(profileRes.data.isProfessor || false);
 
         if (followRes) {
           setFollowers(followRes.data.followers);
@@ -265,8 +281,7 @@ export default function Profile() {
       } else {
         await pinPost(postId);
       }
-      const postsRes = await api.get(`/posts/user/${user?.id}`);
-      setPosts(postsRes.data);
+      await loadPosts();
       loadPinned();
     } catch (error) {
       console.error("Erro ao fixar/desafixar post:", error);
@@ -326,6 +341,39 @@ export default function Profile() {
       enqueueSnackbar(msg, { variant: "error" });
     } finally {
       setUploadingCover(false);
+    }
+  }
+
+  async function handleAudioChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAudio(true);
+    try {
+      const data = await uploadProfileAudio(file);
+      setProfileAudioUrl(data.profileAudioUrl);
+      enqueueSnackbar("Música do perfil atualizada!", { variant: "success" });
+    } catch (error: unknown) {
+      let msg = "Erro ao enviar o áudio. Tente novamente.";
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const err = error as { response?: { data?: { error?: string } } };
+        if (err.response?.data?.error) {
+          msg = err.response.data.error;
+        }
+      }
+      enqueueSnackbar(msg, { variant: "error" });
+    } finally {
+      setUploadingAudio(false);
+    }
+  }
+
+  async function handleRemoveAudio() {
+    try {
+      await deleteProfileAudio();
+      setProfileAudioUrl(null);
+      enqueueSnackbar("Música do perfil removida.", { variant: "success" });
+    } catch (error) {
+      console.error("Erro ao remover áudio:", error);
     }
   }
 
@@ -581,7 +629,7 @@ export default function Profile() {
                 tiktok={tiktok}
               />
 
-              <SpotifyEmbed url={favoriteSongUrl} />
+              <AudioPlayer url={profileAudioUrl} />
 
               <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
                 {[
@@ -716,6 +764,7 @@ export default function Profile() {
 
         {/* Conteúdo — Posts, sempre por último */}
         <Box sx={{ p: 2 }}>
+          <NewPost onPost={loadPosts} />
           <Typography
             sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 2 }}
           >
@@ -1008,19 +1057,53 @@ export default function Profile() {
           <Typography sx={{ color: "#aaa", fontSize: 12, mt: 1, mb: 1 }}>
             Música do perfil
           </Typography>
-          <TextField
-            fullWidth
-            label="Link da faixa no Spotify"
-            value={favoriteSongUrl}
-            onChange={e => setFavoriteSongUrl(e.target.value)}
-            placeholder="Ex: open.spotify.com/track/..."
-            helperText="Toca direto no seu perfil. Troque quando quiser."
+          <Box
             sx={{
-              ...inputSx,
-              mb: 2,
-              "& .MuiFormHelperText-root": { color: "#666" },
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              mb: 0.5,
+              flexWrap: "wrap",
             }}
-          />
+          >
+            <Button
+              component="label"
+              variant="outlined"
+              disabled={uploadingAudio}
+              sx={{
+                color: "#7c4dff",
+                borderColor: "#7c4dff",
+                "&:hover": {
+                  borderColor: "#9c6fe4",
+                  backgroundColor: "#7c4dff11",
+                },
+              }}
+            >
+              {uploadingAudio
+                ? "Enviando..."
+                : profileAudioUrl
+                  ? "Trocar áudio"
+                  : "Enviar áudio"}
+              <input
+                type="file"
+                accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/mp4,audio/ogg"
+                hidden
+                onChange={handleAudioChange}
+              />
+            </Button>
+            {profileAudioUrl && (
+              <Button
+                onClick={handleRemoveAudio}
+                sx={{ color: "#ff4d6d", "&:hover": { color: "#ff8099" } }}
+              >
+                Remover
+              </Button>
+            )}
+          </Box>
+          <Typography sx={{ color: "#666", fontSize: 12, mb: 2 }}>
+            Toca direto no seu perfil, em loop. Troque quando quiser. (MP3, WAV,
+            M4A ou OGG — até 20MB)
+          </Typography>
 
           <TextField
             fullWidth

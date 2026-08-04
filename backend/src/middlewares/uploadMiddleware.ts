@@ -75,3 +75,42 @@ export const uploadVideo = multer({
   fileFilter: videoFileFilter,
   limits: { fileSize: 50 * 1024 * 1024 },
 });
+
+const audioStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const userId = (req as any).userId || "user";
+    return {
+      folder: "musicwork/profile-audio",
+      public_id: `${userId}-${Date.now()}`,
+      resource_type: "video", // Cloudinary trata áudio como "video"
+      allowed_formats: ["mp3", "wav", "m4a", "ogg"],
+    };
+  },
+});
+
+const audioFileFilter = (
+  _req: any,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback,
+) => {
+  const allowed = [
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/mp4",
+    "audio/ogg",
+  ];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Só áudios são permitidos! (MP3, WAV, M4A ou OGG)"));
+  }
+};
+
+export const uploadAudio = multer({
+  storage: audioStorage,
+  fileFilter: audioFileFilter,
+  limits: { fileSize: 20 * 1024 * 1024 },
+});

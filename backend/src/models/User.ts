@@ -22,6 +22,7 @@ class User extends Model {
   declare spotify: string | null;
   declare favoriteSongUrl: string | null;
   declare isProfessor: boolean;
+  declare profileAudioUrl: string | null;
   declare facebook: string | null;
   declare tiktok: string | null;
   declare resetPasswordToken: string | null;
@@ -129,6 +130,10 @@ User.init(
     },
     resetPasswordExpires: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    profileAudioUrl: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
   },

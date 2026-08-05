@@ -27,6 +27,7 @@ function toPublicProfile(user: User) {
     facebook: user.facebook,
     tiktok: user.tiktok,
     profileAudioUrl: user.profileAudioUrl,
+    isSupport: user.isSupport,
   };
 }
 
@@ -185,6 +186,8 @@ class UserService {
       });
     }
 
+    conditions.push({ isSupport: { [Op.not]: true } });
+
     if (instrument) conditions.push(unaccentLike("instrument", instrument));
     if (genre) conditions.push(unaccentLike("genre", genre));
     if (city) conditions.push(unaccentLike("city", city));
@@ -210,6 +213,14 @@ class UserService {
     });
 
     return users;
+  }
+
+  async getSupportAccount() {
+    const support = await User.findOne({ where: { isSupport: true } });
+    if (!support) {
+      throw new Error("Conta de suporte não configurada");
+    }
+    return support;
   }
 }
 

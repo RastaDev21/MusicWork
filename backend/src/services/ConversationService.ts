@@ -28,14 +28,30 @@ class ConversationService {
     return conversation;
   }
 
+  async startSupportConversation(userId: string) {
+    const support = await User.findOne({ where: { isSupport: true } });
+    if (!support) {
+      throw new Error("Conta de suporte não configurada");
+    }
+    return this.findOrCreateConversation(userId, support.id);
+  }
+
   async listConversations(userId: string) {
     const conversations = await Conversation.findAll({
       where: {
         [Op.or]: [{ user1Id: userId }, { user2Id: userId }],
       },
       include: [
-        { model: User, as: "user1", attributes: ["id", "name", "avatarUrl"] },
-        { model: User, as: "user2", attributes: ["id", "name", "avatarUrl"] },
+        {
+          model: User,
+          as: "user1",
+          attributes: ["id", "name", "avatarUrl", "isSupport"],
+        },
+        {
+          model: User,
+          as: "user2",
+          attributes: ["id", "name", "avatarUrl", "isSupport"],
+        },
       ],
     });
 
@@ -84,6 +100,9 @@ class ConversationService {
     );
 
     result.sort((a, b) => {
+      if (a.otherUser.isSupport && !b.otherUser.isSupport) return -1;
+      if (b.otherUser.isSupport && !a.otherUser.isSupport) return 1;
+
       const dateA = a.lastMessage
         ? new Date(a.lastMessage.createdAt).getTime()
         : 0;

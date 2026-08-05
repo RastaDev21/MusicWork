@@ -272,6 +272,7 @@ export interface ConversationSummary {
     id: string;
     name: string;
     avatarUrl: string | null;
+    isSupport?: boolean;
   };
   lastMessage: ChatMessage | null;
   unreadCount: number;
@@ -279,6 +280,11 @@ export interface ConversationSummary {
 
 export async function startConversation(otherUserId: string) {
   const response = await api.post("/conversations", { otherUserId });
+  return response.data;
+}
+
+export async function startSupportConversation() {
+  const response = await api.post("/conversations/support");
   return response.data;
 }
 

@@ -89,22 +89,50 @@ export default function Messages() {
             >
               <Avatar
                 src={getImageUrl(conv.otherUser.avatarUrl)}
-                sx={{ backgroundColor: "#7c4dff", fontWeight: 700 }}
+                sx={{
+                  backgroundColor: conv.otherUser.isSupport
+                    ? "#4caf5022"
+                    : "#7c4dff",
+                  color: conv.otherUser.isSupport ? "#7fdb8f" : undefined,
+                  fontWeight: 700,
+                }}
               >
-                {conv.otherUser.name.charAt(0).toUpperCase()}
+                {conv.otherUser.isSupport
+                  ? "🎧"
+                  : conv.otherUser.name.charAt(0).toUpperCase()}
               </Avatar>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography
-                    sx={{
-                      color: "#fff",
-                      fontSize: 14,
-                      fontWeight: conv.unreadCount > 0 ? 700 : 500,
-                    }}
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
                   >
-                    {conv.otherUser.name}
-                  </Typography>
+                    <Typography
+                      sx={{
+                        color: "#fff",
+                        fontSize: 14,
+                        fontWeight: conv.unreadCount > 0 ? 700 : 500,
+                      }}
+                    >
+                      {conv.otherUser.name}
+                    </Typography>
+                    {conv.otherUser.isSupport && (
+                      <Box
+                        component="span"
+                        sx={{
+                          backgroundColor: "#4caf5022",
+                          color: "#7fdb8f",
+                          fontSize: 9,
+                          fontWeight: 600,
+                          px: 0.75,
+                          py: 0.1,
+                          borderRadius: 1,
+                        }}
+                      >
+                        oficial
+                      </Box>
+                    )}
+                  </Box>
                   {conv.lastMessage && (
                     <Typography sx={{ color: "#666", fontSize: 11 }}>
                       {timeAgo(conv.lastMessage.createdAt)}

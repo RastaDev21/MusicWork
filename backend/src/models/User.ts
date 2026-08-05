@@ -27,6 +27,7 @@ class User extends Model {
   declare tiktok: string | null;
   declare resetPasswordToken: string | null;
   declare resetPasswordExpires: Date | null;
+  declare isSupport: boolean;
 }
 
 User.init(
@@ -135,6 +136,11 @@ User.init(
     profileAudioUrl: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    isSupport: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {

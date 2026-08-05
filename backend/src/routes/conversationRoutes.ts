@@ -29,5 +29,10 @@ conversationRouter.post(
   authMiddleware,
   ConversationController.sendMessage,
 );
+conversationRouter.post(
+  "/conversations/support",
+  authMiddleware,
+  ConversationController.startSupport,
+);
 
 export default conversationRouter;

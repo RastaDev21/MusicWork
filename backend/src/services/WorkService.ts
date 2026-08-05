@@ -40,6 +40,7 @@ class WorkService {
         {
           model: User,
           attributes: ["id", "name", "instrument", "city", "avatarUrl"],
+          where: { isSupport: { [Op.not]: true } },
         },
       ],
       order: [["createdAt", "DESC"]],

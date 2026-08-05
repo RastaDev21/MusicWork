@@ -19,6 +19,18 @@ class ConversationController {
     }
   }
 
+  async startSupport(request: Request, response: Response) {
+    try {
+      const userId = request.userId as string;
+      const conversation =
+        await ConversationService.startSupportConversation(userId);
+      return response.status(200).json(conversation);
+    } catch (error: unknown) {
+      const err = error as Error;
+      return response.status(400).json({ error: err.message });
+    }
+  }
+
   async list(request: Request, response: Response) {
     try {
       const userId = request.userId as string;

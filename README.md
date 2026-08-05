@@ -1,55 +1,23 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 04/08/2026)
+## 🔄 Onde paramos (última atualização: 05/08/2026)
 
-**Última sessão:** 4 melhorias pedidas pelo professor Fábio depois de olhar o app: texto do filtro de busca, vídeo do YouTube embutido nos posts, criar post direto do perfil, e troca do player de música do perfil (Spotify) por upload de áudio próprio.
+**Última sessão:** Ponto 4 do backlog do professor Fábio — reorganização visual do cabeçalho do perfil, pra acabar com a duplicação de informação que ficou evidente depois de tantas features novas (gêneros extras, chip de Professor, player).
 
 **O que foi feito:**
 
-- ✅ Checkbox da busca renomeado de "Só professores" para "Buscar professores".
-- ✅ Posts com link do YouTube no texto agora mostram o vídeo embutido (`constants/youtube.ts` + `PostCard.tsx`), nos formatos `watch?v=`, `youtu.be/` e `/shorts/`.
-- ✅ Dá pra criar post direto da página de perfil (`<NewPost>` embutido em `Profile.tsx`, recarrega via `/posts/user/:id`).
-- ✅ **Música do perfil trocou de motor:** era embed do Spotify (`favoriteSongUrl`, link de faixa) — o professor achou redundante, já que o link do artista já existe. Agora é upload de áudio próprio (`profileAudioUrl`, arquivo MP3/WAV/M4A/OGG até 20MB no Cloudinary), com player customizado (`AudioPlayer.tsx`) em loop. `SpotifyEmbed.tsx` e `constants/spotify.ts` foram removidos (sem uso). `favoriteSongUrl` ficou dormente no banco, mesmo padrão do `presentationVideoUrl`.
+- ✅ **Chips do cabeçalho** (`components/profile/ProfileChips.tsx`, novo): Professor sempre em primeiro (mais ênfase), depois instrumento e gênero principal, depois os secundários — todos exibidos sempre, quebrando linha naturalmente. Chegamos a testar um "+N mais" que expandia/recolhia os secundários, mas foi descartado depois de testar na prática: a posição do toggle ficava inconsistente dependendo de quantos chips cabiam por linha (ora isolado sozinho, ora no meio da lista). Decisão final: mostrar tudo sempre, sem esconder nada.
+- ✅ **Card de detalhes** (`components/profile/ProfileDetailsCard.tsx`, novo): tirou `Instrumento` e `Gênero` (já aparecem completos nos chips) e trocou por `Profissão`, `Cidade` e `Nacionalidade` por extenso (antes a nacionalidade só aparecia como bandeira solta ao lado da cidade). Zero duplicação agora — cada informação mora num lugar só.
+- ✅ **Estatísticas e redes sociais** ficaram na mesma linha (antes eram duas linhas separadas), com `flexWrap` pra quebrar sozinho no mobile sem precisar de media query manual.
+- ✅ Aplicado em `Profile.tsx` e `PublicProfile.tsx`, ambos compilando limpo e testados manualmente (incluindo o comportamento de quebra de linha no mobile).
 
-**Decisão registrada:** autoplay do áudio próprio tem a mesma limitação que já valia pro Spotify — navegador bloqueia som automático até a pessoa interagir com o site antes. Trocar a fonte do áudio não resolve isso; é comportamento do navegador, não da origem do arquivo.
+**Decisão de processo (importante pra não repetir):** o checkout local ficou preso numa branch antiga (`revisao-codigo-jul2026`) depois da revisão de código de jul/2026, e vários commits foram parar nela sem querer, exigindo um `git merge` manual pra trazer tudo de volta pra `main`. Decisão registrada: **por enquanto, sempre trabalhar direto na `main`**, sem branch de feature — só faz sentido criar uma branch de desenvolvimento separada quando o app tiver usuários reais em produção, pra não arriscar quebrar algo ao vivo. Até lá, checar a branch atual (`git status` ou o canto inferior esquerdo do VS Code) antes de cada commit é a única salvaguarda.
 
-**Status:** Backend e frontend compilam sem erros (`tsc --noEmit`). Testado manualmente: checkbox, embed do YouTube, postar do perfil e upload/troca/remoção do áudio, incluindo loop e visualização no perfil público.
+**Status:** Tudo commitado e na `main` (local e GitHub sincronizados). Backend e frontend compilam sem erros (`tsc --noEmit`).
 
-**Pendente do backlog do professor:** ponto 4 (revisar duplicação de infos no perfil) e ponto 8 (chat de suporte com conta fixa).
+**Pendente do backlog do professor:** só o ponto 8 (chat de suporte com conta fixa) — é o único item que resta.
 
-**Próximo passo sugerido:** Atacar o ponto 4 do backlog (reorganizar os chips do cabeçalho do perfil) — ficou mais evidente a bagunça visual depois de tantos elementos novos (gêneros extras, chip de Professor, player).
-**Bugs corrigidos:**
-
-- 🛑 **Editar um Work criava um duplicado** — `WorkController.update` chamava `createWork` em vez de `updateWork` (o `id` da rota era ignorado). Agora atualiza de verdade.
-- 🛑 **`GET /users/:id` vazava o email** — o perfil público reusava a projeção do perfil próprio. Criada projeção pública (`findPublicById` / `toPublicProfile`, sem email); o `/profile` do próprio usuário mantém o email.
-- ⚠️ **Perfil filtrava os próprios posts por nome** (quebrava com homônimos/rename) → agora por `userId`, via endpoint dedicado `/posts/user/:id`.
-- ⚠️ **Chat sem cabeçalho** quando só você tinha mandado mensagem → nome/avatar vêm da conversa (`listConversations`), não das mensagens.
-- ⚠️ **Chat forçava scroll pro fim a cada 4s** (polling) → só rola quando chega mensagem nova.
-- ⚠️ **"Novo work" abria poluído após cancelar uma edição** → reset centralizado (`resetForm` / `handleCloseDialog`).
-- ⚠️ **Compartilhar post gerava link morto** (`/post/:id` não existe) → copia o link do perfil do autor via `window.location.origin`.
-
-**Arquitetura / manutenção:**
-
-- Removidas as rotas duplicadas (`app.use` repetido de follow/comment/notification) no `server.ts`.
-- **Paginação** no Feed e no Work (`limit`/`offset` no backend, botão "Carregar mais" no frontend) — acabou o `findAll` na tabela inteira. Filtros do Work passaram a ser server-side (debounce na cidade).
-- **Componentes de perfil compartilhados** (`SocialLinks`, `SpotifyEmbed`, `ProfessorChip`) — antes o JSX era copiado entre `Profile` e `PublicProfile`.
-- Lista de gêneros unificada de vez (o `Agenda.tsx` ainda mantinha cópia própria).
-- `Feed`/`Work` passaram a usar `useAuth()` em vez de ler o `localStorage` direto.
-- **`userId` agora fica em `req.userId`** (augmentation em `@types/express.d.ts`), não mais em `req.headers`.
-- N+1 na lista de conversas reduzido (contagem de não lidas numa query agregada).
-
-**Nitpicks / decisões:**
-
-- Links das telas de auth viraram `RouterLink` (sem full reload); logs de debug removidos do `forgotPassword`; `require("sequelize")` inline virou import de topo.
-- **`JWT_SECRET` agora é obrigatório no boot** (`config/auth.ts` aborta o servidor se faltar — acabou o fallback `default_secret`).
-- Contato do Work trata **números internacionais** (respeita `+`/código de país).
-- "Mensagens" adicionado ao menu inferior do mobile (6 abas).
-
-**Status:** Backend e frontend compilam sem erros (`tsc --noEmit`). As mudanças ainda **não foram commitadas** — estão no working tree, aguardando teste manual. Pontos que dependem do banco (paginação/filtros do Work, `/posts/user/:id`, contagem de não lidas) pedem um smoke-test em runtime.
-
-**Pendente do backlog do professor:** ponto 4 (revisar duplicação de infos no perfil) e ponto 8 (chat de suporte com conta fixa) — ver seção "Feedback do professor Fábio".
-
-**Próximo passo sugerido:** Testar localmente as mudanças da revisão e, na sequência, atacar o ponto 4 do backlog (reorganizar os chips do cabeçalho do perfil).
+**Próximo passo sugerido:** Ponto 8 — chat de suporte, reaproveitando o sistema de chat já existente.
 
 ---
 
@@ -275,8 +243,8 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
 - ✅ Facebook e TikTok como links sociais (mesmo padrão de Instagram/YouTube/Spotify)
 - ✅ Adicionar "Ukulele" à lista de instrumentos — unificada a lista duplicada em `constants/musicOptions.ts`
-- [ ] Revisar duplicação de informações no perfil (instrumento/gênero/cidade aparecem repetidos entre os chips, a linha de cidade solta, e o card de detalhes)
-- ✅ Player de música no perfil — embed do Spotify via campo novo `favoriteSongUrl`, separado do link de artista (`spotify`)
+- ✅ Revisar duplicação de informações no perfil — resolvido em duas rodadas: primeiro tirou o Gênero repetido do card de detalhes (trocado por Nacionalidade), depois eliminou a última duplicação (Instrumento/Cidade também saíram do card), reorganizou os chips (Professor em destaque primeiro) e uniu estatísticas + redes sociais na mesma linha. Ver "Feedback do professor Fábio (ago/2026)" abaixo.
+- ✅ Player de música no perfil — decisão inicial foi embed do Spotify via `favoriteSongUrl`, depois substituído por upload de áudio próprio (`profileAudioUrl`) — ver segunda rodada abaixo.
 - ✅ Filtro de "Professor" na busca — decisão: Opção B, campo explícito `isProfessor` no perfil (mantém Busca e Work independentes)
 - ✅ Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
 - [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte
@@ -287,6 +255,8 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Vídeo do YouTube embutido nos posts (antes só aparecia o link em texto)
 - ✅ Criar post direto da página de perfil (antes só dava pra postar pelo Feed)
 - ✅ Player de música do perfil trocado de embed do Spotify pra upload de áudio próprio (decisão: o link do artista já cobria a divulgação; o player devia tocar áudio de verdade, não outro link)
+- ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
+- [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte (único item pendente do backlog do professor)
 
 ---
 
@@ -385,6 +355,10 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **`isProfessor` é campo explícito no perfil, não derivado do Work:** decisão consciente (ponto 6 do backlog do professor) de manter Busca e Work como sistemas independentes. Um músico pode ser professor sem nunca ter criado um Work de categoria "Aula", e vice-versa — são conceitos diferentes (identidade do músico vs. oferta pontual de serviço). Não cruzar as duas tabelas pra derivar esse campo.
 
+- **`ProfileChips` mostra todos os chips sempre, sem toggle de expandir/recolher:** foi testado um "+N mais" que expandia instrumentos/gêneros secundários (ago/2026, ponto 4 do backlog), mas descartado depois de testar na prática — a posição do botão de toggle ficava inconsistente dependendo de quantos chips cabiam por linha (às vezes isolado sozinho numa linha, às vezes no meio da lista, quebrando a leitura). Decisão final: sem lógica de expandir, só `flexWrap` deixando quebrar linha à vontade. Ordem fixa: Professor primeiro (mais ênfase), depois instrumento e gênero principal, depois secundários.
+
+- **`ProfileDetailsCard` não repete nada que já aparece em `ProfileChips`:** o card mostra só Profissão, Cidade e Nacionalidade (por extenso, com bandeira) — Instrumento e Gênero saíram de lá porque já aparecem completos nos chips do cabeçalho. Antes de chegar nessa versão, foi cogitado um card só com Profissão (ficava "sozinho" demais) e também remover o card por completo com Profissão virando chip (misturava categorias diferentes de informação — chips são valores de lista fixa, profissão é texto livre). Se um dia adicionar mais um campo de perfil, checar primeiro se ele já aparece em algum outro lugar da tela antes de repetir aqui.
+
 ### Convenções vindas da revisão de código (jul/2026)
 
 - **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
@@ -395,13 +369,15 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **`GET /users/:id` não retorna email:** o perfil de terceiros usa `UserService.findPublicById` (projeção `toPublicProfile`, sem email nem campos sensíveis). Só o `/profile` do próprio usuário autenticado (`findById`) inclui email. Não voltar a reusar o `findById` no endpoint público.
 
-- **Componentes de perfil compartilhados (`frontend/src/components/profile/`):** `SocialLinks` (ícones de rede social + lógica de href), `SpotifyEmbed` (player da música do perfil) e `ProfessorChip` são usados por `Profile`, `PublicProfile` e `Search`. Antes esse JSX (com os SVGs inline) era copiado entre as telas — ao mexer no visual, mexer no componente, não em cada página.
+- **Componentes de perfil compartilhados (`frontend/src/components/profile/`):** `SocialLinks` (ícones de rede social), `ProfessorChip`, `ProfileChips` (chips do cabeçalho) e `ProfileDetailsCard` (Profissão/Cidade/Nacionalidade) são usados por `Profile`, `PublicProfile` e (parcialmente) `Search`. Antes esse JSX era copiado entre as telas — ao mexer no visual, mexer no componente, não em cada página. `SpotifyEmbed` existiu brevemente (jul/ago-2026) e foi removido — ver convenção sobre `favoriteSongUrl`/`profileAudioUrl` mais acima.
 
 - **`JWT_SECRET` é obrigatório no boot:** `backend/src/config/auth.ts` valida a env e **aborta o servidor** se ela faltar (com mensagem clara). Não existe mais o fallback `"default_secret"` (que tornava tokens forjáveis). O middleware e o `AuthService` importam `JWT_SECRET` desse módulo, nunca lêem `process.env` direto.
 
 - **Contato do Work trata número internacional:** `toWhatsappNumber` (`Work.tsx`) só prefixa `55` quando o contato parece um número brasileiro local; se já vier com `+` ou 12+ dígitos (código de país incluso), usa como está. Evita link errado de WhatsApp pra músicos de fora.
 
 - **Contagem de não lidas do chat é agregada:** `ConversationService.listConversations` busca todas as contagens de não lidas numa query só (`GROUP BY conversationId`), em vez de um `count` por conversa. A última mensagem por conversa ainda é um `findOne` por conversa — se um dia virar gargalo, dá pra trocar por um `DISTINCT ON`.
+
+- **Outros bugs corrigidos na mesma revisão:** `WorkController.update` chamava `createWork` em vez de `updateWork` (editar um Work criava um duplicado, o `id` da rota era ignorado); chat sem cabeçalho quando só você tinha mandado mensagem (nome/avatar agora vêm de `listConversations`, não das mensagens); chat forçava scroll pro fim a cada polling de 4s (agora só rola quando chega mensagem nova); "Novo work" abria poluído após cancelar uma edição (reset centralizado via `resetForm`/`handleCloseDialog`); compartilhar post gerava link morto pra `/post/:id` (rota que não existe) — agora copia o link do perfil do autor; rotas duplicadas (`app.use` repetido de follow/comment/notification) removidas do `server.ts`; links das telas de auth viraram `RouterLink` (sem full reload); "Mensagens" adicionado ao menu inferior do mobile (6 abas).
 
 ## Notas importantes
 

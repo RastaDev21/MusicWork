@@ -2,28 +2,23 @@
 
 ## 🔄 Onde paramos (última atualização: 05/08/2026)
 
-**Última sessão:** Ponto 8 do backlog do professor Fábio — chat de suporte com conta fixa. Esse era o **último item pendente** do backlog inteiro do professor.
+**Última sessão:** O bug do Resend (identidade do domínio na região AWS errada) foi corrigido do lado deles — testamos e **recuperação de senha está funcionando de ponta a ponta em produção**.
 
 **O que foi feito:**
 
-- ✅ **Conta fixa `MusicWork Suporte`** (`isSupport` no model `User`, igual padrão do `isProfessor`) — escondida da Busca e do Work (`UserService.searchUsers` e `WorkService.listWorks` agora excluem `isSupport: true`).
-- ✅ **Botão "🎧 Fale com o suporte"** na tela de Configurações — chama `POST /conversations/support`, que acha a conta de suporte no backend e cria/reabre a conversa, sem o frontend precisar saber o ID dela.
-- ✅ **Conversa de suporte fixada no topo** da lista de Mensagens (`ConversationService.listConversations` ordena por `isSupport` antes da data), com badge verde "oficial" e ícone de headset no avatar.
-- ✅ Tela de chat em si **sem nenhuma mudança** — reaproveita 100% o que já existia (`Chat.tsx` usa `otherUser.name`/`avatarUrl` de forma genérica).
-- ✅ Testado de ponta a ponta: criação da conta no banco, botão abrindo a conversa, badge aparecendo, mensagem chegando e sendo respondida do outro lado (logado como a conta de suporte).
+- ✅ Confirmado no Resend: domínio `musicwork.com.br` verificado, região `São Paulo (sa-east-1)` — correta.
+- ✅ **Rotacionada a API key** do Resend — a antiga (`musicwork-production-v2`) foi exposta acidentalmente durante a depuração (print de tela com o valor visível) e foi revogada por segurança; criada uma nova e atualizada no Render.
+- ✅ Testado o fluxo completo: "Esqueci minha senha" → email chega (`contato@musicwork.com.br`) → botão "Redefinir senha" → nova senha aceita → login funciona com a senha nova.
 
-**Também resolvido nessa sessão (não estava no backlog, mas destravou sozinho):** configuramos o **Cloudflare Email Routing** pra `suporte@musicwork.com.br` e `contato@musicwork.com.br`, ambos encaminhando pro Gmail pessoal. Isso é **independente do bloqueio do Resend** — Email Routing é só pra _receber_ email nesses endereços; o Resend continua bloqueado pra _enviar_ (recuperação de senha, etc.), sem relação uma coisa com a outra.
+**Desbloqueado por esse conserto:**
 
-**Ajustes finos de UI feitos no caminho:**
+- Recuperação de senha (já estava implementada no código, só faltava isso)
+- Verificação real de email no cadastro (Fase 3) — pode ser implementada agora
+- Editar email (Fase 3) — o fluxo de confirmação por link também pode avançar
 
-- Tela de Configurações (`Settings.tsx`) não tinha o `p: 2` padrão que `Messages.tsx`/`Work.tsx` já tinham — corrigido pra `pt: 2, px: 2` (sem padding embaixo, pra não sobrar altura).
-- Campos de senha ganharam `size="small"` e `mb` reduzido, pra a tela caber sem scroll com o card de suporte novo.
+**Status:** Recuperação de senha 100% funcional em produção. Nenhuma pendência do backlog do professor Fábio (concluído há uma sessão). Backend e frontend compilando sem erros.
 
-**Status:** Tudo commitado e na `main`. Backend e frontend compilam sem erros (`tsc --noEmit`). Testado manualmente em produção local (conta de suporte criada direto no banco via Neon).
-
-**Pendente do backlog do professor:** nenhum — **backlog inteiro concluído** 🎉
-
-**Próximo passo sugerido:** Não há mais pedidos pendentes do professor Fábio. Os itens em aberto agora são só os que já estavam represados no roadmap por outros motivos (Resend bloqueado, WebSocket adiado por decisão própria, carrossel de mídia como ideia futura) — ver seções abaixo pra escolher por onde seguir.
+**Próximo passo sugerido:** Escolher entre implementar "Editar email" ou "Verificação real de email no cadastro" (Fase 3) — os dois agora só dependem de código, não mais de infraestrutura externa.
 
 ---
 
@@ -45,7 +40,7 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
 - **DNS:** Cloudflare (musicwork.com.br) — inclui Email Routing (suporte@ e contato@ → Gmail)
-- **Email sistema (envio):** Resend (implementado no código; verificação de domínio pendente — ver Notas importantes)
+- **Email sistema (envio):** Resend — funcionando em produção desde ago/2026
 
 ## Estrutura
 
@@ -101,6 +96,7 @@ musicwork/
 - ✅ Alterar senha (exige senha atual, com confirmação e olho de mostrar/ocultar em cada campo)
 - ✅ Email exibido como somente leitura (troca de email ainda não implementada nesta versão — backend já suporta via `/account/email`, só não está exposto no frontend)
 - ✅ Botão "Fale com o suporte" — abre/cria a conversa com a conta fixa de suporte
+- ✅ Recuperação de senha ("Esqueci minha senha") — testada de ponta a ponta em produção, envio de email via Resend funcionando
 
 ### Busca avançada ✅
 
@@ -171,6 +167,7 @@ musicwork/
 - ✅ Backend no domínio próprio: https://api.musicwork.com.br
 - ✅ CORS configurado para todos os domínios
 - ✅ Cloudflare Email Routing configurado (`suporte@` e `contato@musicwork.com.br` → Gmail)
+- ✅ Resend configurado e funcionando (domínio verificado, API key ativa no Render)
 
 ### Melhorias de login/cadastro ✅
 
@@ -178,7 +175,7 @@ musicwork/
 - ✅ Validação de formato de email
 - ✅ Validação de senha mínima (6 caracteres) no cadastro
 - ✅ Bloqueio dos campos durante o loading + spinner no botão
-- ✅ Recuperação de senha implementada (backend `/forgot-password` e `/reset-password` + telas no frontend) — envio de email pendente até verificação de domínio no Resend
+- ✅ Recuperação de senha implementada e **funcionando em produção** (backend `/forgot-password` e `/reset-password` + telas no frontend + envio de email via Resend)
 
 ### Uploads robustos ✅
 
@@ -204,16 +201,16 @@ musicwork/
 
 ## Próximos passos — ROADMAP
 
-### ⏳ Bloqueado — aguardando Resend
+### ✅ Resend — resolvido (ago/2026)
 
 - ✅ Implementar recuperação de senha (backend: /forgot-password e /reset-password)
 - ✅ Implementar telas de recuperação de senha no frontend
-- ✅ Registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF) — confirmado pelo suporte que estão válidos
-- [ ] **Bloqueado por bug interno do Resend:** identidade do domínio registrada em região AWS diferente da usada pelo envio, causando erro 403. Suporte já confirmou o problema e está corrigindo, sem prazo. Nenhuma ação nossa necessária.
-- ✅ Configurar Cloudflare Email Routing (`suporte@` e `contato@musicwork.com.br` → Gmail) — **atenção:** isso resolve só o _recebimento_ de email nesses endereços, não desbloqueia o Resend (que é usado pelo backend pra _enviar_ email — recuperação de senha, etc.). São sistemas independentes.
-- [ ] Criar API key no Resend e adicionar RESEND_API_KEY no Render
+- ✅ Registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF)
+- ✅ Bug interno do Resend corrigido (identidade do domínio, região AWS) — confirmado com teste real
+- ✅ Configurar Cloudflare Email Routing (`suporte@` e `contato@musicwork.com.br` → Gmail)
+- ✅ API key no Resend criada e configurada no Render (`RESEND_API_KEY`) — rotacionada uma vez por exposição acidental durante debug
 
-Sem ação a tomar aqui até o Resend responder o ticket.
+**Testado e funcionando em produção:** fluxo completo de recuperação de senha, do clique em "Esqueci minha senha" até login com a senha nova.
 
 ### Fase 2.5 — Social avançado ✅ CONCLUÍDA
 
@@ -230,8 +227,9 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 ### Fase 3 — Conta e segurança (parcialmente concluída)
 
 - ✅ Alterar senha (Configurações da conta)
-- [ ] Editar email (backend pronto em `/account/email`, falta expor no frontend — decisão consciente de adiar até ter fluxo de confirmação por link, que depende do Resend voltar a funcionar)
-- [ ] Verificação real de email no cadastro (também depende do Resend)
+- ✅ Recuperação de senha (backend + frontend + envio de email via Resend) — testado de ponta a ponta em produção
+- [ ] Editar email (backend pronto em `/account/email`, falta expor no frontend — agora só depende de implementação, o Resend não é mais bloqueio)
+- [ ] Verificação real de email no cadastro (agora só depende de implementação, o Resend não é mais bloqueio)
 - [ ] Login com Google (OAuth)
 
 ### Fase 4 — Features grandes (parcialmente concluída)
@@ -271,7 +269,7 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
 - ✅ Chat de suporte — conta fixa `MusicWork Suporte`, botão em Configurações, badge "oficial" fixado no topo das Mensagens
 
-**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Resend, WebSocket, OAuth, etc.) ou de novo feedback dele.
+**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Fase 3, WebSocket, OAuth, etc.) ou de novo feedback dele.
 
 ---
 
@@ -313,7 +311,7 @@ DB_PASS=...
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
-RESEND_API_KEY=... (pendente)
+RESEND_API_KEY=... (ativo em produção — ver Render; rotacionar se exposta)
 
 ### Frontend (.env)
 
@@ -380,6 +378,8 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Conversa de suporte é fixada no topo por ordenação, não por posição especial na UI:** `ConversationService.listConversations` ordena o array em JS (`isSupport` primeiro, dentro disso por data da última mensagem) — o frontend (`Messages.tsx`) só renderiza na ordem que já veio do backend, e mostra o badge "oficial" quando `conv.otherUser.isSupport` é `true`. Não hardcodar a conversa de suporte como "sempre primeiro item do array" no frontend — se o backend mudar a ordenação um dia, o frontend não deveria saber ou se importar.
 
+- **`RESEND_API_KEY` foi rotacionada em ago/2026:** a chave original (`musicwork-production-v2`) foi exposta acidentalmente durante uma sessão de debug (print de tela com o valor visível) e foi revogada no Resend por segurança. Se algum dia aparecer erro de autenticação com o Resend em produção, confirmar que a chave configurada no Render é a atual, não a antiga.
+
 ### Convenções vindas da revisão de código (jul/2026)
 
 - **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
@@ -407,10 +407,11 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
 - **Email routing (recebimento):** `suporte@musicwork.com.br` e `contato@musicwork.com.br` configurados no Cloudflare Email Routing, encaminhando pro Gmail pessoal. Funciona independente do Resend.
-- **Email sistema (envio):** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
+- **Email sistema (envio):** Resend funcionando em produção desde ago/2026 (bug do domínio corrigido do lado deles). Recuperação de senha testada de ponta a ponta.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
 - **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
 - **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)
 - **`JWT_SECRET` obrigatório:** desde a revisão de jul/2026 o backend aborta o boot se a variável não estiver definida (sem fallback `default_secret`) — garantir que ela esteja no Render e no `.env` local. Ver Convenções de código.
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
 - **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).
+- **`RESEND_API_KEY` no Render:** rotacionada em ago/2026 (a anterior foi exposta acidentalmente e revogada). Se der erro de autenticação no envio de email, confirmar que a chave configurada é a mais recente.

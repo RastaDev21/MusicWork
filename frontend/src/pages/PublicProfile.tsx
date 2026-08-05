@@ -1,11 +1,4 @@
-import {
-  Box,
-  Typography,
-  Chip,
-  Divider,
-  CircularProgress,
-  Button,
-} from "@mui/material";
+import { Box, Typography, CircularProgress, Button } from "@mui/material";
 import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import ShowCard from "../components/ShowCard/ShowCard";
@@ -18,9 +11,9 @@ import api, {
   Show,
 } from "../services/api";
 import { startConversation } from "../services/api";
-import { countryCodeToFlag } from "../constants/countries";
 import SocialLinks from "../components/profile/SocialLinks";
-import ProfessorChip from "../components/profile/ProfessorChip";
+import ProfileChips from "../components/profile/ProfileChips";
+import ProfileDetailsCard from "../components/profile/ProfileDetailsCard";
 import AudioPlayer from "../components/profile/AudioPlayer";
 interface Musician {
   id: string;
@@ -182,32 +175,11 @@ export default function PublicProfile() {
   );
 
   const detailsCard = (
-    <Box
-      sx={{
-        backgroundColor: "#1a1a1a",
-        borderRadius: 3,
-        border: "1px solid #2a2a2a",
-        p: 2,
-        width: "100%",
-      }}
-    >
-      {[
-        { label: "Instrumento", value: musician.instrument },
-        { label: "Profissão", value: musician.secondaryProfession },
-        { label: "Gênero", value: musician.genre },
-        { label: "Cidade", value: musician.city },
-      ].map((item, i) => (
-        <Box key={item.label}>
-          {i > 0 && <Divider sx={{ borderColor: "#2a2a2a", my: 1.5 }} />}
-          <Typography sx={{ color: "#666", fontSize: 12, mb: 0.5 }}>
-            {item.label}
-          </Typography>
-          <Typography sx={{ color: "#ccc", fontSize: 13 }}>
-            {item.value || "—"}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
+    <ProfileDetailsCard
+      secondaryProfession={musician.secondaryProfession}
+      city={musician.city}
+      nationality={musician.nationality}
+    />
   );
 
   return (
@@ -278,63 +250,13 @@ export default function PublicProfile() {
                 {musician.name}
               </Typography>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  mt: 0.5,
-                  mb: 1,
-                  flexWrap: "wrap",
-                }}
-              >
-                {musician.instrument && (
-                  <Chip
-                    label={musician.instrument}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#7c4dff22",
-                      color: "#9c6fe4",
-                      fontSize: 11,
-                    }}
-                  />
-                )}
-                {musician.genre && (
-                  <Chip
-                    label={musician.genre}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#ff4d6d22",
-                      color: "#ff4d6d",
-                      fontSize: 11,
-                    }}
-                  />
-                )}
-                {musician.isProfessor && <ProfessorChip />}
-                {musician.secondaryInstruments?.map(inst => (
-                  <Chip
-                    key={inst}
-                    label={inst}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#33333380",
-                      color: "#bbb",
-                      fontSize: 11,
-                    }}
-                  />
-                ))}
-                {musician.secondaryGenres?.map(g => (
-                  <Chip
-                    key={g}
-                    label={g}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#ff4d6d15",
-                      color: "#ff9baf",
-                      fontSize: 11,
-                    }}
-                  />
-                ))}
-              </Box>
+              <ProfileChips
+                instrument={musician.instrument}
+                genre={musician.genre}
+                secondaryInstruments={musician.secondaryInstruments}
+                secondaryGenres={musician.secondaryGenres}
+                isProfessor={musician.isProfessor}
+              />
 
               {/* Botão de seguir - só no mobile, logo abaixo dos chips */}
               <Box
@@ -344,22 +266,51 @@ export default function PublicProfile() {
                 {messageButton}
               </Box>
 
-              <Typography sx={{ color: "#666", fontSize: 13 }}>
-                {musician.city}
-                {musician.nationality && (
-                  <Box component="span" sx={{ ml: 1 }}>
-                    {countryCodeToFlag(musician.nationality)}
-                  </Box>
-                )}
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 4,
+                  mt: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 4 }}>
+                  {[
+                    { label: "Seguidores", value: followers },
+                    { label: "Seguindo", value: followingCount },
+                  ].map(stat => (
+                    <Box key={stat.label} sx={{ textAlign: "center" }}>
+                      <Typography
+                        sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
+                      >
+                        {stat.value}
+                      </Typography>
+                      <Typography sx={{ color: "#666", fontSize: 12 }}>
+                        {stat.label}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
 
-              <SocialLinks
-                instagram={musician.instagram}
-                youtube={musician.youtube}
-                spotify={musician.spotify}
-                facebook={musician.facebook}
-                tiktok={musician.tiktok}
-              />
+                <SocialLinks
+                  instagram={musician.instagram}
+                  youtube={musician.youtube}
+                  spotify={musician.spotify}
+                  facebook={musician.facebook}
+                  tiktok={musician.tiktok}
+                />
+              </Box>
+
+              {musician.bio && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}
+                  >
+                    {musician.bio}
+                  </Typography>
+                </Box>
+              )}
 
               <AudioPlayer url={musician.profileAudioUrl} />
 

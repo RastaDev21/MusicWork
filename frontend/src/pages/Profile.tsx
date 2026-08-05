@@ -1,9 +1,7 @@
 import {
   Box,
   Typography,
-  Chip,
   Button,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -41,7 +39,8 @@ import { useSnackbar } from "notistack";
 import { instruments, genres } from "../constants/musicOptions";
 import { countries, countryCodeToFlag } from "../constants/countries";
 import SocialLinks from "../components/profile/SocialLinks";
-import ProfessorChip from "../components/profile/ProfessorChip";
+import ProfileChips from "../components/profile/ProfileChips";
+import ProfileDetailsCard from "../components/profile/ProfileDetailsCard";
 import NewPost from "../components/NewPost/NewPost";
 import AudioPlayer from "../components/profile/AudioPlayer";
 interface Post {
@@ -396,32 +395,11 @@ export default function Profile() {
   );
 
   const detailsCard = (
-    <Box
-      sx={{
-        backgroundColor: "#1a1a1a",
-        borderRadius: 3,
-        border: "1px solid #2a2a2a",
-        p: 2,
-        width: "100%",
-      }}
-    >
-      {[
-        { label: "Instrumento", value: user?.instrument },
-        { label: "Profissão", value: secondaryProfession },
-        { label: "Gênero", value: genre },
-        { label: "Cidade", value: user?.city },
-      ].map((item, i) => (
-        <Box key={item.label}>
-          {i > 0 && <Divider sx={{ borderColor: "#2a2a2a", my: 1.5 }} />}
-          <Typography sx={{ color: "#666", fontSize: 12, mb: 0.5 }}>
-            {item.label}
-          </Typography>
-          <Typography sx={{ color: "#ccc", fontSize: 13 }}>
-            {item.value || "—"}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
+    <ProfileDetailsCard
+      secondaryProfession={secondaryProfession}
+      city={user?.city}
+      nationality={nationality}
+    />
   );
 
   return (
@@ -549,85 +527,65 @@ export default function Profile() {
               <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: 22 }}>
                 {user?.name}
               </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  mt: 0.5,
-                  mb: 1,
-                  flexWrap: "wrap",
-                }}
-              >
-                {user?.instrument && (
-                  <Chip
-                    label={user.instrument}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#7c4dff22",
-                      color: "#9c6fe4",
-                      fontSize: 11,
-                    }}
-                  />
-                )}
-                {genre && (
-                  <Chip
-                    label={genre}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#ff4d6d22",
-                      color: "#ff4d6d",
-                      fontSize: 11,
-                    }}
-                  />
-                )}
-                {isProfessor && <ProfessorChip />}
-                {secondaryInstruments.map(inst => (
-                  <Chip
-                    key={inst}
-                    label={inst}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#33333380",
-                      color: "#bbb",
-                      fontSize: 11,
-                    }}
-                  />
-                ))}
-                {secondaryGenres.map(g => (
-                  <Chip
-                    key={g}
-                    label={g}
-                    size="small"
-                    sx={{
-                      backgroundColor: "#ff4d6d15",
-                      color: "#ff9baf",
-                      fontSize: 11,
-                    }}
-                  />
-                ))}
-              </Box>
+              <ProfileChips
+                instrument={user?.instrument}
+                genre={genre}
+                secondaryInstruments={secondaryInstruments}
+                secondaryGenres={secondaryGenres}
+                isProfessor={isProfessor}
+              />
 
               {/* Botão de editar - só no mobile, logo abaixo dos chips */}
               <Box sx={{ display: { xs: "block", md: "none" }, mb: 1.5 }}>
                 {editButton}
               </Box>
 
-              <Typography sx={{ color: "#666", fontSize: 13 }}>
-                {user?.city}
-                {nationality && (
-                  <Box component="span" sx={{ ml: 1 }}>
-                    {countryCodeToFlag(nationality)}
-                  </Box>
-                )}
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 4,
+                  mt: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 4 }}>
+                  {[
+                    { label: "Posts", value: posts.length },
+                    { label: "Seguidores", value: followers },
+                    { label: "Seguindo", value: followingCount },
+                  ].map(stat => (
+                    <Box key={stat.label} sx={{ textAlign: "center" }}>
+                      <Typography
+                        sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
+                      >
+                        {stat.value}
+                      </Typography>
+                      <Typography sx={{ color: "#666", fontSize: 12 }}>
+                        {stat.label}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
 
-              <SocialLinks
-                instagram={instagram}
-                youtube={youtube}
-                spotify={spotify}
-                facebook={facebook}
-                tiktok={tiktok}
-              />
+                <SocialLinks
+                  instagram={instagram}
+                  youtube={youtube}
+                  spotify={spotify}
+                  facebook={facebook}
+                  tiktok={tiktok}
+                />
+              </Box>
+
+              {bio && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}
+                  >
+                    {bio}
+                  </Typography>
+                </Box>
+              )}
 
               <AudioPlayer url={profileAudioUrl} />
 

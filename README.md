@@ -2,22 +2,28 @@
 
 ## 🔄 Onde paramos (última atualização: 05/08/2026)
 
-**Última sessão:** Ponto 4 do backlog do professor Fábio — reorganização visual do cabeçalho do perfil, pra acabar com a duplicação de informação que ficou evidente depois de tantas features novas (gêneros extras, chip de Professor, player).
+**Última sessão:** Ponto 8 do backlog do professor Fábio — chat de suporte com conta fixa. Esse era o **último item pendente** do backlog inteiro do professor.
 
 **O que foi feito:**
 
-- ✅ **Chips do cabeçalho** (`components/profile/ProfileChips.tsx`, novo): Professor sempre em primeiro (mais ênfase), depois instrumento e gênero principal, depois os secundários — todos exibidos sempre, quebrando linha naturalmente. Chegamos a testar um "+N mais" que expandia/recolhia os secundários, mas foi descartado depois de testar na prática: a posição do toggle ficava inconsistente dependendo de quantos chips cabiam por linha (ora isolado sozinho, ora no meio da lista). Decisão final: mostrar tudo sempre, sem esconder nada.
-- ✅ **Card de detalhes** (`components/profile/ProfileDetailsCard.tsx`, novo): tirou `Instrumento` e `Gênero` (já aparecem completos nos chips) e trocou por `Profissão`, `Cidade` e `Nacionalidade` por extenso (antes a nacionalidade só aparecia como bandeira solta ao lado da cidade). Zero duplicação agora — cada informação mora num lugar só.
-- ✅ **Estatísticas e redes sociais** ficaram na mesma linha (antes eram duas linhas separadas), com `flexWrap` pra quebrar sozinho no mobile sem precisar de media query manual.
-- ✅ Aplicado em `Profile.tsx` e `PublicProfile.tsx`, ambos compilando limpo e testados manualmente (incluindo o comportamento de quebra de linha no mobile).
+- ✅ **Conta fixa `MusicWork Suporte`** (`isSupport` no model `User`, igual padrão do `isProfessor`) — escondida da Busca e do Work (`UserService.searchUsers` e `WorkService.listWorks` agora excluem `isSupport: true`).
+- ✅ **Botão "🎧 Fale com o suporte"** na tela de Configurações — chama `POST /conversations/support`, que acha a conta de suporte no backend e cria/reabre a conversa, sem o frontend precisar saber o ID dela.
+- ✅ **Conversa de suporte fixada no topo** da lista de Mensagens (`ConversationService.listConversations` ordena por `isSupport` antes da data), com badge verde "oficial" e ícone de headset no avatar.
+- ✅ Tela de chat em si **sem nenhuma mudança** — reaproveita 100% o que já existia (`Chat.tsx` usa `otherUser.name`/`avatarUrl` de forma genérica).
+- ✅ Testado de ponta a ponta: criação da conta no banco, botão abrindo a conversa, badge aparecendo, mensagem chegando e sendo respondida do outro lado (logado como a conta de suporte).
 
-**Decisão de processo (importante pra não repetir):** o checkout local ficou preso numa branch antiga (`revisao-codigo-jul2026`) depois da revisão de código de jul/2026, e vários commits foram parar nela sem querer, exigindo um `git merge` manual pra trazer tudo de volta pra `main`. Decisão registrada: **por enquanto, sempre trabalhar direto na `main`**, sem branch de feature — só faz sentido criar uma branch de desenvolvimento separada quando o app tiver usuários reais em produção, pra não arriscar quebrar algo ao vivo. Até lá, checar a branch atual (`git status` ou o canto inferior esquerdo do VS Code) antes de cada commit é a única salvaguarda.
+**Também resolvido nessa sessão (não estava no backlog, mas destravou sozinho):** configuramos o **Cloudflare Email Routing** pra `suporte@musicwork.com.br` e `contato@musicwork.com.br`, ambos encaminhando pro Gmail pessoal. Isso é **independente do bloqueio do Resend** — Email Routing é só pra _receber_ email nesses endereços; o Resend continua bloqueado pra _enviar_ (recuperação de senha, etc.), sem relação uma coisa com a outra.
 
-**Status:** Tudo commitado e na `main` (local e GitHub sincronizados). Backend e frontend compilam sem erros (`tsc --noEmit`).
+**Ajustes finos de UI feitos no caminho:**
 
-**Pendente do backlog do professor:** só o ponto 8 (chat de suporte com conta fixa) — é o único item que resta.
+- Tela de Configurações (`Settings.tsx`) não tinha o `p: 2` padrão que `Messages.tsx`/`Work.tsx` já tinham — corrigido pra `pt: 2, px: 2` (sem padding embaixo, pra não sobrar altura).
+- Campos de senha ganharam `size="small"` e `mb` reduzido, pra a tela caber sem scroll com o card de suporte novo.
 
-**Próximo passo sugerido:** Ponto 8 — chat de suporte, reaproveitando o sistema de chat já existente.
+**Status:** Tudo commitado e na `main`. Backend e frontend compilam sem erros (`tsc --noEmit`). Testado manualmente em produção local (conta de suporte criada direto no banco via Neon).
+
+**Pendente do backlog do professor:** nenhum — **backlog inteiro concluído** 🎉
+
+**Próximo passo sugerido:** Não há mais pedidos pendentes do professor Fábio. Os itens em aberto agora são só os que já estavam represados no roadmap por outros motivos (Resend bloqueado, WebSocket adiado por decisão própria, carrossel de mídia como ideia futura) — ver seções abaixo pra escolher por onde seguir.
 
 ---
 
@@ -38,8 +44,8 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Deploy:** Render (backend) + Vercel (frontend)
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
-- **DNS:** Cloudflare (musicwork.com.br)
-- **Email sistema:** Resend (implementado no código; verificação de domínio pendente — ver Notas importantes)
+- **DNS:** Cloudflare (musicwork.com.br) — inclui Email Routing (suporte@ e contato@ → Gmail)
+- **Email sistema (envio):** Resend (implementado no código; verificação de domínio pendente — ver Notas importantes)
 
 ## Estrutura
 
@@ -56,7 +62,7 @@ musicwork/
 │ └── server.ts
 └── frontend/
 └── src/
-├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip compartilhados entre Profile/PublicProfile/Search)
+├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip, ProfileChips, ProfileDetailsCard compartilhados entre Profile/PublicProfile/Search)
 ├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; youtube.ts — helper de embed de vídeo em posts)
 ├── contexts/ (AuthContext)
 ├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
@@ -75,6 +81,7 @@ musicwork/
 - ✅ Ícone de chat no navbar com badge de não lidas (ao lado do sino de notificações)
 - ✅ Atualização por polling (mensagens a cada 4s dentro do chat aberto, contador de não lidas a cada 10s) — mesmo padrão das notificações
 - ✅ Botões de anexar mídia travados durante o envio, evitando clique duplo/estado inconsistente
+- ✅ **Chat de suporte** — conta fixa `MusicWork Suporte` (`isSupport`), acessível via botão em Configurações, sempre fixada no topo da lista de Mensagens com badge "oficial"
 
 ### Base ✅
 
@@ -93,6 +100,7 @@ musicwork/
 - ✅ Página de Configurações (`/configuracoes`), acessível pelo menu do avatar
 - ✅ Alterar senha (exige senha atual, com confirmação e olho de mostrar/ocultar em cada campo)
 - ✅ Email exibido como somente leitura (troca de email ainda não implementada nesta versão — backend já suporta via `/account/email`, só não está exposto no frontend)
+- ✅ Botão "Fale com o suporte" — abre/cria a conversa com a conta fixa de suporte
 
 ### Busca avançada ✅
 
@@ -102,6 +110,7 @@ musicwork/
 - ✅ Limpar filtros
 - ✅ Busca combinada (texto + filtros, todos os filtros se combinam com E lógico)
 - ✅ Clicar no resultado abre o perfil público do músico
+- ✅ Conta de suporte (`isSupport`) nunca aparece nos resultados
 
 ### Work (marketplace) ✅
 
@@ -113,6 +122,7 @@ musicwork/
 - ✅ Contato direto (WhatsApp ou email)
 - ✅ Tipo Ofereço / Procuro
 - ✅ Clicar no autor do work abre o perfil dele
+- ✅ Works da conta de suporte (`isSupport`) nunca aparecem na listagem
 
 ### Feed e posts ✅
 
@@ -148,6 +158,7 @@ musicwork/
 - ✅ Nacionalidade no perfil, exibida com bandeira via emoji Unicode
 - ✅ Música do perfil — upload de áudio próprio (`profileAudioUrl`, via Cloudinary), player customizado em loop, trocável a qualquer momento (substituiu o embed do Spotify)
 - ✅ Campo "Professor" (`isProfessor`) — chip "🎓 Professor" no cabeçalho do perfil quando marcado
+- ✅ Chips do cabeçalho e card de detalhes reorganizados sem duplicação de informação (`ProfileChips` + `ProfileDetailsCard`)
 
 ### Deploy e Infraestrutura ✅
 
@@ -159,6 +170,7 @@ musicwork/
 - ✅ Frontend no domínio próprio: https://musicwork.com.br
 - ✅ Backend no domínio próprio: https://api.musicwork.com.br
 - ✅ CORS configurado para todos os domínios
+- ✅ Cloudflare Email Routing configurado (`suporte@` e `contato@musicwork.com.br` → Gmail)
 
 ### Melhorias de login/cadastro ✅
 
@@ -198,7 +210,7 @@ musicwork/
 - ✅ Implementar telas de recuperação de senha no frontend
 - ✅ Registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF) — confirmado pelo suporte que estão válidos
 - [ ] **Bloqueado por bug interno do Resend:** identidade do domínio registrada em região AWS diferente da usada pelo envio, causando erro 403. Suporte já confirmou o problema e está corrigindo, sem prazo. Nenhuma ação nossa necessária.
-- [ ] Configurar Cloudflare Email Routing (contato@musicwork.com.br → Gmail)
+- ✅ Configurar Cloudflare Email Routing (`suporte@` e `contato@musicwork.com.br` → Gmail) — **atenção:** isso resolve só o _recebimento_ de email nesses endereços, não desbloqueia o Resend (que é usado pelo backend pra _enviar_ email — recuperação de senha, etc.). São sistemas independentes.
 - [ ] Criar API key no Resend e adicionar RESEND_API_KEY no Render
 
 Sem ação a tomar aqui até o Resend responder o ticket.
@@ -213,6 +225,7 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 
 - ✅ Conversas e mensagens (texto, foto, vídeo)
 - ✅ Sem restrição de quem pode iniciar conversa (decisão consciente, ver Convenções abaixo)
+- ✅ Chat de suporte com conta fixa (ver backlog do professor, ponto 8)
 
 ### Fase 3 — Conta e segurança (parcialmente concluída)
 
@@ -238,7 +251,7 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 
 - [ ] Carrossel de múltiplas fotos/vídeos por post (hoje é limitado a 1 mídia por post — decisão de escopo consciente, ver Convenções abaixo)
 
-### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões
+### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões — ✅ CONCLUÍDO
 
 - ✅ Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
 - ✅ Facebook e TikTok como links sociais (mesmo padrão de Instagram/YouTube/Spotify)
@@ -247,16 +260,18 @@ Sem ação a tomar aqui até o Resend responder o ticket.
 - ✅ Player de música no perfil — decisão inicial foi embed do Spotify via `favoriteSongUrl`, depois substituído por upload de áudio próprio (`profileAudioUrl`) — ver segunda rodada abaixo.
 - ✅ Filtro de "Professor" na busca — decisão: Opção B, campo explícito `isProfessor` no perfil (mantém Busca e Work independentes)
 - ✅ Nacionalidade no perfil, com bandeira (emoji Unicode, sem precisar de imagem)
-- [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte
+- ✅ Chat de suporte — reaproveitou o sistema de chat já existente, com conta fixa `isSupport` (ver segunda rodada abaixo)
 
-### 📋 Feedback do professor Fábio (revisão ago/2026) — segunda rodada
+### 📋 Feedback do professor Fábio (revisão ago/2026) — segunda rodada — ✅ CONCLUÍDO
 
 - ✅ Renomear checkbox "Só professores" → "Buscar professores" na busca
 - ✅ Vídeo do YouTube embutido nos posts (antes só aparecia o link em texto)
 - ✅ Criar post direto da página de perfil (antes só dava pra postar pelo Feed)
 - ✅ Player de música do perfil trocado de embed do Spotify pra upload de áudio próprio (decisão: o link do artista já cobria a divulgação; o player devia tocar áudio de verdade, não outro link)
 - ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
-- [ ] Chat de suporte — reaproveitar o sistema de chat já existente, com uma conta fixa de suporte (único item pendente do backlog do professor)
+- ✅ Chat de suporte — conta fixa `MusicWork Suporte`, botão em Configurações, badge "oficial" fixado no topo das Mensagens
+
+**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Resend, WebSocket, OAuth, etc.) ou de novo feedback dele.
 
 ---
 
@@ -333,7 +348,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Gênero musical do show é independente do gênero do perfil do músico:** cada show tem seu próprio campo `genre`, não herda do perfil de quem cria. Decisão consciente: permite que um músico toque em um evento de estilo diferente do seu gênero usual sem ficar inconsistente no filtro da Agenda.
 
-- **`api.ts` organizado em seções por assunto:** o arquivo cresceu bastante e foi reagrupado em blocos comentados (Autenticação e conta / Perfil e uploads / Notificações / Posts / Shows e Agenda), sem alterar nenhum comportamento — só facilita encontrar funções relacionadas ao adicionar código novo.
+- **`api.ts` organizado em seções por assunto:** o arquivo cresceu bastante e foi reagrupado em blocos comentados (Autenticação e conta / Perfil e uploads / Notificações / Posts / Shows e Agenda / Chat), sem alterar nenhum comportamento — só facilita encontrar funções relacionadas ao adicionar código novo.
 
 - **Pasta `backend/dist` no `.gitignore`:** é a saída compilada do TypeScript (gerada automaticamente pelo `npm run build`), não deve ser versionada — o Render compila sozinho no deploy.
 
@@ -358,6 +373,12 @@ VITE_API_URL=https://api.musicwork.com.br
 - **`ProfileChips` mostra todos os chips sempre, sem toggle de expandir/recolher:** foi testado um "+N mais" que expandia instrumentos/gêneros secundários (ago/2026, ponto 4 do backlog), mas descartado depois de testar na prática — a posição do botão de toggle ficava inconsistente dependendo de quantos chips cabiam por linha (às vezes isolado sozinho numa linha, às vezes no meio da lista, quebrando a leitura). Decisão final: sem lógica de expandir, só `flexWrap` deixando quebrar linha à vontade. Ordem fixa: Professor primeiro (mais ênfase), depois instrumento e gênero principal, depois secundários.
 
 - **`ProfileDetailsCard` não repete nada que já aparece em `ProfileChips`:** o card mostra só Profissão, Cidade e Nacionalidade (por extenso, com bandeira) — Instrumento e Gênero saíram de lá porque já aparecem completos nos chips do cabeçalho. Antes de chegar nessa versão, foi cogitado um card só com Profissão (ficava "sozinho" demais) e também remover o card por completo com Profissão virando chip (misturava categorias diferentes de informação — chips são valores de lista fixa, profissão é texto livre). Se um dia adicionar mais um campo de perfil, checar primeiro se ele já aparece em algum outro lugar da tela antes de repetir aqui.
+
+- **Conta de suporte (`isSupport`) é um usuário normal, só com uma flag:** não é um tipo de conta separado no schema, nem tem tabela própria — é a mesma tabela `users`, com `isSupport: true`. Isso permite reaproveitar 100% o sistema de chat, upload de avatar, etc. sem código novo. `UserService.getSupportAccount()` (backend) e `ConversationService.startSupportConversation(userId)` acham essa conta pelo flag — nunca hardcoded por ID ou email, pra não quebrar se a conta for recriada.
+
+- **Conta de suporte é excluída de Busca e Work no nível do banco, não do frontend:** `UserService.searchUsers` sempre adiciona `{ isSupport: { [Op.not]: true } }` nas condições, e `WorkService.listWorks` filtra pelo mesmo campo no `include` do model `User`. Escondida na query, não com `if` no componente — evita que a conta apareça se algum outro endpoint futuro reusar essas queries sem replicar o filtro.
+
+- **Conversa de suporte é fixada no topo por ordenação, não por posição especial na UI:** `ConversationService.listConversations` ordena o array em JS (`isSupport` primeiro, dentro disso por data da última mensagem) — o frontend (`Messages.tsx`) só renderiza na ordem que já veio do backend, e mostra o badge "oficial" quando `conv.otherUser.isSupport` é `true`. Não hardcodar a conversa de suporte como "sempre primeiro item do array" no frontend — se o backend mudar a ordenação um dia, o frontend não deveria saber ou se importar.
 
 ### Convenções vindas da revisão de código (jul/2026)
 
@@ -385,9 +406,11 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Cold start:** o backend no Render free "dorme" após inatividade — primeiro acesso pode levar ~30-50s
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
-- **Email routing:** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
+- **Email routing (recebimento):** `suporte@musicwork.com.br` e `contato@musicwork.com.br` configurados no Cloudflare Email Routing, encaminhando pro Gmail pessoal. Funciona independente do Resend.
+- **Email sistema (envio):** recuperação de senha já implementada no código; DNS (DKIM/SPF) validado. Envio bloqueado por bug interno do Resend (identidade do domínio em região AWS incorreta, erro 403) — suporte já ciente, corrigindo sem prazo definido.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
 - **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
 - **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)
 - **`JWT_SECRET` obrigatório:** desde a revisão de jul/2026 o backend aborta o boot se a variável não estiver definida (sem fallback `default_secret`) — garantir que ela esteja no Render e no `.env` local. Ver Convenções de código.
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
+- **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).

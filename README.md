@@ -1,24 +1,25 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 05/08/2026)
+## 🔄 Onde paramos (última atualização: 06/08/2026)
 
-**Última sessão:** O bug do Resend (identidade do domínio na região AWS errada) foi corrigido do lado deles — testamos e **recuperação de senha está funcionando de ponta a ponta em produção**.
+**Última sessão:** Dois bugs em produção encontrados e corrigidos no perfil, ambos sobras da sessão do ponto 4 (reorganização dos chips).
 
 **O que foi feito:**
 
-- ✅ Confirmado no Resend: domínio `musicwork.com.br` verificado, região `São Paulo (sa-east-1)` — correta.
-- ✅ **Rotacionada a API key** do Resend — a antiga (`musicwork-production-v2`) foi exposta acidentalmente durante a depuração (print de tela com o valor visível) e foi revogada por segurança; criada uma nova e atualizada no Render.
-- ✅ Testado o fluxo completo: "Esqueci minha senha" → email chega (`contato@musicwork.com.br`) → botão "Redefinir senha" → nova senha aceita → login funciona com a senha nova.
+- ✅ **Duplicação de Posts/Seguidores/Seguindo** no `Profile.tsx` e `PublicProfile.tsx` — a edição que reordenou stats/redes/bio/player deixou o bloco antigo sem remover, então o número aparecia duas vezes na tela. Removido o bloco sobrando nos dois arquivos.
+- ✅ **Perfil público não mostrava a lista de posts** — só o post fixado aparecia; o `PublicProfile.tsx` nunca buscava `/posts/user/:id` como o `Profile.tsx` já fazia. Adicionada a busca e a listagem completa (sem os botões de deletar/fixar, que só fazem sentido no próprio perfil).
+- ✅ **Contador de "Posts" ausente no perfil público** — a linha de estatísticas só tinha "Seguidores" e "Seguindo"; adicionado "Posts" também, usando a lista que passou a ser buscada.
+- ✅ Adicionada uma fase nova no roadmap pra "Publicar na Play Store" — já tinha sido investigado (empacotamento PWA→TWA), mas nunca ficou documentado como pendência formal.
+- ✅ `TECH_DEBT.md` atualizado — o item de recuperação de senha estava desatualizado, ainda listado como "não funciona de verdade" mesmo depois do Resend já ter sido corrigido.
 
-**Desbloqueado por esse conserto:**
+**Status:** Tudo commitado e testado em produção pelo usuário.
 
-- Recuperação de senha (já estava implementada no código, só faltava isso)
-- Verificação real de email no cadastro (Fase 3) — pode ser implementada agora
-- Editar email (Fase 3) — o fluxo de confirmação por link também pode avançar
+**Próximo passo sugerido:** Escolher um item da lista represada, ordenada do mais fácil pro mais difícil:
 
-**Status:** Recuperação de senha 100% funcional em produção. Nenhuma pendência do backlog do professor Fábio (concluído há uma sessão). Backend e frontend compilando sem erros.
-
-**Próximo passo sugerido:** Escolher entre implementar "Editar email" ou "Verificação real de email no cadastro" (Fase 3) — os dois agora só dependem de código, não mais de infraestrutura externa.
+1. Separar banco dev/produção, cold start do Render (configuração)
+2. Editar email, verificação de email no cadastro, limpar fotos órfãs do Cloudinary (código médio)
+3. Login com Google, carrossel de mídia (código difícil)
+4. WebSocket, publicar de verdade na Play Store (infraestrutura + trade-offs)
 
 ---
 
@@ -130,6 +131,7 @@ musicwork/
 - ✅ Curtir e comentar funcionam normalmente em posts com mídia, incluindo o fixado
 - ✅ Vídeo do YouTube embutido automaticamente quando o post tem um link no texto
 - ✅ Criar post direto da página de perfil, além do Feed
+- ✅ Lista completa de posts (não só o fixado) aparece também no perfil público de outros músicos
 
 ### Social ✅
 
@@ -155,6 +157,7 @@ musicwork/
 - ✅ Música do perfil — upload de áudio próprio (`profileAudioUrl`, via Cloudinary), player customizado em loop, trocável a qualquer momento (substituiu o embed do Spotify)
 - ✅ Campo "Professor" (`isProfessor`) — chip "🎓 Professor" no cabeçalho do perfil quando marcado
 - ✅ Chips do cabeçalho e card de detalhes reorganizados sem duplicação de informação (`ProfileChips` + `ProfileDetailsCard`)
+- ✅ Contador de Posts/Seguidores/Seguindo sem duplicação, igual no perfil próprio e público
 
 ### Deploy e Infraestrutura ✅
 
@@ -249,6 +252,16 @@ musicwork/
 
 - [ ] Carrossel de múltiplas fotos/vídeos por post (hoje é limitado a 1 mídia por post — decisão de escopo consciente, ver Convenções abaixo)
 
+### Fase 7 — Publicação em loja (investigado, não concretizado)
+
+- [ ] Empacotar o PWA pra Google Play Store — já foi investigado o caminho (Bubblewrap/TWA ou PWABuilder), mas nunca finalizado
+- [ ] Criar conta no Google Play Console (taxa única de $25)
+- [ ] Política de privacidade publicada (exigência da loja)
+- [ ] Ícones e screenshots no formato exigido pela loja
+- [ ] Passar pelo processo de revisão do Google (pode levar dias, às vezes pede ajustes)
+
+**Nota:** a parte técnica de empacotar o PWA é mecânica; a maior fricção está fora do código (conta, política de privacidade, revisão do Google). App iOS/App Store não está nem cogitado ainda.
+
 ### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões — ✅ CONCLUÍDO
 
 - ✅ Múltiplos gêneros musicais no perfil (mesmo padrão dos instrumentos secundários)
@@ -269,7 +282,7 @@ musicwork/
 - ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
 - ✅ Chat de suporte — conta fixa `MusicWork Suporte`, botão em Configurações, badge "oficial" fixado no topo das Mensagens
 
-**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Fase 3, WebSocket, OAuth, etc.) ou de novo feedback dele.
+**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Fase 3, WebSocket, OAuth, Play Store etc.) ou de novo feedback dele.
 
 ---
 
@@ -380,6 +393,10 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **`RESEND_API_KEY` foi rotacionada em ago/2026:** a chave original (`musicwork-production-v2`) foi exposta acidentalmente durante uma sessão de debug (print de tela com o valor visível) e foi revogada no Resend por segurança. Se algum dia aparecer erro de autenticação com o Resend em produção, confirmar que a chave configurada no Render é a atual, não a antiga.
 
+- **`PublicProfile.tsx` busca posts via `/posts/user/:id`, igual `Profile.tsx`:** até ago/2026 essa tela só buscava o post fixado (`getPinnedPost`), nunca a lista completa — bug silencioso que só apareceu quando alguém visitou um perfil com mais de um post. O `PostCard` renderizado ali não recebe `isOwner`, então os botões de deletar/fixar já ficam escondidos automaticamente (prop opcional, `undefined` por padrão).
+
+- **Ao reordenar blocos de JSX (mover um trecho pra outro lugar da página), sempre confirmar que o bloco antigo foi removido, não só que o novo foi inserido:** dois bugs de duplicação (Posts/Seguidores/Seguindo em `Profile.tsx` e `PublicProfile.tsx`) vieram exatamente disso — a edição inseriu o bloco novo no lugar certo, mas o antigo ficou esquecido mais abaixo no arquivo. Depois de qualquer reordenação, um `grep` pelo texto-chave do bloco (ex: `"Seguidores"`) confirmando que só aparece uma vez é mais confiável que só ler o diff.
+
 ### Convenções vindas da revisão de código (jul/2026)
 
 - **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
@@ -415,3 +432,111 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
 - **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).
 - **`RESEND_API_KEY` no Render:** rotacionada em ago/2026 (a anterior foi exposta acidentalmente e revogada). Se der erro de autenticação no envio de email, confirmar que a chave configurada é a mais recente.
+- **Play Store:** ainda não publicado, ver Fase 7 no roadmap. O app já é PWA instalável (ícone próprio, monograma "MW"), mas a publicação formal na loja depende de empacotamento (TWA/Bubblewrap) e trâmites fora do código.
+
+# 🛠️ Dívida Técnica & Melhorias Futuras — MusicWork
+
+Itens conhecidos que funcionam no estágio atual mas precisam ser revisitados.
+Cada item tem: contexto, quando resolver e como resolver.
+
+---
+
+## 🔴 Alta prioridade
+
+### Separar banco de desenvolvimento do de produção
+
+**Contexto:** Hoje o backend local e o de produção apontam para o mesmo banco Neon
+(a `DATABASE_URL` no `.env` é a mesma do Render). Testar localmente mexe nos dados
+reais que aparecem no app publicado.
+
+**Quando resolver:**
+
+- Antes do app ter usuários reais que não podem ser perdidos
+- Ou quando um teste local acidentalmente quebrar dados de produção
+
+**Como resolver:**
+
+- Criar um 2º projeto Neon gratuito (banco de dev)
+- `.env` local aponta pro banco de dev; Render continua no de produção
+- Rodar o sync/seed no banco de dev para ter dados de teste isolados
+
+---
+
+## 🟡 Média prioridade
+
+### Limpar fotos órfãs no Cloudinary ao trocar
+
+**Contexto:** Quando o usuário troca a foto de perfil ou capa, a imagem antiga fica
+órfã no Cloudinary para sempre. Não é urgente (o free tier aguenta muito acúmulo),
+mas com o tempo gera lixo desnecessário.
+
+**Como resolver:**
+
+- Salvar o `public_id` de cada foto no banco (hoje guardamos só a URL)
+- Ao subir uma nova, chamar `cloudinary.uploader.destroy(public_id_antigo)`
+- Bom de fazer junto com outras mudanças na área de perfil
+
+### Verificação real de email no cadastro
+
+**Contexto:** A validação de email é só de formato (regex no frontend). Qualquer
+email com formato válido é aceito, mesmo que não exista de verdade.
+
+**Como resolver:**
+
+- Reaproveitar o `EmailService` (Resend) que já existe pra recuperação de senha
+- Enviar link/código de confirmação no cadastro
+- Marcar usuário como "verificado" só após confirmar
+
+### Editar email no frontend
+
+**Contexto:** O backend já suporta troca de email via `/account/email`, mas isso
+nunca foi exposto na tela de Configurações.
+
+**Como resolver:**
+
+- Montar a tela (parecida com o card de "Alterar senha" que já existe)
+- Decidir se vai ter confirmação por link antes de trocar de verdade (agora que o
+  Resend funciona, dá pra fazer isso com segurança)
+
+---
+
+## 🟢 Baixa prioridade / quando der
+
+### Cold start do backend (~30-50s)
+
+**Contexto:** O Render free coloca o serviço em repouso após inatividade. O primeiro
+acesso depois disso demora pra "acordar".
+
+**Como resolver:**
+
+- Plano pago do Render, OU
+- Um ping periódico (cron externo, ex: cron-job.org) para manter o serviço acordado
+
+### Publicar na Google Play Store
+
+**Contexto:** O app já é PWA instalável, mas nunca foi publicado formalmente na loja.
+Já foi investigado o caminho técnico (Bubblewrap/TWA, PWABuilder), sem finalizar.
+
+**Como resolver:**
+
+- Empacotar o PWA via TWA (Trusted Web Activity)
+- Criar conta no Google Play Console (taxa única de $25)
+- Publicar política de privacidade (exigência da loja)
+- Preparar ícones/screenshots no formato certo
+- Passar pela revisão do Google (pode levar dias, às vezes pede ajustes)
+
+Ver Fase 7 no README para o detalhamento no roadmap principal.
+
+---
+
+## ✅ Resolvidos
+
+- **Uploads em filesystem efêmero** -> migrado para Cloudinary (jun 2026). Fotos
+  agora persistem entre deploys.
+- **Recuperação de senha não enviava email de verdade** -> bug do Resend (identidade
+  do domínio em região AWS errada) corrigido do lado deles em ago/2026. Fluxo testado
+  de ponta a ponta em produção. Ver README, seção "Resend — resolvido".
+
+---
+
+_Última atualização: agosto 2026_

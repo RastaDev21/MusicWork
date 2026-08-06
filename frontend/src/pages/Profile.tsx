@@ -589,35 +589,6 @@ export default function Profile() {
 
               <AudioPlayer url={profileAudioUrl} />
 
-              <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
-                {[
-                  { label: "Posts", value: posts.length },
-                  { label: "Seguidores", value: followers },
-                  { label: "Seguindo", value: followingCount },
-                ].map(stat => (
-                  <Box key={stat.label} sx={{ textAlign: "center" }}>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography sx={{ color: "#666", fontSize: 12 }}>
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-
-              {bio && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography
-                    sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}
-                  >
-                    {bio}
-                  </Typography>
-                </Box>
-              )}
-
               {/* Card de detalhes - só no mobile, depois da bio */}
               <Box sx={{ display: { xs: "block", md: "none" }, mt: 2 }}>
                 {detailsCard}

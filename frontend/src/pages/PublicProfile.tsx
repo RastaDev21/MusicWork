@@ -38,6 +38,26 @@ interface Musician {
   profileAudioUrl?: string | null;
 }
 
+interface Post {
+  id: string;
+  userId: string;
+  content: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  isPinned?: boolean;
+  createdAt: string;
+  likesCount: number;
+  likedByMe: boolean;
+  commentsCount: number;
+  User: {
+    name: string;
+    instrument: string;
+    secondaryProfession: string;
+    city: string;
+    avatarUrl: string | null;
+  };
+}
+
 interface PinnedPost {
   id: string;
   userId: string;
@@ -70,6 +90,7 @@ function timeAgo(date: string) {
 export default function PublicProfile() {
   const { id } = useParams();
   const [musician, setMusician] = useState<Musician | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [pinnedPost, setPinnedPost] = useState<PinnedPost | null>(null);
   const [shows, setShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +116,8 @@ export default function PublicProfile() {
           setPinnedPost(pinned);
           const showsData = await listShowsByUser(id);
           setShows(showsData);
+          const postsRes = await api.get(`/posts/user/${id}`);
+          setPosts(postsRes.data);
         }
       } catch (error) {
         console.error("Erro ao carregar perfil:", error);
@@ -277,6 +300,7 @@ export default function PublicProfile() {
               >
                 <Box sx={{ display: "flex", gap: 4 }}>
                   {[
+                    { label: "Posts", value: posts.length },
                     { label: "Seguidores", value: followers },
                     { label: "Seguindo", value: followingCount },
                   ].map(stat => (
@@ -313,34 +337,6 @@ export default function PublicProfile() {
               )}
 
               <AudioPlayer url={musician.profileAudioUrl} />
-
-              <Box sx={{ display: "flex", gap: 4, mt: 2 }}>
-                {[
-                  { label: "Seguidores", value: followers },
-                  { label: "Seguindo", value: followingCount },
-                ].map(stat => (
-                  <Box key={stat.label} sx={{ textAlign: "center" }}>
-                    <Typography
-                      sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography sx={{ color: "#666", fontSize: 12 }}>
-                      {stat.label}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-
-              {musician.bio && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography
-                    sx={{ color: "#aaa", fontSize: 14, lineHeight: 1.7 }}
-                  >
-                    {musician.bio}
-                  </Typography>
-                </Box>
-              )}
 
               {/* Card de detalhes - só no mobile, depois da bio */}
               <Box sx={{ display: { xs: "block", md: "none" }, mt: 2 }}>
@@ -408,6 +404,43 @@ export default function PublicProfile() {
                 isPinned
               />
             </Box>
+          )}
+        </Box>
+
+        {/* Conteúdo — Posts, sempre por último */}
+        <Box sx={{ p: 2 }}>
+          <Typography
+            sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 2 }}
+          >
+            Posts
+          </Typography>
+          {posts.filter(post => post.id !== pinnedPost?.id).length === 0 ? (
+            <Typography sx={{ color: "#aaa", fontSize: 14 }}>
+              Nenhum post ainda. 🎵
+            </Typography>
+          ) : (
+            posts
+              .filter(post => post.id !== pinnedPost?.id)
+              .map(post => (
+                <PostCard
+                  key={post.id}
+                  id={post.id}
+                  userId={post.userId}
+                  name={post.User.name}
+                  instrument={post.User.instrument}
+                  secondaryProfession={post.User.secondaryProfession}
+                  city={post.User.city}
+                  time={timeAgo(post.createdAt)}
+                  content={post.content}
+                  imageUrl={post.imageUrl}
+                  videoUrl={post.videoUrl}
+                  likes={post.likesCount}
+                  likedByMe={post.likedByMe}
+                  comments={post.commentsCount}
+                  avatarUrl={post.User.avatarUrl}
+                  isPinned={post.isPinned}
+                />
+              ))
           )}
         </Box>
       </Box>

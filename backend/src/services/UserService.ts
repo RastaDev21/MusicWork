@@ -1,9 +1,9 @@
 import { Op, fn, col, where as sqlWhere } from "sequelize";
 import User from "../models/User";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import EmailService from "./EmailService";
 
-// Projeção pública do perfil (sem email nem campos sensíveis).
-// Usada no endpoint /users/:id, consumido por qualquer usuário autenticado.
 function toPublicProfile(user: User) {
   return {
     id: user.id,
@@ -56,10 +56,25 @@ class UserService {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+    const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+    const emailVerificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
     const user = await User.create({
       ...data,
       password: hashedPassword,
+      emailVerificationToken,
+      emailVerificationExpires,
     });
+
+    try {
+      await EmailService.sendEmailVerification(
+        user.email,
+        user.name,
+        emailVerificationToken,
+      );
+    } catch (emailError) {
+      console.error("ERRO AO ENVIAR EMAIL DE VERIFICAÇÃO:", emailError);
+    }
 
     return {
       id: user.id,
@@ -84,7 +99,11 @@ class UserService {
       throw new Error("Usuário não encontrado");
     }
 
-    return { ...toPublicProfile(user), email: user.email };
+    return {
+      ...toPublicProfile(user),
+      email: user.email,
+      isEmailVerified: user.isEmailVerified,
+    };
   }
 
   // Perfil de terceiros (/users/:id): sem email.

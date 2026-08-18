@@ -25,6 +25,29 @@ class EmailService {
 
     return result;
   }
+
+  async sendEmailVerification(to: string, name: string, token: string) {
+    const verifyUrl = `${process.env.FRONTEND_VERIFY_URL || "https://musicwork.com.br/verify-email"}?token=${token}`;
+
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "MusicWork <contato@musicwork.com.br>",
+      to,
+      subject: "Confirme seu email - MusicWork",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2>Olá, ${name}!</h2>
+          <p>Falta só um passo para ativar sua conta no MusicWork.</p>
+          <p>Clique no botão abaixo para confirmar seu email. Este link expira em 24 horas.</p>
+          <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#6C63FF;color:#fff;text-decoration:none;border-radius:8px;margin:16px 0;">
+            Confirmar email
+          </a>
+          <p>Se você não criou uma conta no MusicWork, pode ignorar este email com segurança.</p>
+        </div>
+      `,
+    });
+
+    return result;
+  }
 }
 
 export default new EmailService();

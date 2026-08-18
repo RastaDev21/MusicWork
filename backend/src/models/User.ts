@@ -28,6 +28,9 @@ class User extends Model {
   declare resetPasswordToken: string | null;
   declare resetPasswordExpires: Date | null;
   declare isSupport: boolean;
+  declare isEmailVerified: boolean;
+  declare emailVerificationToken: string | null;
+  declare emailVerificationExpires: Date | null;
 }
 
 User.init(
@@ -141,6 +144,19 @@ User.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+    },
+    isEmailVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    emailVerificationToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    emailVerificationExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

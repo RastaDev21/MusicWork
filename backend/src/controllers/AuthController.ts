@@ -65,6 +65,34 @@ class AuthController {
     }
   }
 
+  async verifyEmail(request: Request, response: Response) {
+    try {
+      const { token } = request.body;
+
+      if (!token) {
+        return response.status(400).json({ error: "Token é obrigatório" });
+      }
+
+      const result = await AuthService.verifyEmail(token);
+
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
+  async resendVerification(request: Request, response: Response) {
+    try {
+      const userId = request.userId as string;
+
+      const result = await AuthService.resendVerification(userId);
+
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
   async changeEmail(request: Request, response: Response) {
     try {
       const userId = request.userId as string;

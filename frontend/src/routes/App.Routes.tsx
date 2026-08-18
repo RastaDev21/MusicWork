@@ -13,6 +13,7 @@ import Settings from "../pages/Settings";
 import Agenda from "../pages/Agenda";
 import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
+import VerifyEmail from "../pages/VerifyEmail";
 
 export default function AppRoutes() {
   return (
@@ -21,6 +22,7 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route
         path="/feed"
         element={

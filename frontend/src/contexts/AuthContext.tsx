@@ -17,6 +17,7 @@ interface User {
   city: string;
   avatarUrl?: string | null;
   genre?: string | null;
+  isEmailVerified?: boolean;
 }
 interface AuthContextData {
   user: User | null;

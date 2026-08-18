@@ -89,6 +89,46 @@ class AuthService {
     return { message: "Senha atualizada com sucesso" };
   }
 
+  async verifyEmail(token: string) {
+    const user = await User.findOne({
+      where: {
+        emailVerificationToken: token,
+        emailVerificationExpires: { [Op.gt]: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new Error("Link inválido ou expirado");
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationExpires = null;
+    await user.save();
+
+    return { message: "Email confirmado com sucesso" };
+  }
+
+  async resendVerification(userId: string) {
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error("Usuário não encontrado");
+
+    if (user.isEmailVerified) {
+      return { message: "Este email já está confirmado" };
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 24);
+
+    user.emailVerificationToken = token;
+    user.emailVerificationExpires = expires;
+    await user.save();
+
+    await EmailService.sendEmailVerification(user.email, user.name, token);
+
+    return { message: "Email de confirmação reenviado" };
+  }
+
   async changeEmail(userId: string, currentPassword: string, newEmail: string) {
     const user = await User.findByPk(userId);
     if (!user) throw new Error("Usuário não encontrado");

@@ -12,7 +12,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
-import { changePassword, startSupportConversation } from "../services/api";
+import {
+  changePassword,
+  startSupportConversation,
+  resendVerification,
+} from "../services/api";
 import { useSnackbar } from "notistack";
 
 const inputSx = {
@@ -41,6 +45,7 @@ export default function Settings() {
 
   const navigate = useNavigate();
   const [openingSupport, setOpeningSupport] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   function getErrorMessage(error: unknown, fallback: string) {
     if (typeof error === "object" && error !== null && "response" in error) {
@@ -48,6 +53,23 @@ export default function Settings() {
       if (err.response?.data?.error) return err.response.data.error;
     }
     return fallback;
+  }
+
+  async function handleResendVerification() {
+    setResendingVerification(true);
+    try {
+      await resendVerification();
+      enqueueSnackbar("Email de confirmação reenviado!", {
+        variant: "success",
+      });
+    } catch (error: unknown) {
+      enqueueSnackbar(
+        getErrorMessage(error, "Erro ao reenviar email de confirmação"),
+        { variant: "error" },
+      );
+    } finally {
+      setResendingVerification(false);
+    }
   }
 
   async function handleOpenSupport() {
@@ -106,12 +128,12 @@ export default function Settings() {
   return (
     <Layout>
       <Box sx={{ maxWidth: 600, mx: "auto", pt: 2, px: 2 }}>
-        {" "}
         <Typography
           sx={{ color: "#fff", fontWeight: 700, fontSize: 20, mb: 2 }}
         >
           Configurações da conta
         </Typography>
+
         {/* Email (somente leitura) */}
         <Box
           sx={{
@@ -130,10 +152,59 @@ export default function Settings() {
           <Typography sx={{ color: "#999", fontSize: 14 }}>
             {user?.email}
           </Typography>
-          <Typography sx={{ color: "#555", fontSize: 12, mt: 0.5 }}>
+
+          {user?.isEmailVerified ? (
+            <Typography
+              sx={{
+                color: "#4caf50",
+                fontSize: 12,
+                mt: 0.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              ✓ Email confirmado
+            </Typography>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mt: 0.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography sx={{ color: "#ff9800", fontSize: 12 }}>
+                ⚠ Email ainda não confirmado
+              </Typography>
+              <Button
+                size="small"
+                onClick={handleResendVerification}
+                disabled={resendingVerification}
+                sx={{
+                  color: "#7c4dff",
+                  fontSize: 12,
+                  minWidth: 0,
+                  p: 0,
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                {resendingVerification ? "Enviando..." : "Reenviar confirmação"}
+              </Button>
+            </Box>
+          )}
+
+          <Typography sx={{ color: "#555", fontSize: 12, mt: 1 }}>
             A troca de email ainda não está disponível nesta versão.
           </Typography>
         </Box>
+
         {/* Trocar senha */}
         <Box
           sx={{
@@ -246,6 +317,7 @@ export default function Settings() {
             {savingPassword ? "Salvando..." : "Salvar nova senha"}
           </Button>
         </Box>
+
         {/* Fale com o suporte */}
         <Box
           sx={{

@@ -1,5 +1,21 @@
 import { Request, Response } from "express";
 import User from "../models/User";
+import cloudinary from "../config/cloudinary";
+
+// Apaga um arquivo antigo do Cloudinary. Nunca lança erro — se falhar
+// (ex: já tinha sido apagado, ID errado), só loga e segue, pra nunca
+// travar o upload da foto nova por causa da limpeza da antiga.
+async function deleteCloudinaryFile(publicId: string | null | undefined) {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error(
+      `Erro ao apagar arquivo órfão do Cloudinary (${publicId}):`,
+      error,
+    );
+  }
+}
 
 export class UploadController {
   async uploadAvatar(req: Request, res: Response) {
@@ -10,8 +26,19 @@ export class UploadController {
 
       const userId = req.userId;
       const avatarUrl = req.file.path;
+      const avatarPublicId = (req.file as any).filename as string | undefined;
 
-      await User.update({ avatarUrl }, { where: { id: userId } });
+      const user = await User.findByPk(userId);
+      const oldPublicId = user?.avatarPublicId;
+
+      await User.update(
+        { avatarUrl, avatarPublicId },
+        { where: { id: userId } },
+      );
+
+      if (oldPublicId && oldPublicId !== avatarPublicId) {
+        deleteCloudinaryFile(oldPublicId);
+      }
 
       return res.json({ avatarUrl });
     } catch (error) {
@@ -27,8 +54,16 @@ export class UploadController {
 
       const userId = req.userId;
       const coverUrl = req.file.path;
+      const coverPublicId = (req.file as any).filename as string | undefined;
 
-      await User.update({ coverUrl }, { where: { id: userId } });
+      const user = await User.findByPk(userId);
+      const oldPublicId = user?.coverPublicId;
+
+      await User.update({ coverUrl, coverPublicId }, { where: { id: userId } });
+
+      if (oldPublicId && oldPublicId !== coverPublicId) {
+        deleteCloudinaryFile(oldPublicId);
+      }
 
       return res.json({ coverUrl });
     } catch (error) {

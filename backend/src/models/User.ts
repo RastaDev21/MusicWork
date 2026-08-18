@@ -13,6 +13,8 @@ class User extends Model {
   declare bio: string;
   declare avatarUrl: string | null;
   declare coverUrl: string | null;
+  declare avatarPublicId: string | null;
+  declare coverPublicId: string | null;
   declare presentationVideoUrl: string | null;
   declare genre: string;
   declare secondaryGenres: string[];
@@ -79,6 +81,14 @@ User.init(
       allowNull: true,
     },
     coverUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    avatarPublicId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    coverPublicId: {
       type: DataTypes.STRING,
       allowNull: true,
     },

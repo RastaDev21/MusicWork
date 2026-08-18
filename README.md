@@ -1,25 +1,31 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 06/08/2026)
+## 🔄 Onde paramos (última atualização: 07/08/2026)
 
-**Última sessão:** Dois bugs em produção encontrados e corrigidos no perfil, ambos sobras da sessão do ponto 4 (reorganização dos chips).
+**Última sessão:** Fechamos os 4 itens da lista represada que dependiam só de configuração e código médio — banco de dev separado, cold start resolvido, verificação de email e limpeza de fotos órfãs no Cloudinary. Todos testados em produção.
 
 **O que foi feito:**
 
-- ✅ **Duplicação de Posts/Seguidores/Seguindo** no `Profile.tsx` e `PublicProfile.tsx` — a edição que reordenou stats/redes/bio/player deixou o bloco antigo sem remover, então o número aparecia duas vezes na tela. Removido o bloco sobrando nos dois arquivos.
-- ✅ **Perfil público não mostrava a lista de posts** — só o post fixado aparecia; o `PublicProfile.tsx` nunca buscava `/posts/user/:id` como o `Profile.tsx` já fazia. Adicionada a busca e a listagem completa (sem os botões de deletar/fixar, que só fazem sentido no próprio perfil).
-- ✅ **Contador de "Posts" ausente no perfil público** — a linha de estatísticas só tinha "Seguidores" e "Seguindo"; adicionado "Posts" também, usando a lista que passou a ser buscada.
-- ✅ Adicionada uma fase nova no roadmap pra "Publicar na Play Store" — já tinha sido investigado (empacotamento PWA→TWA), mas nunca ficou documentado como pendência formal.
-- ✅ `TECH_DEBT.md` atualizado — o item de recuperação de senha estava desatualizado, ainda listado como "não funciona de verdade" mesmo depois do Resend já ter sido corrigido.
+- ✅ **Banco de desenvolvimento separado** — criada uma branch `development` no Neon (cópia isolada dos dados de produção, mesmo projeto). `.env` local agora aponta pra essa branch; produção (Render) continua na branch `production`, intacta.
+- ✅ **Cold start resolvido** — monitor no UptimeRobot batendo em `https://api.musicwork.com.br/health` a cada 5 minutos, mantendo o Render acordado.
+- ✅ **Verificação real de email no cadastro** — `isEmailVerified`, `emailVerificationToken`, `emailVerificationExpires` no `User`; email de confirmação disparado automaticamente no cadastro; botão "Reenviar confirmação" em Configurações; tela `/verify-email` nova. Mesmo padrão já usado na recuperação de senha (token com expiração, endpoint dedicado).
+- ✅ **Limpeza de fotos órfãs no Cloudinary** — `avatarPublicId`/`coverPublicId` salvos no `User`; ao trocar avatar ou capa, a foto antiga é apagada do Cloudinary automaticamente. Só vale pra trocas feitas a partir de agora (fotos antigas trocadas antes continuam órfãs, sem como recuperar o `public_id` delas retroativamente).
 
-**Status:** Tudo commitado e testado em produção pelo usuário.
+**5 bugs encontrados e corrigidos no caminho da verificação de email** (documentados em detalhe nas Convenções de código):
 
-**Próximo passo sugerido:** Escolher um item da lista represada, ordenada do mais fácil pro mais difícil:
+1. `EmailService` não conferia o campo `error` que o SDK do Resend retorna (ele não lança exceção em erro de API) — um envio podia falhar silenciosamente e ainda reportar sucesso.
+2. `RESEND_API_KEY` do `.env` local estava inválida (era a chave antiga, de antes da rotação de segurança).
+3. `FRONTEND_VERIFY_URL`/`FRONTEND_RESET_URL` ausentes no `.env` local — o link do email apontava pra produção mesmo testando localmente, causando erro de "token não encontrado" (o token só existia na branch `development`, não na de produção).
+4. `VerifyEmail.tsx` mostrava a mensagem genérica do axios ("Request failed with status code 400") em vez do motivo real vindo do backend.
+5. `Settings.tsx` não recarregava o perfil ao entrar na tela — o status "email confirmado" ficava desatualizado por causa do cache em `localStorage`.
 
-1. Separar banco dev/produção, cold start do Render (configuração)
-2. Editar email, verificação de email no cadastro, limpar fotos órfãs do Cloudinary (código médio)
-3. Login com Google, carrossel de mídia (código difícil)
-4. WebSocket, publicar de verdade na Play Store (infraestrutura + trade-offs)
+**Incidente de segurança no caminho:** durante a depuração, um `.env` completo foi colado no chat, expondo `RESEND_API_KEY`, `JWT_SECRET`, a senha do banco (`DB_PASS`) e as credenciais do Cloudinary. Os 4 segredos foram rotacionados (Render e local atualizados). Depois, ao configurar o banco de dev, ficou evidente que só uma chave do Resend não é suficiente pros dois ambientes — resolvido com **chaves separadas**: `musicwork-production-v3` (Render) e `musicwork-local-dev` (só local).
+
+**Decisão registrada:** "Editar email" (Fase 3) não vai ser construído como tela por enquanto — casos raros de troca de email são resolvidos manualmente via chat de suporte (`UPDATE` direto no banco), já que é um recurso pouco usado e o custo de fazer com segurança (confirmação por link, checagem de duplicidade, etc.) não compensa agora.
+
+**Status:** Os 4 itens testados e commitados. Backend e frontend compilando sem erros.
+
+**Próximo passo sugerido:** Só restam os itens de "código difícil" (Login com Google, carrossel de mídia) e "infraestrutura + trade-offs" (WebSocket, push notifications, Play Store) — ver Roadmap abaixo.
 
 ---
 
@@ -35,13 +41,15 @@ Plataforma para músicos se conectarem, compartilharem posts e trocarem serviço
 - **Frontend:** React + TypeScript + Vite + Material UI
 - **Backend:** Node.js + Express + TypeScript + Sequelize + PostgreSQL
 - **Auth:** JWT + bcrypt
-- **Banco produção:** Neon PostgreSQL (São Paulo)
-- **Uploads:** Cloudinary (imagens e vídeos persistentes)
+- **Banco produção:** Neon PostgreSQL (São Paulo) — branch `production`
+- **Banco desenvolvimento:** Neon PostgreSQL, branch `development` (cópia isolada de `production`, mesmo projeto)
+- **Uploads:** Cloudinary (imagens e vídeos persistentes, com limpeza de órfãos ao trocar avatar/capa)
 - **Deploy:** Render (backend) + Vercel (frontend)
+- **Monitoramento:** UptimeRobot (ping a cada 5 min em `/health`, evita cold start)
 - **Toasts:** notistack
 - **Compressão de imagem:** browser-image-compression
 - **DNS:** Cloudflare (musicwork.com.br) — inclui Email Routing (suporte@ e contato@ → Gmail)
-- **Email sistema (envio):** Resend — funcionando em produção desde ago/2026
+- **Email sistema (envio):** Resend — funcionando em produção desde ago/2026, com chaves de API separadas por ambiente
 
 ## Estrutura
 
@@ -61,7 +69,7 @@ musicwork/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip, ProfileChips, ProfileDetailsCard compartilhados entre Profile/PublicProfile/Search)
 ├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; youtube.ts — helper de embed de vídeo em posts)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword, VerifyEmail)
 ├── routes/ (App.Routes, PrivateRoute)
 └── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows, chat)
 
@@ -78,13 +86,14 @@ musicwork/
 - ✅ Atualização por polling (mensagens a cada 4s dentro do chat aberto, contador de não lidas a cada 10s) — mesmo padrão das notificações
 - ✅ Botões de anexar mídia travados durante o envio, evitando clique duplo/estado inconsistente
 - ✅ **Chat de suporte** — conta fixa `MusicWork Suporte` (`isSupport`), acessível via botão em Configurações, sempre fixada no topo da lista de Mensagens com badge "oficial"
+- ✅ Usado também como canal pra pedidos raros que não têm tela própria (ex: troca de email — ver Fase 3)
 
 ### Base ✅
 
 - ✅ Autenticação completa (login, cadastro, JWT, logout)
 - ✅ Feed com posts reais do banco
 - ✅ Criar e deletar posts
-- ✅ Foto de perfil e foto de capa (via Cloudinary)
+- ✅ Foto de perfil e foto de capa (via Cloudinary, com limpeza de foto antiga ao trocar)
 - ✅ Avatar em todo lugar (navbar, feed, newpost)
 - ✅ Perfil do músico com edição (nome, instrumento, cidade, bio, gênero)
 - ✅ Layout responsivo desktop e mobile, incluindo reordenação de seções do perfil no mobile (botão "Editar perfil" logo abaixo do nome, card de detalhes por último)
@@ -95,9 +104,10 @@ musicwork/
 
 - ✅ Página de Configurações (`/configuracoes`), acessível pelo menu do avatar
 - ✅ Alterar senha (exige senha atual, com confirmação e olho de mostrar/ocultar em cada campo)
-- ✅ Email exibido como somente leitura (troca de email ainda não implementada nesta versão — backend já suporta via `/account/email`, só não está exposto no frontend)
+- ✅ Email exibido como somente leitura (troca de email não terá tela própria — decisão consciente, ver Fase 3)
 - ✅ Botão "Fale com o suporte" — abre/cria a conversa com a conta fixa de suporte
 - ✅ Recuperação de senha ("Esqueci minha senha") — testada de ponta a ponta em produção, envio de email via Resend funcionando
+- ✅ Verificação real de email no cadastro — email de confirmação automático, botão de reenviar, status exibido em Configurações
 
 ### Busca avançada ✅
 
@@ -161,7 +171,8 @@ musicwork/
 
 ### Deploy e Infraestrutura ✅
 
-- ✅ Banco de dados na nuvem (Neon PostgreSQL — São Paulo)
+- ✅ Banco de dados na nuvem (Neon PostgreSQL — São Paulo), branch `production`
+- ✅ Banco de desenvolvimento separado (branch `development` do mesmo projeto Neon)
 - ✅ Deploy do backend (Render)
 - ✅ Deploy do frontend (Vercel)
 - ✅ Domínio próprio registrado: musicwork.com.br (Registro.br, expira 30/06/2027)
@@ -170,7 +181,8 @@ musicwork/
 - ✅ Backend no domínio próprio: https://api.musicwork.com.br
 - ✅ CORS configurado para todos os domínios
 - ✅ Cloudflare Email Routing configurado (`suporte@` e `contato@musicwork.com.br` → Gmail)
-- ✅ Resend configurado e funcionando (domínio verificado, API key ativa no Render)
+- ✅ Resend configurado e funcionando (domínio verificado, chaves de API separadas por ambiente)
+- ✅ Monitor UptimeRobot (`/health` a cada 5 min) evitando cold start do Render
 
 ### Melhorias de login/cadastro ✅
 
@@ -179,6 +191,7 @@ musicwork/
 - ✅ Validação de senha mínima (6 caracteres) no cadastro
 - ✅ Bloqueio dos campos durante o loading + spinner no botão
 - ✅ Recuperação de senha implementada e **funcionando em produção** (backend `/forgot-password` e `/reset-password` + telas no frontend + envio de email via Resend)
+- ✅ Verificação real de email no cadastro, com email automático e reenvio manual
 
 ### Uploads robustos ✅
 
@@ -188,6 +201,7 @@ musicwork/
 - ✅ Toasts de sucesso/erro no upload
 - ✅ Upload funciona no mobile
 - ✅ Helper getImageUrl (compatível com fotos antigas e novas do Cloudinary, e com vídeos)
+- ✅ Limpeza automática de foto antiga ao trocar avatar/capa (evita acúmulo de arquivos órfãos)
 
 ### Calendário de shows ✅
 
@@ -211,9 +225,9 @@ musicwork/
 - ✅ Registros DNS do Resend no Cloudflare (TXT DKIM, MX SPF)
 - ✅ Bug interno do Resend corrigido (identidade do domínio, região AWS) — confirmado com teste real
 - ✅ Configurar Cloudflare Email Routing (`suporte@` e `contato@musicwork.com.br` → Gmail)
-- ✅ API key no Resend criada e configurada no Render (`RESEND_API_KEY`) — rotacionada uma vez por exposição acidental durante debug
+- ✅ API key no Resend criada e configurada no Render (`RESEND_API_KEY`) — chaves separadas por ambiente (produção no Render, outra só local)
 
-**Testado e funcionando em produção:** fluxo completo de recuperação de senha, do clique em "Esqueci minha senha" até login com a senha nova.
+**Testado e funcionando em produção:** fluxo completo de recuperação de senha e de verificação de email, do disparo até a confirmação.
 
 ### Fase 2.5 — Social avançado ✅ CONCLUÍDA
 
@@ -227,13 +241,13 @@ musicwork/
 - ✅ Sem restrição de quem pode iniciar conversa (decisão consciente, ver Convenções abaixo)
 - ✅ Chat de suporte com conta fixa (ver backlog do professor, ponto 8)
 
-### Fase 3 — Conta e segurança (parcialmente concluída)
+### Fase 3 — Conta e segurança ✅ CONCLUÍDA (com 1 decisão de escopo)
 
 - ✅ Alterar senha (Configurações da conta)
 - ✅ Recuperação de senha (backend + frontend + envio de email via Resend) — testado de ponta a ponta em produção
-- [ ] Editar email (backend pronto em `/account/email`, falta expor no frontend — agora só depende de implementação, o Resend não é mais bloqueio)
-- [ ] Verificação real de email no cadastro (agora só depende de implementação, o Resend não é mais bloqueio)
-- [ ] Login com Google (OAuth)
+- ✅ Verificação real de email no cadastro — testado de ponta a ponta em produção
+- ❌ **Editar email — decisão consciente de não construir** (ago/2026): recurso raro de ser usado; casos que aparecerem são resolvidos manualmente via chat de suporte (`UPDATE` direto no banco). O endpoint `/account/email` continua existindo no backend, só não é exposto no frontend.
+- [ ] Login com Google (OAuth) — não iniciado
 
 ### Fase 4 — Features grandes (parcialmente concluída)
 
@@ -241,12 +255,13 @@ musicwork/
 - ✅ Vídeo/áudio de apresentação no perfil — evoluiu para posts com foto ou vídeo + sistema de fixar post no perfil
 - ✅ Calendário de shows
 
-### Fase 5 — Real-time (planejado, não iniciado)
+### Fase 5 — Real-time e notificações (planejado, não iniciado)
 
-- [ ] WebSocket (Socket.IO) para notificações instantâneas, substituindo o polling atual de 30s
-- [ ] Lógica de reconexão no frontend (o backend no Render free hiberna por inatividade, então a conexão persistente vai cair)
+- [ ] WebSocket (Socket.IO) para notificações instantâneas _dentro do app aberto_, substituindo o polling atual de 30s
+- [ ] Lógica de reconexão no frontend (o backend no Render free hiberna por inatividade, então a conexão persistente vai cair) — parcialmente mitigado pelo monitor do UptimeRobot, mas ainda vale ter reconexão própria
+- [ ] **Push notifications** (Web Push API) — notificações que chegam mesmo com o app fechado (curtida, comentário, mensagem, seguir), diferente do WebSocket (que só funciona com o app aberto). Precisa de: Service Worker, chaves VAPID, backend disparando por evento, e pedido de permissão na UI. No iPhone só funciona com o PWA instalado na tela inicial (não funciona no Safari comum).
 
-**Decisão registrada (jul/2026):** optamos por adiar o WebSocket. Hoje as notificações funcionam por polling (frontend consulta `/notifications/unread-count` a cada 30s), o que não é real-time de verdade mas resolve bem pra um projeto com poucos usuários. WebSocket não vai exigir refazer nada do que já existe — é uma camada adicional em cima do que já temos (o REST continua servindo a lista de notificações, o socket só avisa "tem algo novo"). Faz mais sentido implementar quando: (a) já tivermos uma base de usuários ativa que justifique, e (b) migrarmos pra um plano/host que não hiberne, pra não ter reconexão toda hora.
+**Decisão registrada (jul/2026):** optamos por adiar o WebSocket. Hoje as notificações funcionam por polling (frontend consulta `/notifications/unread-count` a cada 30s), o que não é real-time de verdade mas resolve bem pra um projeto com poucos usuários. WebSocket não vai exigir refazer nada do que já existe — é uma camada adicional em cima do que já temos (o REST continua servindo a lista de notificações, o socket só avisa "tem algo novo"). Faz mais sentido implementar quando: (a) já tivermos uma base de usuários ativa que justifique, e (b) migrarmos pra um plano/host que não hiberne, pra não ter reconexão toda hora. WebSocket e push notifications resolvem problemas parecidos ("saber que aconteceu algo sem abrir o app"), então faz sentido avaliar os dois juntos quando chegar a hora.
 
 ### Fase 6 — Ideias futuras (não iniciado)
 
@@ -282,7 +297,7 @@ musicwork/
 - ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
 - ✅ Chat de suporte — conta fixa `MusicWork Suporte`, botão em Configurações, badge "oficial" fixado no topo das Mensagens
 
-**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Fase 3, WebSocket, OAuth, Play Store etc.) ou de novo feedback dele.
+**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Login com Google, WebSocket, push notifications, carrossel de mídia, Play Store) ou de novo feedback dele.
 
 ---
 
@@ -313,18 +328,16 @@ npm run dev
 
 PORT=3333
 JWT_SECRET=sua_chave # obrigatória — o servidor não sobe sem ela (config/auth.ts)
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173,https://musicwork.com.br,https://www.musicwork.com.br,https://music-work.vercel.app
-DATABASE_URL=postgresql://...
-DB_HOST=...
-DB_PORT=5432
-DB_NAME=neondb
-DB_USER=neondb_owner
-DB_PASS=...
+NODE_ENV=production # sim, "production" mesmo em dev — ver Convenções de código (database.ts)
+FRONTEND_URL=http://localhost:5173,http://localhost:4173,https://musicwork.com.br,https://www.musicwork.com.br,https://music-work.vercel.app
+DATABASE_URL=postgresql://... # LOCAL: aponta pra branch "development" do Neon. PRODUÇÃO (Render): branch "production"
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
-RESEND_API_KEY=... (ativo em produção — ver Render; rotacionar se exposta)
+RESEND_API_KEY=... # chave DIFERENTE pra local (ex: musicwork-local-dev) e pra produção (ex: musicwork-production-v3)
+EMAIL_FROM=MusicWork contato@musicwork.com.br
+FRONTEND_RESET_URL=http://localhost:5173/reset-password # LOCAL — em produção, https://musicwork.com.br/reset-password
+FRONTEND_VERIFY_URL=http://localhost:5173/verify-email # LOCAL — em produção, https://musicwork.com.br/verify-email
 
 ### Frontend (.env)
 
@@ -348,6 +361,8 @@ VITE_API_URL=https://api.musicwork.com.br
   Esquecer qualquer um desses passos é a causa mais comum de bug tipo "por que essa tabela não existe?" ou "por que essa relação não carrega?". Não usamos `sequelize-cli` / pasta `migrations/` (que existe mas está obsoleta) — o schema é gerenciado só pelo `sync({ alter: true })` direto no server.ts.
 
 - **Autenticação via `request.userId`:** o `authMiddleware` decodifica o JWT e injeta o ID do usuário logado em `request.userId`, tipado por augmentation em `backend/src/@types/express.d.ts`. Todos os controllers que precisam saber quem está logado leem daí. (Até jul/2026 isso ficava em `request.headers["userId"]`; foi migrado para `req.userId` por ser dado de aplicação, não header HTTP — e isso passou a alimentar corretamente o `public_id` dos uploads no `uploadMiddleware`, que já lia `req.userId`.)
+
+- **`database.ts` decide a conexão pelo `NODE_ENV`, não é fixo:** se `NODE_ENV=production`, usa `DATABASE_URL` direto (com SSL configurado). Senão, monta a conexão a partir de `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME`/`DB_PORT` separados (sem SSL). Como o projeto sempre usou Neon (que exige SSL), o `.env` local também usa `NODE_ENV=production` — o nome da variável é enganoso, mas é assim que a conexão SSL funciona local e em produção da mesma forma. Não confundir esse `NODE_ENV=production` com "isso é o banco de produção": o que decide qual banco é o `DATABASE_URL` em si (branch `development` local, `production` no Render), não o `NODE_ENV`.
 
 - **Notificações nunca disparam para si mesmo:** regra centralizada em `NotificationService.create` (`if (recipientId === senderId) return null`). Qualquer novo tipo de notificação que for criado no futuro já herda essa proteção automaticamente, sem precisar reimplementar a checagem em cada lugar que dispara notificação.
 
@@ -391,11 +406,19 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Conversa de suporte é fixada no topo por ordenação, não por posição especial na UI:** `ConversationService.listConversations` ordena o array em JS (`isSupport` primeiro, dentro disso por data da última mensagem) — o frontend (`Messages.tsx`) só renderiza na ordem que já veio do backend, e mostra o badge "oficial" quando `conv.otherUser.isSupport` é `true`. Não hardcodar a conversa de suporte como "sempre primeiro item do array" no frontend — se o backend mudar a ordenação um dia, o frontend não deveria saber ou se importar.
 
-- **`RESEND_API_KEY` foi rotacionada em ago/2026:** a chave original (`musicwork-production-v2`) foi exposta acidentalmente durante uma sessão de debug (print de tela com o valor visível) e foi revogada no Resend por segurança. Se algum dia aparecer erro de autenticação com o Resend em produção, confirmar que a chave configurada no Render é a atual, não a antiga.
-
 - **`PublicProfile.tsx` busca posts via `/posts/user/:id`, igual `Profile.tsx`:** até ago/2026 essa tela só buscava o post fixado (`getPinnedPost`), nunca a lista completa — bug silencioso que só apareceu quando alguém visitou um perfil com mais de um post. O `PostCard` renderizado ali não recebe `isOwner`, então os botões de deletar/fixar já ficam escondidos automaticamente (prop opcional, `undefined` por padrão).
 
 - **Ao reordenar blocos de JSX (mover um trecho pra outro lugar da página), sempre confirmar que o bloco antigo foi removido, não só que o novo foi inserido:** dois bugs de duplicação (Posts/Seguidores/Seguindo em `Profile.tsx` e `PublicProfile.tsx`) vieram exatamente disso — a edição inseriu o bloco novo no lugar certo, mas o antigo ficou esquecido mais abaixo no arquivo. Depois de qualquer reordenação, um `grep` pelo texto-chave do bloco (ex: `"Seguidores"`) confirmando que só aparece uma vez é mais confiável que só ler o diff.
+
+- **O SDK do Resend não lança exceção em erro de API — ele retorna `{ data, error }`:** o `EmailService.ts` precisa checar `result.error` explicitamente e lançar (`throw`) se existir; sem isso, um envio que falha (rate limit, chave inválida, domínio, etc.) passa como se tivesse dado certo, porque a promise resolve normalmente. Esse foi um bug real que ficou escondido até a verificação de email expor ele (ago/2026) — os dois métodos (`sendPasswordReset` e `sendEmailVerification`) já fazem essa checagem.
+
+- **`AuthContext` guarda o usuário em `localStorage`, não busca no servidor a cada carregamento:** dado que muda no backend por uma ação feita fora da aba atual (ex: confirmar email clicando num link que abre em outra guia) não aparece sozinho na tela até alguém buscar `/profile` de novo. Telas que mostram esse tipo de status mutável (ex: `Settings.tsx` com `isEmailVerified`) devem ter um `useEffect` buscando o perfil fresco ao montar e chamando `updateUser(...)`, em vez de confiar só no `user` do contexto.
+
+- **`FRONTEND_VERIFY_URL`/`FRONTEND_RESET_URL` precisam apontar pro ambiente certo:** se testando local, essas variáveis (no `.env` do backend) devem ser `http://localhost:5173/...`, não o padrão de produção. Como o backend local usa o banco `development` (branch separada), um link de confirmação que aponta pra produção (`musicwork.com.br`) bate num banco diferente de onde o token foi salvo, e a confirmação falha com "token inválido" mesmo o fluxo estando correto.
+
+- **Cloudinary não distingue "public_id" novo de antigo sozinho — isso precisa ser guardado no banco:** `avatarPublicId`/`coverPublicId` em `User` guardam o `public_id` da imagem atual (vem de `req.file.filename`, que a lib `multer-storage-cloudinary` preenche com o `public_id` retornado pelo Cloudinary). Antes de salvar a URL nova, o `UploadController` busca o `public_id` antigo do usuário e chama `cloudinary.uploader.destroy()` nele — a chamada de delete roda sem `await` bloqueante pro response, e falhas nela só são logadas, nunca travam o upload da foto nova. Só limpa fotos trocadas a partir dessa mudança; fotos antigas trocadas antes ficam órfãs pra sempre (sem `public_id` salvo pra recuperar).
+
+- **Chaves de API do Resend são separadas por ambiente (ago/2026):** `musicwork-production-v3` (Render) e uma chave só local (nome livre, ex: `musicwork-local-dev`). Antes disso, tentar sincronizar uma chave só entre os dois ambientes gerava dessincronia toda vez que precisava rotacionar — resolvido tendo uma chave dedicada em cada lugar, sem depender de copiar valor de um ambiente pro outro.
 
 ### Convenções vindas da revisão de código (jul/2026)
 
@@ -419,20 +442,21 @@ VITE_API_URL=https://api.musicwork.com.br
 
 ## Notas importantes
 
-- **Banco único:** local e produção usam o mesmo banco Neon (ver TECH_DEBT.md)
-- **Cold start:** o backend no Render free "dorme" após inatividade — primeiro acesso pode levar ~30-50s
+- **Bancos separados desde ago/2026:** local usa a branch `development` do Neon; produção (Render) usa `production`. As duas compartilham o mesmo role/senha do Postgres — rotacionar a senha do banco afeta as duas branches, atualizar `DATABASE_URL` nos dois lugares.
+- **Cold start mitigado:** monitor no UptimeRobot batendo em `/health` a cada 5 minutos — não elimina 100% (o Render ainda pode hibernar em janelas sem cobertura do monitor), mas reduz bastante a frequência.
 - **Deploy automático:** push na branch main dispara deploy no Render e Vercel
 - **Domínio:** musicwork.com.br gerenciado pelo Cloudflare, registrado no Registro.br até 30/06/2027
 - **Email routing (recebimento):** `suporte@musicwork.com.br` e `contato@musicwork.com.br` configurados no Cloudflare Email Routing, encaminhando pro Gmail pessoal. Funciona independente do Resend.
-- **Email sistema (envio):** Resend funcionando em produção desde ago/2026 (bug do domínio corrigido do lado deles). Recuperação de senha testada de ponta a ponta.
+- **Email sistema (envio):** Resend funcionando em produção desde ago/2026 (bug do domínio corrigido do lado deles). Recuperação de senha e verificação de email testadas de ponta a ponta. Chaves de API separadas por ambiente (local vs produção) — ver Convenções de código.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
 - **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
 - **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)
 - **`JWT_SECRET` obrigatório:** desde a revisão de jul/2026 o backend aborta o boot se a variável não estiver definida (sem fallback `default_secret`) — garantir que ela esteja no Render e no `.env` local. Ver Convenções de código.
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
 - **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).
-- **`RESEND_API_KEY` no Render:** rotacionada em ago/2026 (a anterior foi exposta acidentalmente e revogada). Se der erro de autenticação no envio de email, confirmar que a chave configurada é a mais recente.
+- **Segredos rotacionados em ago/2026** (exposição acidental de um `.env` completo durante debug): `RESEND_API_KEY`, `JWT_SECRET`, senha do banco (Neon), `CLOUDINARY_API_SECRET`. Todos atualizados no Render e local. Nunca colar um `.env` inteiro em chat/ferramenta externa — preferir citar nome da variável e confirmar existência, sem o valor.
 - **Play Store:** ainda não publicado, ver Fase 7 no roadmap. O app já é PWA instalável (ícone próprio, monograma "MW"), mas a publicação formal na loja depende de empacotamento (TWA/Bubblewrap) e trâmites fora do código.
+- **Limpeza de fotos órfãs do Cloudinary:** ativa desde ago/2026, só vale pra trocas de avatar/capa feitas a partir dessa data — fotos trocadas antes continuam acumuladas no Cloudinary (não há como recuperar o `public_id` delas retroativamente).
 
 # 🛠️ Dívida Técnica & Melhorias Futuras — MusicWork
 
@@ -441,76 +465,25 @@ Cada item tem: contexto, quando resolver e como resolver.
 
 ---
 
-## 🔴 Alta prioridade
-
-### Separar banco de desenvolvimento do de produção
-
-**Contexto:** Hoje o backend local e o de produção apontam para o mesmo banco Neon
-(a `DATABASE_URL` no `.env` é a mesma do Render). Testar localmente mexe nos dados
-reais que aparecem no app publicado.
-
-**Quando resolver:**
-
-- Antes do app ter usuários reais que não podem ser perdidos
-- Ou quando um teste local acidentalmente quebrar dados de produção
-
-**Como resolver:**
-
-- Criar um 2º projeto Neon gratuito (banco de dev)
-- `.env` local aponta pro banco de dev; Render continua no de produção
-- Rodar o sync/seed no banco de dev para ter dados de teste isolados
-
----
-
 ## 🟡 Média prioridade
-
-### Limpar fotos órfãs no Cloudinary ao trocar
-
-**Contexto:** Quando o usuário troca a foto de perfil ou capa, a imagem antiga fica
-órfã no Cloudinary para sempre. Não é urgente (o free tier aguenta muito acúmulo),
-mas com o tempo gera lixo desnecessário.
-
-**Como resolver:**
-
-- Salvar o `public_id` de cada foto no banco (hoje guardamos só a URL)
-- Ao subir uma nova, chamar `cloudinary.uploader.destroy(public_id_antigo)`
-- Bom de fazer junto com outras mudanças na área de perfil
-
-### Verificação real de email no cadastro
-
-**Contexto:** A validação de email é só de formato (regex no frontend). Qualquer
-email com formato válido é aceito, mesmo que não exista de verdade.
-
-**Como resolver:**
-
-- Reaproveitar o `EmailService` (Resend) que já existe pra recuperação de senha
-- Enviar link/código de confirmação no cadastro
-- Marcar usuário como "verificado" só após confirmar
 
 ### Editar email no frontend
 
 **Contexto:** O backend já suporta troca de email via `/account/email`, mas isso
 nunca foi exposto na tela de Configurações.
 
-**Como resolver:**
+**Decisão (ago/2026):** não construir essa tela por enquanto. É um recurso raro
+de ser usado, e o custo de fazer com segurança (confirmação por link, checagem
+de duplicidade, proteção contra sequestro de conta) não compensa pra algo que
+provavelmente ninguém vai pedir nos próximos meses. Casos que aparecerem são
+resolvidos manualmente: a pessoa manda mensagem pelo chat de suporte, e o
+`UPDATE` é feito direto no banco via Neon.
 
-- Montar a tela (parecida com o card de "Alterar senha" que já existe)
-- Decidir se vai ter confirmação por link antes de trocar de verdade (agora que o
-  Resend funciona, dá pra fazer isso com segurança)
+**Reconsiderar se:** virar um pedido frequente — aí sim compensa automatizar.
 
 ---
 
 ## 🟢 Baixa prioridade / quando der
-
-### Cold start do backend (~30-50s)
-
-**Contexto:** O Render free coloca o serviço em repouso após inatividade. O primeiro
-acesso depois disso demora pra "acordar".
-
-**Como resolver:**
-
-- Plano pago do Render, OU
-- Um ping periódico (cron externo, ex: cron-job.org) para manter o serviço acordado
 
 ### Publicar na Google Play Store
 
@@ -527,6 +500,23 @@ Já foi investigado o caminho técnico (Bubblewrap/TWA, PWABuilder), sem finaliz
 
 Ver Fase 7 no README para o detalhamento no roadmap principal.
 
+### Push notifications (Web Push API)
+
+**Contexto:** Hoje o app só avisa de coisas novas (curtida, comentário, mensagem)
+quando está aberto (polling). Notificação chegando com o app fechado, tipo Instagram,
+exige um mecanismo diferente.
+
+**Como resolver:**
+
+- Service Worker novo no frontend
+- Chaves VAPID + biblioteca `web-push` no backend
+- Backend dispara push nos mesmos eventos que já geram notificação hoje
+- Pedido de permissão explícito na UI
+- No iPhone só funciona com o PWA instalado na tela inicial (não funciona no Safari comum)
+
+Ver Fase 5 no README — faz sentido avaliar junto com WebSocket, já que resolvem
+problemas parecidos.
+
 ---
 
 ## ✅ Resolvidos
@@ -536,6 +526,22 @@ Ver Fase 7 no README para o detalhamento no roadmap principal.
 - **Recuperação de senha não enviava email de verdade** -> bug do Resend (identidade
   do domínio em região AWS errada) corrigido do lado deles em ago/2026. Fluxo testado
   de ponta a ponta em produção. Ver README, seção "Resend — resolvido".
+- **Banco de dev/produção compartilhado** -> resolvido em ago/2026 com uma branch
+  `development` separada no Neon (cópia isolada dos dados de produção). Local usa
+  `development`, Render continua em `production`. Ver README, Convenções de código.
+- **Cold start do backend (~30-50s)** -> resolvido em ago/2026 com monitor do
+  UptimeRobot batendo em `/health` a cada 5 minutos. Não elimina 100% em todas as
+  janelas, mas reduz bastante a frequência de acontecer.
+- **Fotos órfãs no Cloudinary ao trocar avatar/capa** -> resolvido em ago/2026.
+  `avatarPublicId`/`coverPublicId` salvos no `User`; `UploadController` apaga a foto
+  antiga do Cloudinary ao salvar uma nova. Só vale pra trocas feitas a partir dessa
+  data — fotos antigas continuam órfãs (sem `public_id` salvo pra recuperar).
+- **Verificação real de email no cadastro** -> resolvido em ago/2026. Mesmo padrão
+  da recuperação de senha (token com expiração, endpoint dedicado). 5 bugs
+  encontrados e corrigidos no processo de testar — ver README, "Onde paramos" e
+  Convenções de código.
+- **Editar email no frontend** -> decisão consciente de não construir (ago/2026),
+  ver seção acima.
 
 ---
 

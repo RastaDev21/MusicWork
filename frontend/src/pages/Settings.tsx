@@ -8,11 +8,11 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
-import {
+import api, {
   changePassword,
   startSupportConversation,
   resendVerification,
@@ -31,7 +31,7 @@ const inputSx = {
 };
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -46,6 +46,22 @@ export default function Settings() {
   const navigate = useNavigate();
   const [openingSupport, setOpeningSupport] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
+
+  // Busca o perfil de novo ao entrar na tela — o usuário em localStorage
+  // fica desatualizado depois de ações feitas fora dessa aba (ex: confirmar
+  // email pelo link, que abre em outra guia).
+  useEffect(() => {
+    async function loadFreshProfile() {
+      try {
+        const response = await api.get("/profile");
+        updateUser(response.data);
+      } catch (error) {
+        console.error("Erro ao atualizar perfil:", error);
+      }
+    }
+    loadFreshProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function getErrorMessage(error: unknown, fallback: string) {
     if (typeof error === "object" && error !== null && "response" in error) {

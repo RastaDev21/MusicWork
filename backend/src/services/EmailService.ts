@@ -23,6 +23,15 @@ class EmailService {
       `,
     });
 
+    // O SDK do Resend não lança exceção em erro de API — ele retorna
+    // { data, error }. Sem checar isso, um envio que falha (rate limit,
+    // domínio, etc.) passava como se tivesse dado certo.
+    if (result.error) {
+      throw new Error(
+        `Falha ao enviar email de recuperação: ${result.error.message}`,
+      );
+    }
+
     return result;
   }
 
@@ -45,6 +54,12 @@ class EmailService {
         </div>
       `,
     });
+
+    if (result.error) {
+      throw new Error(
+        `Falha ao enviar email de verificação: ${result.error.message}`,
+      );
+    }
 
     return result;
   }

@@ -36,9 +36,16 @@ export default function VerifyEmail() {
       try {
         await verifyEmail(token);
         setStatus("success");
-      } catch (err) {
+      } catch (err: unknown) {
         setStatus("error");
-        setError((err as Error).message || "Erro ao confirmar email");
+        if (typeof err === "object" && err !== null && "response" in err) {
+          const axiosErr = err as {
+            response?: { data?: { error?: string } };
+          };
+          setError(axiosErr.response?.data?.error || "Erro ao confirmar email");
+        } else {
+          setError("Erro ao confirmar email");
+        }
       }
     }
     confirm();

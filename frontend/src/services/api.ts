@@ -83,6 +83,11 @@ export async function changePassword(
   return response.data;
 }
 
+export async function loginWithGoogle(idToken: string) {
+  const response = await api.post("/google", { idToken });
+  return response.data;
+}
+
 // ── Perfil / uploads de imagem e vídeo do perfil ──
 
 export async function uploadAvatar(file: File) {

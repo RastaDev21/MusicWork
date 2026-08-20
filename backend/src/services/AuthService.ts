@@ -5,6 +5,9 @@ import crypto from "crypto";
 import { Op } from "sequelize";
 import EmailService from "./EmailService";
 import { JWT_SECRET } from "../config/auth";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 class AuthService {
   async login(email: string, password: string) {
@@ -20,6 +23,58 @@ class AuthService {
 
     if (!passwordMatch) {
       throw new Error("Email ou senha inválidos");
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        instrument: user.instrument,
+        city: user.city,
+      },
+    };
+  }
+
+  async loginWithGoogle(idToken: string) {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.email) {
+      throw new Error("Token do Google inválido");
+    }
+
+    const { sub: googleId, email, name } = payload;
+
+    let user = await User.findOne({ where: { googleId } });
+
+    if (!user) {
+      user = await User.findOne({ where: { email } });
+
+      if (user) {
+        user.googleId = googleId;
+        await user.save();
+      } else {
+        const randomPassword = crypto.randomBytes(32).toString("hex");
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+        user = await User.create({
+          name: name || email.split("@")[0],
+          email,
+          password: hashedPassword,
+          googleId,
+          isEmailVerified: true,
+        });
+      }
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {

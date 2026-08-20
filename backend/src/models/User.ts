@@ -33,6 +33,7 @@ class User extends Model {
   declare isEmailVerified: boolean;
   declare emailVerificationToken: string | null;
   declare emailVerificationExpires: Date | null;
+  declare googleId: string | null;
 }
 
 User.init(
@@ -167,6 +168,11 @@ User.init(
     emailVerificationExpires: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    googleId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     },
   },
   {

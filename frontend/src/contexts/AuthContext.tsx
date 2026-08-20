@@ -6,7 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, { loginWithGoogle } from "../services/api";
 
 interface User {
   id: string;
@@ -24,6 +24,7 @@ interface AuthContextData {
   signed: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
   signUp: (data: {
     name: string;
     email: string;
@@ -55,27 +56,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  async function finishLogin(token: string, user: Partial<User>) {
+    const cleanToken = token.replace(/"/g, "");
+    localStorage.setItem("musicwork_token", cleanToken);
+
+    const profileResponse = await api.get("/profile", {
+      headers: { Authorization: `Bearer ${cleanToken}` },
+    });
+
+    const fullUser = { ...user, ...profileResponse.data } as User;
+    localStorage.setItem("musicwork_user", JSON.stringify(fullUser));
+    setUser(fullUser);
+
+    navigate("/feed");
+  }
+
   async function signIn(email: string, password: string) {
     setLoading(true);
     try {
       const response = await api.post("/login", { email, password });
-      const { token, user } = response.data;
-
-      localStorage.setItem("musicwork_token", token.replace(/"/g, ""));
-
-      // 👇 Busca o perfil completo com avatarUrl após login
-      const profileResponse = await api.get("/profile", {
-        headers: { Authorization: `Bearer ${token.replace(/"/g, "")}` },
-      });
-
-      const fullUser = { ...user, ...profileResponse.data };
-      localStorage.setItem("musicwork_user", JSON.stringify(fullUser));
-      setUser(fullUser);
-
-      navigate("/feed");
+      await finishLogin(response.data.token, response.data.user);
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
       throw new Error(err.response?.data?.error || "Erro ao fazer login");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function signInWithGoogle(idToken: string) {
+    setLoading(true);
+    try {
+      const { token, user } = await loginWithGoogle(idToken);
+      await finishLogin(token, user);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      throw new Error(
+        err.response?.data?.error || "Erro ao fazer login com Google",
+      );
     } finally {
       setLoading(false);
     }
@@ -123,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signed: !!user,
         loading,
         signIn,
+        signInWithGoogle,
         signUp,
         signOut,
         updateUser,

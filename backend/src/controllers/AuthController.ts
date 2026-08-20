@@ -136,6 +136,24 @@ class AuthController {
       return response.status(400).json({ error: error.message });
     }
   }
+
+  async googleLogin(request: Request, response: Response) {
+    try {
+      const { idToken } = request.body;
+
+      if (!idToken) {
+        return response
+          .status(400)
+          .json({ error: "Token do Google é obrigatório" });
+      }
+
+      const result = await AuthService.loginWithGoogle(idToken);
+
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(401).json({ error: error.message });
+    }
+  }
 }
 
 export default new AuthController();

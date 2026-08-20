@@ -16,9 +16,10 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../components/Logo/Logo";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
-  const { signIn, loading } = useAuth();
+  const { signIn, signInWithGoogle, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -152,6 +153,23 @@ export default function Login() {
               "Entrar"
             )}
           </Button>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+            <GoogleLogin
+              onSuccess={async credentialResponse => {
+                if (!credentialResponse.credential) return;
+                try {
+                  setError("");
+                  await signInWithGoogle(credentialResponse.credential);
+                } catch (err) {
+                  setError((err as Error).message);
+                }
+              }}
+              onError={() => setError("Não foi possível entrar com o Google")}
+              theme="filled_black"
+              text="signin_with"
+            />
+          </Box>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Link

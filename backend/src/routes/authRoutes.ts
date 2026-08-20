@@ -8,6 +8,7 @@ authRouter.post("/login", AuthController.login);
 authRouter.post("/forgot-password", AuthController.forgotPassword);
 authRouter.post("/reset-password", AuthController.resetPassword);
 authRouter.post("/verify-email", AuthController.verifyEmail);
+authRouter.post("/google", AuthController.googleLogin);
 authRouter.post(
   "/resend-verification",
   authMiddleware,

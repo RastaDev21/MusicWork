@@ -21,6 +21,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Logo from "../components/Logo/Logo";
 import { useAuth } from "../contexts/AuthContext";
 import { instruments } from "../constants/musicOptions";
+import { GoogleLogin } from "@react-oauth/google";
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {
@@ -55,7 +56,7 @@ const menuItemSx = {
 };
 
 export default function Register() {
-  const { signUp, loading } = useAuth();
+  const { signUp, signInWithGoogle, loading } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -238,6 +239,23 @@ export default function Register() {
               "Cadastrar"
             )}
           </Button>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+            <GoogleLogin
+              onSuccess={async credentialResponse => {
+                if (!credentialResponse.credential) return;
+                try {
+                  setError("");
+                  await signInWithGoogle(credentialResponse.credential);
+                } catch (err) {
+                  setError((err as Error).message);
+                }
+              }}
+              onError={() => setError("Não foi possível entrar com o Google")}
+              theme="filled_black"
+              text="signup_with"
+            />
+          </Box>
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Link

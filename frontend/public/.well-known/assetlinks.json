@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "br.com.musicwork.twa",
+    "sha256_cert_fingerprints": [
+      "45:50:92:59:11:27:54:00:db:25:a5:0f:cf:b1:75:14:f2:f6:a4:78:94:02:f9:b5:90:5e:3b:b1:74:0f:4e:3d"
+    ]
+  }
+}]

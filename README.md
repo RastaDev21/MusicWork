@@ -1,8 +1,28 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 07/08/2026)
+## 🔄 Onde paramos (última atualização: 07/09/2026)
 
-**Última sessão:** Fechamos os 4 itens da lista represada que dependiam só de configuração e código médio — banco de dev separado, cold start resolvido, verificação de email e limpeza de fotos órfãs no Cloudinary. Todos testados em produção.
+**Última sessão:** Login com Google (OAuth) implementado e testado em produção. Iniciada a Fase 7 (Play Store).
+
+**Login com Google — ✅ CONCLUÍDO:**
+
+- `googleId` no model `User`, `loginWithGoogle` no `AuthService`, endpoint `POST /google`
+- Botão nas telas de Login e Registro (`@react-oauth/google`), vinculação automática por email pra contas que já existiam com senha
+- Origin `https://www.musicwork.com.br` precisou ser adicionada ao Client ID no Google Cloud Console (o manifest computa o App ID usando o subdomínio www)
+
+**Fase 7 (Play Store) — EM ANDAMENTO:**
+
+- ✅ Conta de desenvolvedor no Google Play Console criada e 100% verificada (identidade, telefone, acesso a dispositivo Android via QR code)
+- ✅ Pacote Android gerado via Bubblewrap (`br.com.musicwork.twa`), keystore de assinatura criado em `~/musicwork-android/android.keystore` — **backup pendente, crítico: perda = impossível atualizar o app depois de publicado**
+- ✅ Build gerado com sucesso: `app-release-signed.apk` e `app-release-bundle.aab`, assinatura verificada via `apksigner`
+- ⚠️ Teste manual do APK direto no celular (sideload) falhou repetidamente com "pacote parece inválido", mesmo o arquivo estando estruturalmente correto (tamanho e assinatura confirmados); causa não identificada — decidido abandonar sideload manual e testar via teste interno do Play Console em vez disso
+- ✅ `assetlinks.json` criado em `frontend/public/.well-known/assetlinks.json` com o SHA-256 do certificado (formato com dois-pontos) e `package_name`, deployado e confirmado servindo como `application/json` via `curl`
+- **Próximo passo:** criar o registro do app dentro do Play Console (nome, categoria, ficha da loja, política de privacidade), depois subir o `.aab` no teste interno
+
+**Lembrete de regras do Play Store (contas pessoais novas):**
+
+- Teste fechado obrigatório: mínimo 12 testadores, opt-in contínuo por 14 dias, antes de liberar produção — ainda não iniciado, comece a levantar a lista de testadores em paralelo
+- `targetSdkVersion` precisa ser Android 16 (API 36) para apps novos — o Bubblewrap já gera isso automaticamente nas versões recentes
 
 **O que foi feito:**
 

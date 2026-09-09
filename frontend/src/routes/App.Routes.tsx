@@ -14,6 +14,7 @@ import Agenda from "../pages/Agenda";
 import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
 import VerifyEmail from "../pages/VerifyEmail";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
 
 export default function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route
         path="/feed"
         element={

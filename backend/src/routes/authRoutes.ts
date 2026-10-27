@@ -20,5 +20,6 @@ authRouter.put(
   authMiddleware,
   AuthController.changePassword,
 );
+authRouter.delete("/account", authMiddleware, AuthController.deleteAccount);
 
 export default authRouter;

@@ -1,21 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/User";
-import cloudinary from "../config/cloudinary";
-
-// Apaga um arquivo antigo do Cloudinary. Nunca lança erro — se falhar
-// (ex: já tinha sido apagado, ID errado), só loga e segue, pra nunca
-// travar o upload da foto nova por causa da limpeza da antiga.
-async function deleteCloudinaryFile(publicId: string | null | undefined) {
-  if (!publicId) return;
-  try {
-    await cloudinary.uploader.destroy(publicId);
-  } catch (error) {
-    console.error(
-      `Erro ao apagar arquivo órfão do Cloudinary (${publicId}):`,
-      error,
-    );
-  }
-}
+import { deleteCloudinaryFile } from "../services/CloudinaryService";
 
 export class UploadController {
   async uploadAvatar(req: Request, res: Response) {

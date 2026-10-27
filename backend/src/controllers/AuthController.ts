@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import AuthService from "../services/AuthService";
+import AccountService from "../services/AccountService";
 
 class AuthController {
   async login(request: Request, response: Response) {
@@ -152,6 +153,26 @@ class AuthController {
       return response.status(200).json(result);
     } catch (error: any) {
       return response.status(401).json({ error: error.message });
+    }
+  }
+
+  async deleteAccount(request: Request, response: Response) {
+    try {
+      const userId = request.userId as string;
+      // No Express 5, body fica undefined quando a requisição vem sem corpo.
+      const { confirmation } = request.body ?? {};
+
+      if (confirmation !== "EXCLUIR") {
+        return response.status(400).json({
+          error: "Digite EXCLUIR para confirmar a exclusão da conta",
+        });
+      }
+
+      const result = await AccountService.deleteAccount(userId);
+      return response.status(200).json(result);
+    } catch (error: any) {
+      console.error("ERRO AO EXCLUIR CONTA:", error);
+      return response.status(400).json({ error: error.message });
     }
   }
 }

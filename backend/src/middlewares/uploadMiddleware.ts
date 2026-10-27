@@ -2,6 +2,11 @@ import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary";
 
+// Ao criar uma pasta nova aqui, adicionar também em CLOUDINARY_FOLDERS
+// (services/CloudinaryService.ts) — a exclusão de conta usa essa lista.
+// O public_id `${userId}-${Date.now()}` também é usado por ela (limpeza
+// por prefixo), então não mudar esse formato sem ajustar lá.
+
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {

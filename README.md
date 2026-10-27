@@ -1,8 +1,8 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: 07/09/2026)
+## 🔄 Onde paramos (última atualização: setembro de 2026)
 
-**Última sessão:** Login com Google (OAuth) implementado e testado em produção. Iniciada a Fase 7 (Play Store).
+**Última sessão:** Fase 7 (Play Store) avançou: app criado no Play Console, `.aab` publicado no teste interno e instalado com sucesso em celular Android real, e política de privacidade publicada em `https://musicwork.com.br/privacidade`.
 
 **Login com Google — ✅ CONCLUÍDO:**
 
@@ -10,14 +10,27 @@
 - Botão nas telas de Login e Registro (`@react-oauth/google`), vinculação automática por email pra contas que já existiam com senha
 - Origin `https://www.musicwork.com.br` precisou ser adicionada ao Client ID no Google Cloud Console (o manifest computa o App ID usando o subdomínio www)
 
-**Fase 7 (Play Store) — EM ANDAMENTO:**
+**Fase 7 (Play Store): EM ANDAMENTO**
 
-- ✅ Conta de desenvolvedor no Google Play Console criada e 100% verificada (identidade, telefone, acesso a dispositivo Android via QR code)
-- ✅ Pacote Android gerado via Bubblewrap (`br.com.musicwork.twa`), keystore de assinatura criado em `~/musicwork-android/android.keystore` — **backup pendente, crítico: perda = impossível atualizar o app depois de publicado**
-- ✅ Build gerado com sucesso: `app-release-signed.apk` e `app-release-bundle.aab`, assinatura verificada via `apksigner`
-- ⚠️ Teste manual do APK direto no celular (sideload) falhou repetidamente com "pacote parece inválido", mesmo o arquivo estando estruturalmente correto (tamanho e assinatura confirmados); causa não identificada — decidido abandonar sideload manual e testar via teste interno do Play Console em vez disso
-- ✅ `assetlinks.json` criado em `frontend/public/.well-known/assetlinks.json` com o SHA-256 do certificado (formato com dois-pontos) e `package_name`, deployado e confirmado servindo como `application/json` via `curl`
-- **Próximo passo:** criar o registro do app dentro do Play Console (nome, categoria, ficha da loja, política de privacidade), depois subir o `.aab` no teste interno
+Feito:
+
+- ✅ Conta de desenvolvedor pessoal criada e 100% verificada
+- ✅ TWA gerada via Bubblewrap (`br.com.musicwork.twa`, targetSdk 36); keystore em `~/musicwork-android/android.keystore` (**backup ainda pendente**); bundle em `~/musicwork-android/app-release-bundle.aab`
+- ✅ Sideload manual do APK falhou repetidamente (causa não identificada) e foi abandonado; o teste pelo Play Console funcionou
+- ✅ `assetlinks.json` publicado em `frontend/public/.well-known/` e servindo como `application/json`
+- ✅ App criado no Play Console: gratuito, Assinatura de apps do Google Play aceita (a keystore local passa a ser a chave de upload)
+- ✅ Teste interno: lista "teste" com 2 emails, versão 1 (1) publicada, instalação confirmada em celular real via link de opt-in
+- ✅ Política de privacidade publicada em `/privacidade` (`pages/PrivacyPolicy.tsx`, rota pública fora do `PrivateRoute`, cores fixas porque a rota não herda o tema)
+
+Pendente:
+
+- [ ] Colar a URL da política no Play Console
+- [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
+- [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
+- [ ] **Exclusão de conta** (exigência do Google para apps com criação de conta): caminho dentro do app (botão em Configurações + endpoint de delete no backend) e página web `/excluir-conta`; o link vai no formulário de segurança de dados e a seção deve ficar destacada na política. Hoje a exclusão só acontece pelo chat de suporte, o que não atende
+- [ ] Denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): **a confirmar** na Central de Ajuda do Play Console antes de construir
+- [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar)
+- [ ] Backup da keystore
 
 **Lembrete de regras do Play Store (contas pessoais novas):**
 
@@ -45,7 +58,7 @@
 
 **Status:** Os 4 itens testados e commitados. Backend e frontend compilando sem erros.
 
-**Próximo passo sugerido:** Só restam os itens de "código difícil" (Login com Google, carrossel de mídia) e "infraestrutura + trade-offs" (WebSocket, push notifications, Play Store) — ver Roadmap abaixo.
+**Próximo passo sugerido:** concluir a Fase 7 (ver pendências acima), começando pela exclusão de conta e pela lista de 12 testers, já que os 14 dias do teste fechado são o gargalo.
 
 ---
 
@@ -89,7 +102,7 @@ musicwork/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip, ProfileChips, ProfileDetailsCard compartilhados entre Profile/PublicProfile/Search)
 ├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; youtube.ts — helper de embed de vídeo em posts)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword, VerifyEmail)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword, VerifyEmail, PrivacyPolicy)
 ├── routes/ (App.Routes, PrivateRoute)
 └── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows, chat)
 
@@ -128,6 +141,7 @@ musicwork/
 - ✅ Botão "Fale com o suporte" — abre/cria a conversa com a conta fixa de suporte
 - ✅ Recuperação de senha ("Esqueci minha senha") — testada de ponta a ponta em produção, envio de email via Resend funcionando
 - ✅ Verificação real de email no cadastro — email de confirmação automático, botão de reenviar, status exibido em Configurações
+- ✅ Política de privacidade pública em `/privacidade`
 
 ### Busca avançada ✅
 
@@ -267,7 +281,7 @@ musicwork/
 - ✅ Recuperação de senha (backend + frontend + envio de email via Resend) — testado de ponta a ponta em produção
 - ✅ Verificação real de email no cadastro — testado de ponta a ponta em produção
 - ❌ **Editar email — decisão consciente de não construir** (ago/2026): recurso raro de ser usado; casos que aparecerem são resolvidos manualmente via chat de suporte (`UPDATE` direto no banco). O endpoint `/account/email` continua existindo no backend, só não é exposto no frontend.
-- [ ] Login com Google (OAuth) — não iniciado
+- ✅ Login com Google (OAuth) — concluído (set/2026), testado em produção
 
 ### Fase 4 — Features grandes (parcialmente concluída)
 
@@ -287,15 +301,15 @@ musicwork/
 
 - [ ] Carrossel de múltiplas fotos/vídeos por post (hoje é limitado a 1 mídia por post — decisão de escopo consciente, ver Convenções abaixo)
 
-### Fase 7 — Publicação em loja (investigado, não concretizado)
+### Fase 7 — Publicação em loja (em andamento, ver "Onde paramos")
 
-- [ ] Empacotar o PWA pra Google Play Store — já foi investigado o caminho (Bubblewrap/TWA ou PWABuilder), mas nunca finalizado
-- [ ] Criar conta no Google Play Console (taxa única de $25)
-- [ ] Política de privacidade publicada (exigência da loja)
-- [ ] Ícones e screenshots no formato exigido pela loja
-- [ ] Passar pelo processo de revisão do Google (pode levar dias, às vezes pede ajustes)
+- ✅ Conta no Google Play Console
+- ✅ TWA via Bubblewrap e teste interno funcionando
+- ✅ Política de privacidade publicada
+- [ ] Ficha da loja, formulários do Console, exclusão de conta
+- [ ] Teste fechado (12 testers, 14 dias) e pedido de produção
 
-**Nota:** a parte técnica de empacotar o PWA é mecânica; a maior fricção está fora do código (conta, política de privacidade, revisão do Google). App iOS/App Store não está nem cogitado ainda.
+**Nota:** app iOS/App Store não está cogitado.
 
 ### 📋 Feedback do professor Fábio (jul/2026) — backlog de sugestões — ✅ CONCLUÍDO
 
@@ -317,7 +331,7 @@ musicwork/
 - ✅ Reorganização dos chips e do card de detalhes do perfil (ponto 4, ver Convenções de código para os detalhes das decisões descartadas no caminho — toggle "+N mais", card só com Profissão)
 - ✅ Chat de suporte — conta fixa `MusicWork Suporte`, botão em Configurações, badge "oficial" fixado no topo das Mensagens
 
-**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (Login com Google, WebSocket, push notifications, carrossel de mídia, Play Store) ou de novo feedback dele.
+**Backlog do professor Fábio 100% concluído — as duas rodadas.** Próximos passos do projeto agora dependem só do roadmap próprio (WebSocket, push notifications, carrossel de mídia, conclusão da Play Store) ou de novo feedback dele.
 
 ---
 
@@ -440,6 +454,10 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Chaves de API do Resend são separadas por ambiente (ago/2026):** `musicwork-production-v3` (Render) e uma chave só local (nome livre, ex: `musicwork-local-dev`). Antes disso, tentar sincronizar uma chave só entre os dois ambientes gerava dessincronia toda vez que precisava rotacionar — resolvido tendo uma chave dedicada em cada lugar, sem depender de copiar valor de um ambiente pro outro.
 
+- **MUI v9: a prop `paragraph` do `Typography` não existe mais.** Usar `sx={{ mb: 2 }}` para espaçamento entre parágrafos. Usar a prop gera um erro de TypeScript confuso sobre "overload" e `component`.
+
+- **Rotas públicas sem tema (ex: `/privacidade`):** `PrivacyPolicy.tsx` usa cores fixas (fundo `#0f0f0f`, texto claro) porque, fora do layout autenticado, o texto herdava preto sobre fundo escuro e ficava ilegível. Qualquer página pública nova deve definir cores explicitamente ou ser envolvida pelo mesmo tema.
+
 ### Convenções vindas da revisão de código (jul/2026)
 
 - **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
@@ -475,7 +493,7 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
 - **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).
 - **Segredos rotacionados em ago/2026** (exposição acidental de um `.env` completo durante debug): `RESEND_API_KEY`, `JWT_SECRET`, senha do banco (Neon), `CLOUDINARY_API_SECRET`. Todos atualizados no Render e local. Nunca colar um `.env` inteiro em chat/ferramenta externa — preferir citar nome da variável e confirmar existência, sem o valor.
-- **Play Store:** ainda não publicado, ver Fase 7 no roadmap. O app já é PWA instalável (ícone próprio, monograma "MW"), mas a publicação formal na loja depende de empacotamento (TWA/Bubblewrap) e trâmites fora do código.
+- **Play Store:** em teste interno (versão 1 (1) instalada e validada em celular real); produção depende do teste fechado de 14 dias e das pendências listadas em "Onde paramos". O app também continua instalável como PWA (ícone próprio, monograma "MW").
 - **Limpeza de fotos órfãs do Cloudinary:** ativa desde ago/2026, só vale pra trocas de avatar/capa feitas a partir dessa data — fotos trocadas antes continuam acumuladas no Cloudinary (não há como recuperar o `public_id` delas retroativamente).
 
 # 🛠️ Dívida Técnica & Melhorias Futuras — MusicWork
@@ -507,18 +525,12 @@ resolvidos manualmente: a pessoa manda mensagem pelo chat de suporte, e o
 
 ### Publicar na Google Play Store
 
-**Contexto:** O app já é PWA instalável, mas nunca foi publicado formalmente na loja.
-Já foi investigado o caminho técnico (Bubblewrap/TWA, PWABuilder), sem finalizar.
+**Contexto:** Em andamento (set/2026): TWA gerada, teste interno funcionando e
+política de privacidade publicada. Faltam ficha da loja, formulários do Console,
+exclusão de conta e o teste fechado (12 testers, 14 dias).
 
-**Como resolver:**
-
-- Empacotar o PWA via TWA (Trusted Web Activity)
-- Criar conta no Google Play Console (taxa única de $25)
-- Publicar política de privacidade (exigência da loja)
-- Preparar ícones/screenshots no formato certo
-- Passar pela revisão do Google (pode levar dias, às vezes pede ajustes)
-
-Ver Fase 7 no README para o detalhamento no roadmap principal.
+**Como resolver:** ver "Onde paramos" e Fase 7 no README, que têm a lista
+atualizada de pendências.
 
 ### Push notifications (Web Push API)
 
@@ -565,4 +577,4 @@ problemas parecidos.
 
 ---
 
-_Última atualização: agosto 2026_
+_Última atualização: setembro de 2026_

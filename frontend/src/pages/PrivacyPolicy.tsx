@@ -1,4 +1,5 @@
-import { Container, Typography, Box } from "@mui/material";
+import { Container, Typography, Box, Link } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 
 export default function PrivacyPolicy() {
   return (
@@ -8,7 +9,7 @@ export default function PrivacyPolicy() {
           Política de Privacidade — MusicWork
         </Typography>
         <Typography variant="body2" sx={{ color: "#a0a0a0" }} gutterBottom>
-          Última atualização: setembro de 2026
+          Última atualização: outubro de 2026
         </Typography>
 
         <Box sx={{ mt: 4 }}>
@@ -194,9 +195,7 @@ export default function PrivacyPolicy() {
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
-                Solicitar a exclusão da sua conta e dos dados associados,
-                entrando em contato pelo chat de suporte dentro do aplicativo ou
-                pelo email contato@musicwork.com.br
+                Excluir sua conta e os dados associados (ver abaixo)
               </Typography>
             </li>
             <li>
@@ -204,6 +203,43 @@ export default function PrivacyPolicy() {
                 Solicitar a correção de dados incorretos
               </Typography>
             </li>
+          </Box>
+
+          <Box
+            sx={{
+              mt: 3,
+              mb: 2,
+              p: 2.5,
+              border: "1px solid #f4433666",
+              backgroundColor: "#f4433614",
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "#ffffff", fontSize: 18 }}
+            >
+              Exclusão de conta
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 1.5, color: "inherit" }}>
+              Você mesmo pode excluir sua conta a qualquer momento, pelo app ou
+              pelo site: <strong>Configurações → Excluir conta</strong>. A
+              exclusão é imediata e definitiva e apaga seu perfil, suas mídias,
+              posts, comentários, curtidas, seguidores, works, shows e conversas
+              do chat.
+            </Typography>
+            <Typography variant="body1" sx={{ color: "inherit" }}>
+              Passo a passo, o que é apagado e como pedir a exclusão sem acesso
+              à conta:{" "}
+              <Link
+                component={RouterLink}
+                to="/excluir-conta"
+                sx={{ color: "#b39dff" }}
+              >
+                musicwork.com.br/excluir-conta
+              </Link>
+            </Typography>
           </Box>
 
           <Typography
@@ -214,9 +250,12 @@ export default function PrivacyPolicy() {
             5. Retenção de dados
           </Typography>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
-            Mantemos seus dados enquanto sua conta estiver ativa. Caso solicite
-            a exclusão da conta, removemos os dados pessoais associados, exceto
-            quando a retenção for exigida por obrigação legal.
+            Mantemos seus dados enquanto sua conta estiver ativa. Quando você
+            exclui a conta, os dados associados são apagados imediatamente.
+            Cópias de segurança automáticas dos nossos provedores de
+            infraestrutura podem conter esses dados por até 30 dias, até serem
+            descartadas automaticamente, e não são usadas para nenhuma outra
+            finalidade.
           </Typography>
 
           <Typography

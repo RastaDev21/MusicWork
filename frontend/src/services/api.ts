@@ -88,6 +88,11 @@ export async function loginWithGoogle(idToken: string) {
   return response.data;
 }
 
+export async function deleteAccount(confirmation: string) {
+  const response = await api.delete("/account", { data: { confirmation } });
+  return response.data;
+}
+
 // ── Perfil / uploads de imagem e vídeo do perfil ──
 
 export async function uploadAvatar(file: File) {

@@ -15,6 +15,7 @@ import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
 import VerifyEmail from "../pages/VerifyEmail";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
+import DeleteAccount from "../pages/DeleteAccount";
 
 export default function AppRoutes() {
   return (
@@ -25,6 +26,7 @@ export default function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/privacidade" element={<PrivacyPolicy />} />
+      <Route path="/excluir-conta" element={<DeleteAccount />} />
       <Route
         path="/feed"
         element={

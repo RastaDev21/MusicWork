@@ -1,8 +1,18 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: setembro de 2026)
+## 🔄 Onde paramos (última atualização: outubro de 2026)
 
-**Última sessão:** Fase 7 (Play Store) avançou: app criado no Play Console, `.aab` publicado no teste interno e instalado com sucesso em celular Android real, e política de privacidade publicada em `https://musicwork.com.br/privacidade`.
+**Última sessão:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
+
+**Exclusão de conta — ✅ CONCLUÍDA (falta deploy):**
+
+- `AccountService.deleteAccount` apaga tudo numa transação, em ordem explícita (ver Convenções de código); conversas somem inteiras, para os dois lados
+- `CloudinaryService.deleteUserMedia` limpa a mídia em duas passadas: pelas URLs salvas no banco e pelo prefixo `<pasta>/<userId>-` (pega órfãos)
+- Confirmação digitando `EXCLUIR` (funciona igual pra conta com senha e conta criada pelo Google, que tem senha aleatória); o backend também valida
+- Conta de suporte (`isSupport`) não pode ser excluída
+- 2 bugs encontrados no teste e corrigidos antes do commit: (1) as chamadas de limpeza em paralelo estouravam o limite de concorrência da Admin API do Cloudinary (`420 Too many concurrent admin_api_resource_destroy operations`) — agora rodam uma por vez; (2) o objeto de erro do SDK do Cloudinary carrega a API key e o secret em `request_options.auth`, e estava sendo logado inteiro — agora só mensagem + código HTTP
+
+**Incidente de segurança (out/2026):** durante o teste da exclusão de conta, o bug (2) acima fez o `CLOUDINARY_API_SECRET` aparecer num log exibido no chat. **Rotacionar o secret** (Render + `.env` local) — ver pendências.
 
 **Login com Google — ✅ CONCLUÍDO:**
 
@@ -21,13 +31,16 @@ Feito:
 - ✅ App criado no Play Console: gratuito, Assinatura de apps do Google Play aceita (a keystore local passa a ser a chave de upload)
 - ✅ Teste interno: lista "teste" com 2 emails, versão 1 (1) publicada, instalação confirmada em celular real via link de opt-in
 - ✅ Política de privacidade publicada em `/privacidade` (`pages/PrivacyPolicy.tsx`, rota pública fora do `PrivateRoute`, cores fixas porque a rota não herda o tema)
+- ✅ Exclusão de conta: botão em Configurações + `DELETE /account` + página pública `/excluir-conta` (`pages/DeleteAccount.tsx`) + seção destacada na política
 
 Pendente:
 
+- [ ] **Rotacionar `CLOUDINARY_API_SECRET`** (exposto em log no chat em out/2026) — Render e `.env` local
+- [ ] Conferir a janela de restore (backup) do Neon e ajustar o "até 30 dias" escrito em `/excluir-conta` e na seção 5 da política, antes do deploy
+- [ ] Deploy da exclusão de conta e colar `https://musicwork.com.br/excluir-conta` no Play Console (Segurança dos dados → Exclusão de conta)
 - [ ] Colar a URL da política no Play Console
 - [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
 - [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
-- [ ] **Exclusão de conta** (exigência do Google para apps com criação de conta): caminho dentro do app (botão em Configurações + endpoint de delete no backend) e página web `/excluir-conta`; o link vai no formulário de segurança de dados e a seção deve ficar destacada na política. Hoje a exclusão só acontece pelo chat de suporte, o que não atende
 - [ ] Denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): **a confirmar** na Central de Ajuda do Play Console antes de construir
 - [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar)
 - [ ] Backup da keystore
@@ -58,7 +71,7 @@ Pendente:
 
 **Status:** Os 4 itens testados e commitados. Backend e frontend compilando sem erros.
 
-**Próximo passo sugerido:** concluir a Fase 7 (ver pendências acima), começando pela exclusão de conta e pela lista de 12 testers, já que os 14 dias do teste fechado são o gargalo.
+**Próximo passo sugerido:** rotacionar o secret do Cloudinary, fazer o deploy da exclusão de conta e seguir com a Fase 7 (ver pendências acima), priorizando a lista de 12 testers, já que os 14 dias do teste fechado são o gargalo.
 
 ---
 
@@ -95,14 +108,14 @@ musicwork/
 │ ├── middlewares/ (authMiddleware, uploadMiddleware)
 │ ├── models/ (User, Post, Like, CommentLike, Work, Follow, Comment, Notification, Show, Conversation, Message)
 │ ├── routes/ (authRoutes, userRoutes, postRoutes, uploadRoutes, likeRoutes, commentLikeRoutes, workRoutes, followRoutes, commentRoutes, notificationRoutes, showRoutes, conversationRoutes)
-│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, ShowService, ConversationService, EmailService)
+│ ├── services/ (AuthService, UserService, PostService, WorkService, FollowService, CommentService, NotificationService, ShowService, ConversationService, EmailService, AccountService — exclusão de conta, CloudinaryService — limpeza de mídia)
 │ └── server.ts
 └── frontend/
 └── src/
 ├── components/ (Layout, NavBar, SideBar, BottomNav, PostCard, NewPost, ShowCard, ShowDialog, Logo; profile/ — SocialLinks, AudioPlayer, ProfessorChip, ProfileChips, ProfileDetailsCard compartilhados entre Profile/PublicProfile/Search)
 ├── constants/ (musicOptions.ts — instrumentos e gêneros; countries.ts — países e bandeira; youtube.ts — helper de embed de vídeo em posts)
 ├── contexts/ (AuthContext)
-├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword, VerifyEmail, PrivacyPolicy)
+├── pages/ (Login, Register, Feed, Profile, PublicProfile, Search, Work, Agenda, Messages, Chat, Settings, ForgotPassword, ResetPassword, VerifyEmail, PrivacyPolicy, DeleteAccount)
 ├── routes/ (App.Routes, PrivateRoute)
 └── services/ (api.ts — organizado em seções: auth/conta, perfil/uploads, notificações, posts, shows, chat)
 
@@ -142,6 +155,7 @@ musicwork/
 - ✅ Recuperação de senha ("Esqueci minha senha") — testada de ponta a ponta em produção, envio de email via Resend funcionando
 - ✅ Verificação real de email no cadastro — email de confirmação automático, botão de reenviar, status exibido em Configurações
 - ✅ Política de privacidade pública em `/privacidade`
+- ✅ Excluir minha conta (Configurações, confirmação digitando `EXCLUIR`) — apaga conta, conteúdo, conversas e mídias do Cloudinary; página pública com o passo a passo em `/excluir-conta`
 
 ### Busca avançada ✅
 
@@ -306,7 +320,8 @@ musicwork/
 - ✅ Conta no Google Play Console
 - ✅ TWA via Bubblewrap e teste interno funcionando
 - ✅ Política de privacidade publicada
-- [ ] Ficha da loja, formulários do Console, exclusão de conta
+- ✅ Exclusão de conta (app + página `/excluir-conta`)
+- [ ] Ficha da loja, formulários do Console
 - [ ] Teste fechado (12 testers, 14 dias) e pedido de produção
 
 **Nota:** app iOS/App Store não está cogitado.
@@ -458,6 +473,14 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Rotas públicas sem tema (ex: `/privacidade`):** `PrivacyPolicy.tsx` usa cores fixas (fundo `#0f0f0f`, texto claro) porque, fora do layout autenticado, o texto herdava preto sobre fundo escuro e ficava ilegível. Qualquer página pública nova deve definir cores explicitamente ou ser envolvida pelo mesmo tema.
 
+- **Exclusão de conta apaga em ordem explícita, sem depender de `ON DELETE CASCADE` (out/2026):** `AccountService.deleteAccount` coleta ids e URLs de mídia antes, depois apaga numa `sequelize.transaction` na ordem CommentLike → Comment → Like → Notification → Post → Follow → Work → Show → Message → Conversation → User. As FKs são criadas pelo `sync({ alter: true })` (em paralelo, sem `await` entre tabelas), então o comportamento de cascade no banco não é confiável. **Ao criar uma tabela nova que referencia `users`, incluí-la nessa lista**, senão a exclusão deixa linha órfã ou falha por FK. Comentários apagados incluem os do usuário, os feitos nos posts dele e as respostas de outros aos comentários dele (mesma regra do `CommentService.delete`). Conversas somem inteiras, para os dois lados (decisão consciente: mais simples e não deixa dado pessoal pra trás).
+
+- **Limpeza de mídia da conta excluída é por URL + por prefixo:** `CloudinaryService.deleteUserMedia` primeiro apaga os `public_id` extraídos das URLs salvas no banco (pega uploads antigos com prefixo `user-`/`undefined-` e a mídia da outra pessoa nas conversas apagadas), depois chama `delete_resources_by_prefix("<pasta>/<userId>-")` em cada pasta (pega órfãos: fotos trocadas antes do `avatarPublicId`, áudio/vídeo substituídos, upload de post nunca publicado). Depende do formato `public_id: \`${userId}-${Date.now()}\`` do `uploadMiddleware` — não mudar esse formato sem ajustar lá. **Pasta nova no `uploadMiddleware` precisa entrar em `CLOUDINARY_FOLDERS`.** As chamadas rodam uma por vez: em paralelo, a Admin API recusa com HTTP 420. A limpeza roda depois do commit do banco e nunca derruba a resposta (falha só vai pro log).
+
+- **Nunca logar o objeto de erro do SDK do Cloudinary inteiro:** ele carrega `request_options.auth` com a API key **e o secret**. Usar `describeCloudinaryError` (`CloudinaryService.ts`), que loga só mensagem e código HTTP. `deleteCloudinaryFile` (usado pelo `UploadController` na troca de avatar/capa) também mora no `CloudinaryService` agora.
+
+- **Confirmação da exclusão de conta é digitar `EXCLUIR`, não a senha:** contas criadas pelo Google têm senha aleatória que ninguém conhece (`AuthService.loginWithGoogle`), então pedir senha travaria essas contas. O backend valida `confirmation === "EXCLUIR"` no body do `DELETE /account` (o `request.body ?? {}` é porque, no Express 5, `body` vem `undefined` em requisição sem corpo). A conta de suporte (`isSupport`) não pode ser excluída.
+
 ### Convenções vindas da revisão de código (jul/2026)
 
 - **Paginação do Feed e do Work (`limit`/`offset` + "Carregar mais"):** os endpoints `/posts` e `/works` aceitam `limit` (default 20, teto 50) e `offset`. O frontend carrega a primeira página e vai concatenando com o botão "Carregar mais" (que some quando a última página volta incompleta). Serve pra não fazer `findAll` na tabela inteira. Recarregar a lista (após criar/deletar) sempre reseta pra primeira página.
@@ -493,8 +516,9 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
 - **Conta de suporte (`suporte@musicwork.com.br`, `isSupport: true`):** criada direto no banco (cadastro normal + `UPDATE` no Neon). Sem seed automático nesse projeto — se precisar recriar, ver Convenções de código (seção sobre `isSupport`).
 - **Segredos rotacionados em ago/2026** (exposição acidental de um `.env` completo durante debug): `RESEND_API_KEY`, `JWT_SECRET`, senha do banco (Neon), `CLOUDINARY_API_SECRET`. Todos atualizados no Render e local. Nunca colar um `.env` inteiro em chat/ferramenta externa — preferir citar nome da variável e confirmar existência, sem o valor.
-- **Play Store:** em teste interno (versão 1 (1) instalada e validada em celular real); produção depende do teste fechado de 14 dias e das pendências listadas em "Onde paramos". O app também continua instalável como PWA (ícone próprio, monograma "MW").
-- **Limpeza de fotos órfãs do Cloudinary:** ativa desde ago/2026, só vale pra trocas de avatar/capa feitas a partir dessa data — fotos trocadas antes continuam acumuladas no Cloudinary (não há como recuperar o `public_id` delas retroativamente).
+- **Play Store:** em teste interno (versão 1 (1) instalada e validada em celular real); exclusão de conta pronta (página `/excluir-conta`); produção depende do teste fechado de 14 dias e das pendências listadas em "Onde paramos". O app também continua instalável como PWA (ícone próprio, monograma "MW").
+- **Limpeza de fotos órfãs do Cloudinary:** ativa desde ago/2026, só vale pra trocas de avatar/capa feitas a partir dessa data — fotos trocadas antes continuam acumuladas no Cloudinary (não há como recuperar o `public_id` delas retroativamente). Exceção: ao excluir a conta, a limpeza por prefixo `<pasta>/<userId>-` pega também esses órfãos (desde que o upload seja de depois de jul/2026, quando o `public_id` passou a ter o `userId`).
+- **Limitações conhecidas da exclusão de conta:** um JWT aberto em outro aparelho continua válido por até 7 dias depois da exclusão (o `authMiddleware` não confere se o usuário ainda existe — a maioria das telas só vai dar erro de "Usuário não encontrado"). E `PostService.deletePost` continua sem apagar a mídia do post no Cloudinary (só a exclusão de conta faz isso).
 
 # 🛠️ Dívida Técnica & Melhorias Futuras — MusicWork
 
@@ -525,9 +549,9 @@ resolvidos manualmente: a pessoa manda mensagem pelo chat de suporte, e o
 
 ### Publicar na Google Play Store
 
-**Contexto:** Em andamento (set/2026): TWA gerada, teste interno funcionando e
-política de privacidade publicada. Faltam ficha da loja, formulários do Console,
-exclusão de conta e o teste fechado (12 testers, 14 dias).
+**Contexto:** Em andamento (out/2026): TWA gerada, teste interno funcionando,
+política de privacidade publicada e exclusão de conta implementada. Faltam ficha
+da loja, formulários do Console e o teste fechado (12 testers, 14 dias).
 
 **Como resolver:** ver "Onde paramos" e Fase 7 no README, que têm a lista
 atualizada de pendências.
@@ -577,4 +601,4 @@ problemas parecidos.
 
 ---
 
-_Última atualização: setembro de 2026_
+_Última atualização: outubro de 2026_

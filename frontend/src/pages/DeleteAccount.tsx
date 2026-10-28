@@ -77,7 +77,7 @@ export default function DeleteAccount() {
           </Typography>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
             Se você não consegue mais entrar, envie um email para{" "}
-            <strong>contato@musicwork.com.br</strong> a partir do email
+            <strong>humberto_21style@hotmail.com</strong> a partir do email
             cadastrado na conta, com o assunto <strong>"Exclusão de conta"</strong>.
             A exclusão é feita em até 15 dias e você recebe uma confirmação por
             email.

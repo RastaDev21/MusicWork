@@ -342,7 +342,7 @@ export default function PrivacyPolicy() {
           </Typography>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
             Dúvidas sobre esta política ou sobre seus dados podem ser enviadas
-            para <strong>contato@musicwork.com.br</strong> ou pelo chat de
+            para <strong>humberto_21style@hotmail.com</strong> ou pelo chat de
             suporte disponível dentro do aplicativo.
           </Typography>
         </Box>

@@ -36,22 +36,26 @@ export default function PrivacyPolicy() {
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Dados de cadastro:</strong> nome, email e senha
                 (armazenada de forma criptografada). Se você usar o login com
-                Google, coletamos nome, email e foto de perfil fornecidos pela
-                sua conta Google.
+                Google, recebemos da sua conta Google apenas o nome, o email e
+                um identificador da conta. Cada conta também recebe um
+                identificador interno no MusicWork.
               </Typography>
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Dados de perfil:</strong> cidade, nacionalidade,
-                biografia, instrumentos musicais, gêneros musicais e indicação
-                de atuação como professor.
+                biografia, profissão secundária, instrumentos musicais, gêneros
+                musicais, link de música favorita e indicação de atuação como
+                professor. A cidade é um texto que você digita: o aplicativo não
+                acessa a localização (GPS) do seu aparelho.
               </Typography>
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Mídia enviada por você:</strong> foto de perfil, foto de
-                capa e um arquivo de áudio de apresentação, todos armazenados em
-                nosso provedor de armazenamento em nuvem (Cloudinary).
+                capa, vídeo de apresentação, áudio de apresentação e as fotos,
+                vídeos e flyers que você publicar, todos armazenados em nosso
+                provedor de armazenamento em nuvem (Cloudinary).
               </Typography>
             </li>
             <li>
@@ -64,7 +68,10 @@ export default function PrivacyPolicy() {
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Conteúdo gerado por você:</strong> posts (texto, foto ou
-                vídeo), comentários, curtidas e shows cadastrados na Agenda.
+                vídeo), comentários, curtidas, quem você segue, shows cadastrados
+                na Agenda e anúncios publicados no Work (título, descrição,
+                valor, cidade e o contato que você informar, que pode ser
+                telefone, WhatsApp ou email).
               </Typography>
             </li>
             <li>
@@ -82,6 +89,11 @@ export default function PrivacyPolicy() {
               </Typography>
             </li>
           </Box>
+          <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
+            O MusicWork não usa ferramentas de publicidade, de análise de uso
+            (analytics) nem de rastreamento, e não acessa contatos, agenda,
+            câmera, microfone ou localização do seu aparelho.
+          </Typography>
 
           <Typography
             variant="h6"
@@ -96,7 +108,8 @@ export default function PrivacyPolicy() {
           <Box component="ul" sx={{ color: "inherit" }}>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
-                Criar e manter seu perfil público na plataforma
+                Criar e manter seu perfil, visível para os outros usuários da
+                plataforma
               </Typography>
             </li>
             <li>
@@ -107,7 +120,9 @@ export default function PrivacyPolicy() {
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
-                Viabilizar a publicação de posts, comentários, curtidas e shows
+                Viabilizar a publicação de posts, comentários, curtidas, shows e
+                anúncios no Work, e avisar você sobre interações por
+                notificações dentro do app
               </Typography>
             </li>
             <li>
@@ -158,6 +173,17 @@ export default function PrivacyPolicy() {
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>Render:</strong> hospedagem do servidor (API) do
+                MusicWork
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>Vercel:</strong> hospedagem do site e do aplicativo web
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Resend:</strong> envio de emails transacionais
                 (confirmação de cadastro, recuperação de senha)
               </Typography>
@@ -168,12 +194,21 @@ export default function PrivacyPolicy() {
                 quando você optar por esse método
               </Typography>
             </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>YouTube:</strong> vídeos do YouTube incluídos em posts
+                são carregados diretamente do YouTube quando exibidos
+              </Typography>
+            </li>
           </Box>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
-            Informações de perfil que você marcar como públicas (nome, foto,
-            instrumentos, posts, etc.) ficam visíveis para outros usuários da
-            plataforma e, no caso de perfis públicos, podem ser acessadas por
-            qualquer visitante do site.
+            Seu perfil (nome, foto, capa, instrumentos, cidade, biografia,
+            links), seus posts, shows e anúncios ficam visíveis para os outros
+            usuários conectados ao MusicWork. Seu email não é exibido. As
+            mensagens do chat são visíveis apenas para os participantes da
+            conversa. Arquivos de mídia são entregues por links do nosso
+            provedor de armazenamento, que podem ser abertos por quem tiver o
+            link.
           </Typography>
 
           <Typography
@@ -279,10 +314,10 @@ export default function PrivacyPolicy() {
             7. Menores de idade
           </Typography>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
-            O MusicWork não é direcionado a menores de 13 anos. Se você tiver
-            conhecimento de que um menor de 13 anos forneceu dados pessoais à
-            plataforma, entre em contato conosco para que possamos remover essas
-            informações.
+            O MusicWork é destinado a pessoas com 18 anos ou mais e não é
+            direcionado a crianças. Se você tiver conhecimento de que um menor
+            de idade forneceu dados pessoais à plataforma, entre em contato
+            conosco para que possamos remover essas informações.
           </Typography>
 
           <Typography

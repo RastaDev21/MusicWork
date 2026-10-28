@@ -48,6 +48,9 @@ export default function BottomNav() {
             label={item.label}
             icon={item.icon}
             sx={{
+              // Sem isso, o minWidth padrão (80px) x 6 itens estoura telas de ~360px
+              minWidth: 0,
+              px: 0.5,
               color: "#666",
               "&.Mui-selected": { color: "#7c4dff" },
               "& .MuiBottomNavigationAction-label": { fontSize: 10 },

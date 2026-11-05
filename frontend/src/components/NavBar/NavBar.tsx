@@ -331,13 +331,15 @@ export default function Navbar() {
               },
             }}
           >
-            <MenuItem disabled sx={{ opacity: 1, pb: 0 }}>
+            {/* Item desabilitado recebe opacidade do MUI pela classe
+                .Mui-disabled, que ganha de um `opacity` solto no sx */}
+            <MenuItem disabled sx={{ pb: 0, "&.Mui-disabled": { opacity: 1 } }}>
               <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
                 {user?.name}
               </Typography>
             </MenuItem>
-            <MenuItem disabled sx={{ opacity: 1, pt: 0 }}>
-              <Typography sx={{ color: "#666", fontSize: 12 }}>
+            <MenuItem disabled sx={{ pt: 0, "&.Mui-disabled": { opacity: 1 } }}>
+              <Typography sx={{ color: "#999", fontSize: 12 }}>
                 {user?.instrument} · {user?.city}
               </Typography>
             </MenuItem>

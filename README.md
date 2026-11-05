@@ -1,8 +1,25 @@
 # MusicWork 🎵
 
-## 🔄 Onde paramos (última atualização: outubro de 2026)
+## 🔄 Onde paramos (última atualização: novembro de 2026)
 
-**Última sessão:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
+**Última sessão (nov/2026):** notificações push — pop-up no celular com o app fechado ou em segundo plano, igual aos outros apps, para seguir, curtir, comentar, responder, curtir comentário e mensagem do chat. Testado localmente de ponta a ponta: backend entregando para um serviço de push falso (payload descriptografado e conferido) e Chrome real recebendo pelo FCM do Google.
+
+**Notificações push — ✅ IMPLEMENTADO (falta configurar o Render e fazer deploy):**
+
+- Backend: biblioteca `web-push` + chaves VAPID (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`), tabela `push_subscriptions` (uma linha por aparelho), rotas `GET /push/public-key`, `POST /push/subscription` e `DELETE /push/subscription`
+- Disparo em `NotificationService.create` (todos os tipos do sino de uma vez) e em `ConversationService.sendMessage`; sem `await`, a resposta da ação não espera o serviço de push
+- Frontend: service worker próprio (`src/sw.ts`, `strategies: "injectManifest"`), banner "Ative as notificações" no Feed, card "Notificações no celular" em Configurações, lógica em `services/push.ts`
+- Sem as chaves VAPID o push fica desligado e o resto do app funciona normal
+- O app Android (TWA) já foi gerado com `enableNotifications: true` e a permissão `POST_NOTIFICATIONS` — não precisa gerar nova versão do `.aab`
+- Política de privacidade e `/excluir-conta` atualizadas (endereço de entrega das notificações, serviços de push do navegador)
+
+Pendente:
+
+- [ ] Colocar as chaves VAPID **de produção** no Render (são diferentes das do `.env` local), depois deploy e teste no celular
+- [ ] Play Console → Segurança dos dados: avaliar declarar "IDs do dispositivo ou outros" (o endereço de entrega das notificações), coletado, não compartilhado, finalidade "Funcionalidade do app"
+- [ ] Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users` (ver "Média prioridade" no fim deste arquivo)
+
+**Sessão anterior:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
 
 **Exclusão de conta — ✅ CONCLUÍDA (falta deploy):**
 
@@ -202,6 +219,7 @@ musicwork/
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo, tanto no perfil público quanto no próprio perfil
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
+- ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo banner do Feed ou em Configurações
 
 ### Perfil ✅
 
@@ -303,11 +321,11 @@ musicwork/
 - ✅ Vídeo/áudio de apresentação no perfil — evoluiu para posts com foto ou vídeo + sistema de fixar post no perfil
 - ✅ Calendário de shows
 
-### Fase 5 — Real-time e notificações (planejado, não iniciado)
+### Fase 5 — Real-time e notificações (push concluído em nov/2026; WebSocket adiado)
 
 - [ ] WebSocket (Socket.IO) para notificações instantâneas _dentro do app aberto_, substituindo o polling atual de 30s
 - [ ] Lógica de reconexão no frontend (o backend no Render free hiberna por inatividade, então a conexão persistente vai cair) — parcialmente mitigado pelo monitor do UptimeRobot, mas ainda vale ter reconexão própria
-- [ ] **Push notifications** (Web Push API) — notificações que chegam mesmo com o app fechado (curtida, comentário, mensagem, seguir), diferente do WebSocket (que só funciona com o app aberto). Precisa de: Service Worker, chaves VAPID, backend disparando por evento, e pedido de permissão na UI. No iPhone só funciona com o PWA instalado na tela inicial (não funciona no Safari comum).
+- ✅ **Push notifications** (Web Push API) — notificações que chegam mesmo com o app fechado (seguir, curtir, comentar, responder, curtir comentário, mensagem), diferente do WebSocket (que só funciona com o app aberto). No iPhone só funciona com o PWA instalado na tela inicial (não funciona no Safari comum). Ver "Onde paramos" e Convenções de código.
 
 **Decisão registrada (jul/2026):** optamos por adiar o WebSocket. Hoje as notificações funcionam por polling (frontend consulta `/notifications/unread-count` a cada 30s), o que não é real-time de verdade mas resolve bem pra um projeto com poucos usuários. WebSocket não vai exigir refazer nada do que já existe — é uma camada adicional em cima do que já temos (o REST continua servindo a lista de notificações, o socket só avisa "tem algo novo"). Faz mais sentido implementar quando: (a) já tivermos uma base de usuários ativa que justifique, e (b) migrarmos pra um plano/host que não hiberne, pra não ter reconexão toda hora. WebSocket e push notifications resolvem problemas parecidos ("saber que aconteceu algo sem abrir o app"), então faz sentido avaliar os dois juntos quando chegar a hora.
 
@@ -387,6 +405,9 @@ RESEND_API_KEY=... # chave DIFERENTE pra local (ex: musicwork-local-dev) e pra p
 EMAIL_FROM=MusicWork contato@musicwork.com.br
 FRONTEND_RESET_URL=http://localhost:5173/reset-password # LOCAL — em produção, https://musicwork.com.br/reset-password
 FRONTEND_VERIFY_URL=http://localhost:5173/verify-email # LOCAL — em produção, https://musicwork.com.br/verify-email
+VAPID_PUBLIC_KEY=... # notificações push — par DIFERENTE pra local e pra produção. Gerar com: npx web-push generate-vapid-keys
+VAPID_PRIVATE_KEY=... # sem as duas chaves o push fica desligado (o resto do app funciona)
+VAPID_SUBJECT=https://musicwork.com.br
 
 ### Frontend (.env)
 
@@ -473,13 +494,21 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Rotas públicas sem tema (ex: `/privacidade`):** `PrivacyPolicy.tsx` usa cores fixas (fundo `#0f0f0f`, texto claro) porque, fora do layout autenticado, o texto herdava preto sobre fundo escuro e ficava ilegível. Qualquer página pública nova deve definir cores explicitamente ou ser envolvida pelo mesmo tema.
 
-- **Exclusão de conta apaga em ordem explícita, sem depender de `ON DELETE CASCADE` (out/2026):** `AccountService.deleteAccount` coleta ids e URLs de mídia antes, depois apaga numa `sequelize.transaction` na ordem CommentLike → Comment → Like → Notification → Post → Follow → Work → Show → Message → Conversation → User. As FKs são criadas pelo `sync({ alter: true })` (em paralelo, sem `await` entre tabelas), então o comportamento de cascade no banco não é confiável. **Ao criar uma tabela nova que referencia `users`, incluí-la nessa lista**, senão a exclusão deixa linha órfã ou falha por FK. Comentários apagados incluem os do usuário, os feitos nos posts dele e as respostas de outros aos comentários dele (mesma regra do `CommentService.delete`). Conversas somem inteiras, para os dois lados (decisão consciente: mais simples e não deixa dado pessoal pra trás).
+- **Exclusão de conta apaga em ordem explícita, sem depender de `ON DELETE CASCADE` (out/2026):** `AccountService.deleteAccount` coleta ids e URLs de mídia antes, depois apaga numa `sequelize.transaction` na ordem CommentLike → Comment → Like → Notification → Post → Follow → Work → Show → Message → Conversation → PushSubscription → User. As FKs são criadas pelo `sync({ alter: true })` (em paralelo, sem `await` entre tabelas), então o comportamento de cascade no banco não é confiável. **Ao criar uma tabela nova que referencia `users`, incluí-la nessa lista**, senão a exclusão deixa linha órfã ou falha por FK. Comentários apagados incluem os do usuário, os feitos nos posts dele e as respostas de outros aos comentários dele (mesma regra do `CommentService.delete`). Conversas somem inteiras, para os dois lados (decisão consciente: mais simples e não deixa dado pessoal pra trás).
 
 - **Limpeza de mídia da conta excluída é por URL + por prefixo:** `CloudinaryService.deleteUserMedia` primeiro apaga os `public_id` extraídos das URLs salvas no banco (pega uploads antigos com prefixo `user-`/`undefined-` e a mídia da outra pessoa nas conversas apagadas), depois chama `delete_resources_by_prefix("<pasta>/<userId>-")` em cada pasta (pega órfãos: fotos trocadas antes do `avatarPublicId`, áudio/vídeo substituídos, upload de post nunca publicado). Depende do formato `public_id: \`${userId}-${Date.now()}\`` do `uploadMiddleware` — não mudar esse formato sem ajustar lá. **Pasta nova no `uploadMiddleware` precisa entrar em `CLOUDINARY_FOLDERS`.** As chamadas rodam uma por vez: em paralelo, a Admin API recusa com HTTP 420. A limpeza roda depois do commit do banco e nunca derruba a resposta (falha só vai pro log).
 
 - **Nunca logar o objeto de erro do SDK do Cloudinary inteiro:** ele carrega `request_options.auth` com a API key **e o secret**. Usar `describeCloudinaryError` (`CloudinaryService.ts`), que loga só mensagem e código HTTP. `deleteCloudinaryFile` (usado pelo `UploadController` na troca de avatar/capa) também mora no `CloudinaryService` agora.
 
 - **Confirmação da exclusão de conta é digitar `EXCLUIR`, não a senha:** contas criadas pelo Google têm senha aleatória que ninguém conhece (`AuthService.loginWithGoogle`), então pedir senha travaria essas contas. O backend valida `confirmation === "EXCLUIR"` no body do `DELETE /account` (o `request.body ?? {}` é porque, no Express 5, `body` vem `undefined` em requisição sem corpo). A conta de suporte (`isSupport`) não pode ser excluída.
+
+- **Notificações push (nov/2026):** `PushService.sendToUser` nunca lança e é chamado sem `await` — falha de push não pode derrubar seguir/comentar/mandar mensagem. Inscrição morta (serviço de push responde 404/410) é apagada no próprio envio. Log só com status/código de erro, nunca o objeto de erro inteiro (traz endpoint e cabeçalhos). Endpoint precisa ser `https://` (a lib `web-push` só envia por HTTPS). Os textos do push (`PUSH_TEXT` no `NotificationService`) espelham o `notificationText` do `NavBar` — mudar um, mudar o outro. Cada push tem `tag` (`follow-<sender>-<post>`, `chat-<conversa>`): curtir/descurtir várias vezes ou mandar várias mensagens substitui a notificação em vez de empilhar.
+
+- **Push no frontend — quando inscreve e desinscreve:** o service worker não mostra pop-up se o app estiver aberto na tela (o sino e o contador do chat já avisam). Logout chama `detachPushFromAccount` (apaga a linha no backend, mas mantém a inscrição do navegador); ao logar, `syncPush` reenvia essa inscrição para a conta nova. `syncPush` nunca pede permissão nem cria inscrição: quem tocou em "Desativar" em Configurações (que apaga no backend **e** no navegador) continua desativado. O banner do Feed só aparece com a permissão ainda não respondida e some de vez com "Agora não" (`musicwork_push_prompt_dismissed` no localStorage).
+
+- **Service worker próprio (`frontend/src/sw.ts`):** desde o push, o `vite-plugin-pwa` usa `strategies: "injectManifest"` em vez de gerar o SW sozinho. O `sw.ts` reproduz o que o plugin gerava (`skipWaiting`, `clientsClaim`, precache, `cleanupOutdatedCaches`, fallback do SPA para `index.html`) — a lista de precache foi conferida igual à de antes. Tem tsconfig próprio (`tsconfig.sw.json`, lib `WebWorker`) e fica fora do `tsconfig.app.json`. **Não renomear o arquivo final `sw.js`**: é o endereço que os aparelhos já instalados usam para buscar atualização.
+
+- **`unique: true` na coluna + `sync({ alter: true })` duplica constraint a cada restart:** é bug conhecido do Sequelize com Postgres. A tabela `users` já acumulou centenas (ver "Média prioridade"). Em tabela nova, declarar unicidade como índice nomeado em `indexes` (ex: `PushSubscription`, índice `push_subscriptions_endpoint_unique`) — o sync reconhece pelo nome e não recria.
 
 ### Convenções vindas da revisão de código (jul/2026)
 
@@ -510,7 +539,7 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Email routing (recebimento):** `suporte@musicwork.com.br` e `contato@musicwork.com.br` configurados no Cloudflare Email Routing, encaminhando pro Gmail pessoal. Funciona independente do Resend.
 - **Email sistema (envio):** Resend funcionando em produção desde ago/2026 (bug do domínio corrigido do lado deles). Recuperação de senha e verificação de email testadas de ponta a ponta. Chaves de API separadas por ambiente (local vs produção) — ver Convenções de código.
 - **Campo `type` da tabela `notifications`:** é `STRING` (não ENUM) de propósito, pra permitir novos tipos de notificação (ex: curtir comentário) sem precisar de migração no banco
-- **Notificações:** atualmente via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap
+- **Notificações:** dentro do app, via polling (30s), não real-time via WebSocket — decisão consciente, ver Fase 5 no roadmap. Com o app fechado, via push (Web Push) desde nov/2026
 - **Busca de músicos:** filtra só pelo instrumento principal, não pelos instrumentos secundários — decisão consciente pra não reescrever a query de busca (que já usa `unaccent`)
 - **`JWT_SECRET` obrigatório:** desde a revisão de jul/2026 o backend aborta o boot se a variável não estiver definida (sem fallback `default_secret`) — garantir que ela esteja no Render e no `.env` local. Ver Convenções de código.
 - **Feed e Work paginam** (`limit`/`offset`, botão "Carregar mais"); os filtros do Work agora rodam no servidor. Detalhes nas Convenções de código.
@@ -528,6 +557,12 @@ Cada item tem: contexto, quando resolver e como resolver.
 ---
 
 ## 🟡 Média prioridade
+
+### Constraints únicas duplicadas na tabela `users`
+
+**Contexto:** encontrado em nov/2026. `email` e `googleId` do `User` usam `unique: true`, e o `User.sync({ alter: true })` cria uma constraint única nova para cada uma a cada restart do backend (bug do Sequelize com Postgres). No banco `development` já eram **376** constraints únicas na tabela `users`; produção deve estar parecida ou pior. Cada uma é um índice: deixa inserts e updates em `users` mais lentos e o boot mais demorado.
+
+**Como resolver:** trocar o `unique: true` das colunas por índices nomeados em `indexes` (mesmo padrão do `PushSubscription`) e apagar as duplicadas no banco, mantendo uma por coluna. Testar primeiro na branch `development` do Neon. Vale considerar também parar de usar `alter: true` em produção.
 
 ### Editar email no frontend
 
@@ -556,27 +591,13 @@ da loja, formulários do Console e o teste fechado (12 testers, 14 dias).
 **Como resolver:** ver "Onde paramos" e Fase 7 no README, que têm a lista
 atualizada de pendências.
 
-### Push notifications (Web Push API)
-
-**Contexto:** Hoje o app só avisa de coisas novas (curtida, comentário, mensagem)
-quando está aberto (polling). Notificação chegando com o app fechado, tipo Instagram,
-exige um mecanismo diferente.
-
-**Como resolver:**
-
-- Service Worker novo no frontend
-- Chaves VAPID + biblioteca `web-push` no backend
-- Backend dispara push nos mesmos eventos que já geram notificação hoje
-- Pedido de permissão explícito na UI
-- No iPhone só funciona com o PWA instalado na tela inicial (não funciona no Safari comum)
-
-Ver Fase 5 no README — faz sentido avaliar junto com WebSocket, já que resolvem
-problemas parecidos.
-
 ---
 
 ## ✅ Resolvidos
 
+- **Push notifications (Web Push API)** -> implementado em nov/2026. Notificação
+  chegando com o app fechado (seguir, curtir, comentar, responder, curtir
+  comentário, mensagem). Ver "Onde paramos" e Convenções de código.
 - **Uploads em filesystem efêmero** -> migrado para Cloudinary (jun 2026). Fotos
   agora persistem entre deploys.
 - **Recuperação de senha não enviava email de verdade** -> bug do Resend (identidade

@@ -2,6 +2,7 @@ import { Op, fn, col } from "sequelize";
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import User from "../models/User";
+import PushService from "./PushService";
 
 class ConversationService {
   async findOrCreateConversation(userId: string, otherUserId: string) {
@@ -178,6 +179,33 @@ class ConversationService {
         { model: User, as: "sender", attributes: ["id", "name", "avatarUrl"] },
       ],
     });
+
+    const sender = (withSender as any)?.sender as User | undefined;
+    const recipientId =
+      conversation.user1Id === senderId
+        ? conversation.user2Id
+        : conversation.user1Id;
+    const preview = hasContent
+      ? (content as string).trim().slice(0, 140)
+      : imageUrl
+        ? "📷 Foto"
+        : "🎥 Vídeo";
+
+    // Sem await: sendToUser nunca lança e o envio não segura a resposta.
+    PushService.sendToUser(
+      recipientId,
+      {
+        title: sender?.name || "Nova mensagem",
+        body: preview,
+        url: `/mensagens/${conversationId}`,
+        // Uma notificação por conversa, atualizada a cada mensagem nova
+        tag: `chat-${conversationId}`,
+        icon: sender?.avatarUrl?.startsWith("https://")
+          ? sender.avatarUrl
+          : undefined,
+      },
+      "high",
+    );
 
     return withSender;
   }

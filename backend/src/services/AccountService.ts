@@ -11,6 +11,7 @@ import Work from "../models/Work";
 import Show from "../models/Show";
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
+import PushSubscription from "../models/PushSubscription";
 import { deleteUserMedia } from "./CloudinaryService";
 
 class AccountService {
@@ -123,6 +124,7 @@ class AccountService {
         where: { id: { [Op.in]: conversationIds } },
         transaction,
       });
+      await PushSubscription.destroy({ where: { userId }, transaction });
       await User.destroy({ where: { id: userId }, transaction });
     });
 

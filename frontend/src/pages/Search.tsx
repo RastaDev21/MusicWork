@@ -374,7 +374,9 @@ export default function Search() {
                 {musician.name.charAt(0).toUpperCase()}
               </Avatar>
 
-              <Box sx={{ flex: 1 }}>
+              {/* minWidth 0: sem isso o noWrap da bio estica a caixa e o
+                  texto vaza do card em vez de cortar com "…" */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box
                   sx={{
                     display: "flex",

@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
           Política de Privacidade — MusicWork
         </Typography>
         <Typography variant="body2" sx={{ color: "#a0a0a0" }} gutterBottom>
-          Última atualização: outubro de 2026
+          Última atualização: novembro de 2026
         </Typography>
 
         <Box sx={{ mt: 4 }}>
@@ -85,7 +85,12 @@ export default function PrivacyPolicy() {
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Dados de uso técnico:</strong> informações padrão de
                 autenticação (token de sessão) necessárias para manter você
-                conectado com segurança.
+                conectado com segurança. Se você ativar as notificações no
+                aparelho, guardamos também o endereço de entrega de
+                notificações gerado pelo navegador ou aplicativo, que identifica
+                o aparelho apenas para esse fim. Ele é apagado quando você
+                desativa as notificações, sai da conta naquele aparelho ou
+                exclui a conta.
               </Typography>
             </li>
           </Box>
@@ -121,8 +126,9 @@ export default function PrivacyPolicy() {
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 Viabilizar a publicação de posts, comentários, curtidas, shows e
-                anúncios no Work, e avisar você sobre interações por
-                notificações dentro do app
+                anúncios no Work, e avisar você sobre interações e mensagens
+                por notificações dentro do app e, se você ativar, no seu
+                aparelho
               </Typography>
             </li>
             <li>
@@ -192,6 +198,15 @@ export default function PrivacyPolicy() {
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 <strong>Google:</strong> autenticação via login com Google,
                 quando você optar por esse método
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>Serviços de notificação do aparelho:</strong> quando
+                você ativa as notificações, elas são entregues pelo serviço do
+                seu navegador ou sistema (Google no Android e no Chrome, Apple
+                no iPhone, Mozilla no Firefox). O conteúdo da notificação
+                trafega criptografado e esses serviços não conseguem lê-lo
               </Typography>
             </li>
             <li>

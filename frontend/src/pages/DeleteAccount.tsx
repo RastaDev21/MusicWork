@@ -109,7 +109,8 @@ export default function DeleteAccount() {
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
-                Seguidores, quem você segue e notificações
+                Seguidores, quem você segue, notificações e o cadastro dos
+                aparelhos que recebem notificações
               </Typography>
             </li>
             <li>

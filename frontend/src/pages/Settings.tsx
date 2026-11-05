@@ -22,6 +22,12 @@ import api, {
   resendVerification,
   deleteAccount,
 } from "../services/api";
+import {
+  disablePush,
+  enablePush,
+  getPushStatus,
+  PushStatus,
+} from "../services/push";
 import { useSnackbar } from "notistack";
 
 const inputSx = {
@@ -55,6 +61,13 @@ export default function Settings() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
+  const [togglingPush, setTogglingPush] = useState(false);
+
+  useEffect(() => {
+    getPushStatus().then(setPushStatus);
+  }, []);
 
   // Busca o perfil de novo ao entrar na tela — o usuário em localStorage
   // fica desatualizado depois de ações feitas fora dessa aba (ex: confirmar
@@ -111,6 +124,51 @@ export default function Settings() {
       setOpeningSupport(false);
     }
   }
+
+  async function handleEnablePush() {
+    setTogglingPush(true);
+    try {
+      const status = await enablePush();
+      setPushStatus(status);
+      if (status === "enabled") {
+        enqueueSnackbar("Notificações ativadas!", { variant: "success" });
+      }
+    } catch (error: unknown) {
+      enqueueSnackbar(
+        getErrorMessage(error, "Não foi possível ativar as notificações"),
+        { variant: "error" },
+      );
+    } finally {
+      setTogglingPush(false);
+    }
+  }
+
+  async function handleDisablePush() {
+    setTogglingPush(true);
+    try {
+      await disablePush();
+      setPushStatus("disabled");
+      enqueueSnackbar("Notificações desativadas", { variant: "success" });
+    } catch (error: unknown) {
+      enqueueSnackbar(
+        getErrorMessage(error, "Erro ao desativar as notificações"),
+        { variant: "error" },
+      );
+    } finally {
+      setTogglingPush(false);
+    }
+  }
+
+  const pushDescription: Record<PushStatus, string> = {
+    enabled:
+      "✓ Ativadas neste aparelho. Você recebe um aviso quando alguém te seguir, interagir com seus posts ou mandar mensagem.",
+    disabled:
+      "Receba um aviso no aparelho quando alguém te seguir, interagir com seus posts ou mandar mensagem.",
+    denied:
+      "Bloqueadas neste aparelho. Para receber, libere as notificações do MusicWork nas configurações do celular ou do navegador.",
+    unsupported:
+      "Este navegador não recebe notificações. No iPhone, adicione o MusicWork à Tela de Início (Compartilhar → Adicionar à Tela de Início) e ative por lá.",
+  };
 
   function handleCloseDeleteDialog() {
     if (deletingAccount) return;
@@ -363,6 +421,57 @@ export default function Settings() {
           >
             {savingPassword ? "Salvando..." : "Salvar nova senha"}
           </Button>
+        </Box>
+
+        {/* Notificações no aparelho */}
+        <Box
+          sx={{
+            backgroundColor: "#1a1a1a",
+            border: "1px solid #7c4dff44",
+            borderRadius: 3,
+            p: 2,
+            mt: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box sx={{ flex: 1, minWidth: 200 }}>
+            <Typography
+              sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 0.5 }}
+            >
+              🔔 Notificações no celular
+            </Typography>
+            <Typography sx={{ color: "#666", fontSize: 13 }}>
+              {pushStatus ? pushDescription[pushStatus] : "Verificando..."}
+            </Typography>
+          </Box>
+          {(pushStatus === "enabled" || pushStatus === "disabled") && (
+            <Button
+              variant="outlined"
+              onClick={
+                pushStatus === "enabled" ? handleDisablePush : handleEnablePush
+              }
+              disabled={togglingPush}
+              sx={{
+                color: "#7c4dff",
+                borderColor: "#7c4dff88",
+                whiteSpace: "nowrap",
+                "&:hover": {
+                  borderColor: "#7c4dff",
+                  backgroundColor: "#7c4dff11",
+                },
+              }}
+            >
+              {togglingPush
+                ? "Aguarde..."
+                : pushStatus === "enabled"
+                  ? "Desativar"
+                  : "Ativar"}
+            </Button>
+          )}
         </Box>
 
         {/* Fale com o suporte */}

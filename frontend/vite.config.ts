@@ -7,6 +7,11 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Service worker próprio (src/sw.ts) para receber notificações push;
+      // o plugin só injeta nele a lista de arquivos do build.
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {

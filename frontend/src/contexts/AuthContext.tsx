@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { loginWithGoogle } from "../services/api";
+import { detachPushFromAccount, syncPush } from "../services/push";
 
 interface User {
   id: string;
@@ -55,6 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setLoading(false);
   }, []);
+
+  // Vincula as notificações push do aparelho à conta logada (se já foram
+  // ativadas aqui antes)
+  useEffect(() => {
+    if (user?.id) syncPush();
+  }, [user?.id]);
 
   async function finishLogin(token: string, user: Partial<User>) {
     const cleanToken = token.replace(/"/g, "");
@@ -121,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function signOut() {
+    const token = localStorage.getItem("musicwork_token");
+    if (token) detachPushFromAccount(token.replace(/^"|"$/g, ""));
     localStorage.removeItem("musicwork_token");
     localStorage.removeItem("musicwork_user");
     setUser(null);

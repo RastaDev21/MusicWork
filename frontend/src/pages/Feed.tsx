@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import NewPost from "../components/NewPost/NewPost";
+import PushPrompt from "../components/PushPrompt/PushPrompt";
 import api, { pinPost, unpinPost } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -111,6 +112,7 @@ export default function Feed() {
   return (
     <Layout>
       <Box sx={{ maxWidth: 600, mx: "auto", p: 2 }}>
+        <PushPrompt />
         <NewPost onPost={loadPosts} />
 
         {loading ? (

@@ -86,20 +86,14 @@ class PushService {
 
   // Nunca lança: falha de push não pode derrubar a ação que a disparou
   // (seguir, comentar, mandar mensagem).
-  async sendToUser(
-    userId: string,
-    payload: PushPayload,
-    urgency: "normal" | "high" = "normal",
-  ) {
+  async sendToUser(userId: string, payload: PushPayload) {
     if (!this.isConfigured()) return;
 
     try {
       const subscriptions = await PushSubscription.findAll({
         where: { userId },
       });
-      await Promise.all(
-        subscriptions.map(sub => this.send(sub, payload, urgency)),
-      );
+      await Promise.all(subscriptions.map(sub => this.send(sub, payload)));
     } catch (error) {
       console.error(
         "Erro ao enviar notificação push:",
@@ -108,11 +102,7 @@ class PushService {
     }
   }
 
-  private async send(
-    sub: PushSubscription,
-    payload: PushPayload,
-    urgency: "normal" | "high",
-  ) {
+  private async send(sub: PushSubscription, payload: PushPayload) {
     try {
       await webpush.sendNotification(
         {
@@ -120,7 +110,11 @@ class PushService {
           keys: { p256dh: sub.p256dh, auth: sub.auth },
         },
         JSON.stringify(payload),
-        { TTL: 60 * 60 * 24, urgency },
+        // Urgência alta em todos: com "normal", o Android segura o push
+        // quando o celular está parado (Doze) e curtidas/comentários
+        // chegavam atrasados ou não chegavam. Todo push vira notificação
+        // visível, que é o caso de uso de alta prioridade do FCM.
+        { TTL: 60 * 60 * 24, urgency: "high" },
       );
     } catch (error) {
       // 404/410: o aparelho cancelou a inscrição (desinstalou o app, revogou

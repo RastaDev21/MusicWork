@@ -192,20 +192,16 @@ class ConversationService {
         : "🎥 Vídeo";
 
     // Sem await: sendToUser nunca lança e o envio não segura a resposta.
-    PushService.sendToUser(
-      recipientId,
-      {
-        title: sender?.name || "Nova mensagem",
-        body: preview,
-        url: `/mensagens/${conversationId}`,
-        // Uma notificação por conversa, atualizada a cada mensagem nova
-        tag: `chat-${conversationId}`,
-        icon: sender?.avatarUrl?.startsWith("https://")
-          ? sender.avatarUrl
-          : undefined,
-      },
-      "high",
-    );
+    PushService.sendToUser(recipientId, {
+      title: sender?.name || "Nova mensagem",
+      body: preview,
+      url: `/mensagens/${conversationId}`,
+      // Uma notificação por conversa, atualizada a cada mensagem nova
+      tag: `chat-${conversationId}`,
+      icon: sender?.avatarUrl?.startsWith("https://")
+        ? sender.avatarUrl
+        : undefined,
+    });
 
     return withSender;
   }

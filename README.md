@@ -2,9 +2,18 @@
 
 ## 🔄 Onde paramos (última atualização: novembro de 2026)
 
-**Última sessão (nov/2026):** notificações push — pop-up no celular com o app fechado ou em segundo plano, igual aos outros apps, para seguir, curtir, comentar, responder, curtir comentário e mensagem do chat. Testado localmente de ponta a ponta: backend entregando para um serviço de push falso (payload descriptografado e conferido) e Chrome real recebendo pelo FCM do Google.
+**Última sessão (nov/2026):** onboarding — tour de 6 telas pelo app (boas-vindas, perfil, buscar e Work, feed e Agenda, mensagens com o botão de ativar notificações, considerações finais com os créditos de Humberto Simoes e Fábio duBaixo). Abre sozinho uma vez por conta; depois fica no ícone **?** do header por 14 dias e para sempre em Configurações ("Ver o tour" e "Sobre"). Ideia do Fábio. Testado localmente de ponta a ponta no Chrome (celular e computador), incluindo push real.
 
-**Notificações push — ✅ IMPLEMENTADO (falta configurar o Render e fazer deploy):**
+**Onboarding — ✅ IMPLEMENTADO (falta deploy):**
+
+- `onboardingSeenAt` no `User` (null = ainda não viu) e `PATCH /profile/onboarding`, que guarda só a primeira data
+- `components/Onboarding/Onboarding.tsx` (tela cheia no celular, janela no computador); o `NavBar` abre sozinho e marca como visto ao fechar
+- O ícone de mensagens saiu do header (ficou o **?** do tour); o contador de não lidas foi para o "Mensagens" do menu de baixo e da barra lateral (polling no `Layout`)
+- No deploy, **todo mundo que já tem conta vê o tour uma vez** (o campo nasce vazio) — decisão consciente, ninguém tinha visto ainda
+
+**Sessão anterior (nov/2026):** notificações push — pop-up no celular com o app fechado ou em segundo plano, igual aos outros apps, para seguir, curtir, comentar, responder, curtir comentário e mensagem do chat. Testado localmente de ponta a ponta: backend entregando para um serviço de push falso (payload descriptografado e conferido) e Chrome real recebendo pelo FCM do Google.
+
+**Notificações push — ✅ EM PRODUÇÃO (05/11/2026):**
 
 - Backend: biblioteca `web-push` + chaves VAPID (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`), tabela `push_subscriptions` (uma linha por aparelho), rotas `GET /push/public-key`, `POST /push/subscription` e `DELETE /push/subscription`
 - Disparo em `NotificationService.create` (todos os tipos do sino de uma vez) e em `ConversationService.sendMessage`; sem `await`, a resposta da ação não espera o serviço de push
@@ -15,11 +24,12 @@
 
 Pendente:
 
-- [ ] Colocar as chaves VAPID **de produção** no Render (são diferentes das do `.env` local), depois deploy e teste no celular
+- ✅ Chaves VAPID de produção no Render (diferentes das do `.env` local), deploy feito, ativação testada no celular (app da Play Store reinstalado)
+- [ ] Terminar o teste no celular: pop-up de "seguir" e de mensagem com o app fechado, e tocar no pop-up para ver se abre a tela certa
 - [ ] Play Console → Segurança dos dados: avaliar declarar "IDs do dispositivo ou outros" (o endereço de entrega das notificações), coletado, não compartilhado, finalidade "Funcionalidade do app"
 - [ ] Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users` (ver "Média prioridade" no fim deste arquivo)
 
-**Sessão anterior:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
+**Antes disso:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
 
 **Exclusão de conta — ✅ CONCLUÍDA (falta deploy):**
 
@@ -145,7 +155,7 @@ musicwork/
 - ✅ Lista de conversas (`/mensagens`) com prévia da última mensagem, horário e badge de não lidas
 - ✅ Tela de chat aberta (`/mensagens/:id`) com histórico completo, balões enviados/recebidos
 - ✅ Botão "Mensagem" no perfil público de outros músicos, ao lado do "Seguir"
-- ✅ Ícone de chat no navbar com badge de não lidas (ao lado do sino de notificações)
+- ✅ Badge de não lidas no "Mensagens" do menu de baixo (celular) e da barra lateral (computador) — até nov/2026 ficava num ícone de chat no header
 - ✅ Atualização por polling (mensagens a cada 4s dentro do chat aberto, contador de não lidas a cada 10s) — mesmo padrão das notificações
 - ✅ Botões de anexar mídia travados durante o envio, evitando clique duplo/estado inconsistente
 - ✅ **Chat de suporte** — conta fixa `MusicWork Suporte` (`isSupport`), acessível via botão em Configurações, sempre fixada no topo da lista de Mensagens com badge "oficial"
@@ -219,7 +229,8 @@ musicwork/
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo, tanto no perfil público quanto no próprio perfil
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
-- ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo banner do Feed ou em Configurações
+- ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo tour, pelo banner do Feed ou em Configurações
+- ✅ Onboarding (nov/2026): tour de 6 telas que abre sozinho uma vez por conta, ícone **?** no header por 14 dias, "Ver o tour" e "Sobre" (créditos) em Configurações
 
 ### Perfil ✅
 
@@ -450,7 +461,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Chat sem restrição de quem pode conversar:** qualquer músico pode mandar mensagem pra qualquer outro, sem precisar seguir ou ser seguido. Decisão consciente: o MusicWork tem uma pegada de rede profissional (parecido com o Work), onde um contratante pode querer chamar um músico que nunca seguiu. Diferente de redes mais "fechadas" (ex: LinkedIn). Se no futuro isso virar problema de spam, dá pra adicionar uma caixa de "solicitações" separada, sem quebrar o que já existe.
 
-- **Chat usa polling, não WebSocket:** mesma decisão já tomada pras notificações (ver Fase 5). Mensagens dentro do chat aberto atualizam a cada 4 segundos; o contador de não lidas no navbar atualiza a cada 10 segundos.
+- **Chat usa polling, não WebSocket:** mesma decisão já tomada pras notificações (ver Fase 5). Mensagens dentro do chat aberto atualizam a cada 4 segundos; o contador de não lidas (no `Layout`, mostrado no menu de baixo e na barra lateral) atualiza a cada 10 segundos.
 
 - **`spotify` (link do artista) e `profileAudioUrl` (música do perfil) são campos diferentes, de propósito:** `spotify` é o link do perfil do artista no Spotify, exibido só como ícone clicável (divulgação). `profileAudioUrl` é um arquivo de áudio (upload próprio via Cloudinary) que toca direto no perfil, em loop — trocável a qualquer momento, sem relação com o link de artista. Não confundir os dois nem tentar unificá-los.
 
@@ -507,6 +518,8 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Push no frontend — quando inscreve e desinscreve:** o service worker não mostra pop-up se o app estiver aberto na tela (o sino e o contador do chat já avisam). Logout chama `detachPushFromAccount` (apaga a linha no backend, mas mantém a inscrição do navegador); ao logar, `syncPush` reenvia essa inscrição para a conta nova. `syncPush` nunca pede permissão nem cria inscrição: quem tocou em "Desativar" em Configurações (que apaga no backend **e** no navegador) continua desativado. O banner do Feed só aparece com a permissão ainda não respondida e some de vez com "Agora não" (`musicwork_push_prompt_dismissed` no localStorage).
 
 - **Service worker próprio (`frontend/src/sw.ts`):** desde o push, o `vite-plugin-pwa` usa `strategies: "injectManifest"` em vez de gerar o SW sozinho. O `sw.ts` reproduz o que o plugin gerava (`skipWaiting`, `clientsClaim`, precache, `cleanupOutdatedCaches`, fallback do SPA para `index.html`) — a lista de precache foi conferida igual à de antes. Tem tsconfig próprio (`tsconfig.sw.json`, lib `WebWorker`) e fica fora do `tsconfig.app.json`. **Não renomear o arquivo final `sw.js`**: é o endereço que os aparelhos já instalados usam para buscar atualização.
+
+- **Onboarding (nov/2026) — quando abre e quando marca:** abre sozinho quando `onboardingSeenAt` está vazio. Como o usuário do localStorage pode estar velho (viu o tour em outro aparelho), o `NavBar` confere no `GET /profile` antes de abrir. Marca como visto **ao fechar**, não ao abrir: enquanto o tour está aberto, o banner "Ative as notificações" do Feed fica escondido (`PushPrompt` exige `onboardingSeenAt`), e ao fechar ele só aparece se a pessoa pulou antes da tela de notificações (chegar nela chama `dismissPushPrompt`). O `PushPrompt` checa o "dispensado" de novo a cada render por isso. O ícone **?** do header aparece por `TOUR_ICON_DAYS` (14) dias contados do `onboardingSeenAt` — por isso o backend guarda só a primeira data. Textos das telas ficam no array `SLIDES` do `Onboarding.tsx` e só descrevem o que o app já faz; o protótipo de referência está num artifact do Claude (canvas "MusicWork — Onboarding no header").
 
 - **`unique: true` na coluna + `sync({ alter: true })` duplica constraint a cada restart:** é bug conhecido do Sequelize com Postgres. A tabela `users` já acumulou centenas (ver "Média prioridade"). Em tabela nova, declarar unicidade como índice nomeado em `indexes` (ex: `PushSubscription`, índice `push_subscriptions_endpoint_unique`) — o sync reconhece pelo nome e não recria.
 

@@ -49,6 +49,16 @@ class UserController {
     }
   }
 
+  async markOnboardingSeen(request: Request, response: Response) {
+    try {
+      const userId = request.userId as string;
+      const result = await UserService.markOnboardingSeen(userId);
+      return response.status(200).json(result);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
   async update(request: Request, response: Response) {
     try {
       const userId = request.userId as string;

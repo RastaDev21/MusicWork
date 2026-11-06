@@ -103,7 +103,23 @@ class UserService {
       ...toPublicProfile(user),
       email: user.email,
       isEmailVerified: user.isEmailVerified,
+      onboardingSeenAt: user.onboardingSeenAt,
     };
+  }
+
+  // Guarda só a primeira vez: os 14 dias do ícone do tour contam dela.
+  async markOnboardingSeen(id: string) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    if (!user.onboardingSeenAt) {
+      await user.update({ onboardingSeenAt: new Date() });
+    }
+
+    return { onboardingSeenAt: user.onboardingSeenAt };
   }
 
   // Perfil de terceiros (/users/:id): sem email.

@@ -34,6 +34,7 @@ class User extends Model {
   declare emailVerificationToken: string | null;
   declare emailVerificationExpires: Date | null;
   declare googleId: string | null;
+  declare onboardingSeenAt: Date | null;
 }
 
 User.init(
@@ -173,6 +174,12 @@ User.init(
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
+    },
+    // Primeira vez que viu o tour do app (onboarding). null = ainda não viu:
+    // o tour abre sozinho. Também conta os 14 dias do ícone no header.
+    onboardingSeenAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

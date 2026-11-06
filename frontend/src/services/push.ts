@@ -6,6 +6,18 @@ import api from "./api";
 // início).
 export type PushStatus = "enabled" | "disabled" | "denied" | "unsupported";
 
+// Banner "Ative as notificações" do Feed: dispensado no "Agora não" ou
+// quando a pessoa já viu a tela de notificações do tour
+const PROMPT_DISMISSED_KEY = "musicwork_push_prompt_dismissed";
+
+export function isPushPromptDismissed() {
+  return Boolean(localStorage.getItem(PROMPT_DISMISSED_KEY));
+}
+
+export function dismissPushPrompt() {
+  localStorage.setItem(PROMPT_DISMISSED_KEY, "1");
+}
+
 export function isPushSupported() {
   return (
     "serviceWorker" in navigator &&

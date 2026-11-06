@@ -15,21 +15,26 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import Logo from "../Logo/Logo";
+import Onboarding from "../Onboarding/Onboarding";
 import { Avatar } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
+import api, {
   getImageUrl,
   getNotifications,
   getUnreadNotificationCount,
   markNotificationsAsRead,
+  markOnboardingSeen,
   NotificationItem,
 } from "../../services/api";
 import SettingsIcon from "@mui/icons-material/Settings";
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatOutlined";
-import { getUnreadMessageCount } from "../../services/api";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
+
+// Depois disso o ícone do tour sai do header; o tour continua em
+// Configurações
+const TOUR_ICON_DAYS = 14;
 
 function timeAgo(dateString: string) {
   const diffMs = Date.now() - new Date(dateString).getTime();
@@ -61,12 +66,13 @@ function notificationText(notification: NotificationItem) {
 }
 
 export default function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateUser } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [tourOpen, setTourOpen] = useState(false);
+  const onboardingChecked = useRef(false);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
@@ -86,19 +92,48 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
+  // Tour abre sozinho uma vez por conta. O usuário salvo no localStorage
+  // pode estar desatualizado (viu o tour em outro aparelho), então confere no
+  // servidor antes de abrir.
   useEffect(() => {
-    async function fetchUnreadMessages() {
+    if (!user || user.onboardingSeenAt || onboardingChecked.current) return;
+    onboardingChecked.current = true;
+
+    async function checkOnboarding() {
       try {
-        const count = await getUnreadMessageCount();
-        setUnreadMessages(count);
+        const { data } = await api.get("/profile");
+        if (data.onboardingSeenAt) {
+          updateUser({ onboardingSeenAt: data.onboardingSeenAt });
+          return;
+        }
+        setTourOpen(true);
       } catch {
-        // silencioso
+        // silencioso: tenta de novo na próxima tela
+        onboardingChecked.current = false;
       }
     }
-    fetchUnreadMessages();
-    const interval = setInterval(fetchUnreadMessages, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    checkOnboarding();
+  }, [user, updateUser]);
+
+  // Marca como visto ao fechar, não ao abrir: enquanto o tour está aberto o
+  // banner de notificações do Feed fica escondido (PushPrompt), e ao fechar
+  // ele só aparece se a pessoa pulou antes da tela de notificações.
+  async function handleCloseTour() {
+    setTourOpen(false);
+    if (user?.onboardingSeenAt) return;
+    try {
+      const seenAt = await markOnboardingSeen();
+      updateUser({ onboardingSeenAt: seenAt });
+    } catch {
+      // silencioso: o tour volta na próxima tela
+      onboardingChecked.current = false;
+    }
+  }
+
+  const showTourIcon =
+    !!user?.onboardingSeenAt &&
+    Date.now() - new Date(user.onboardingSeenAt).getTime() <
+      TOUR_ICON_DAYS * 24 * 60 * 60 * 1000;
 
   async function handleOpenNotifications(event: React.MouseEvent<HTMLElement>) {
     setNotifAnchorEl(event.currentTarget);
@@ -191,21 +226,15 @@ export default function Navbar() {
           />
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton
-            sx={{ color: "#aaa" }}
-            onClick={() => navigate("/mensagens")}
-          >
-            <Badge
-              badgeContent={unreadMessages}
-              max={9}
-              color="error"
-              sx={{
-                "& .MuiBadge-badge": { fontSize: 10, height: 16, minWidth: 16 },
-              }}
+          {showTourIcon && (
+            <IconButton
+              sx={{ color: "#aaa" }}
+              onClick={() => setTourOpen(true)}
+              aria-label="Conheça o MusicWork"
             >
-              <ChatBubbleOutlineIcon />
-            </Badge>
-          </IconButton>
+              <HelpOutlineIcon />
+            </IconButton>
+          )}
 
           <IconButton sx={{ color: "#aaa" }} onClick={handleOpenNotifications}>
             <Badge
@@ -390,6 +419,7 @@ export default function Navbar() {
           </Menu>
         </Box>
       </Toolbar>
+      <Onboarding open={tourOpen} onClose={handleCloseTour} />
     </AppBar>
   );
 }

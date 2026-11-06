@@ -15,6 +15,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
+import Onboarding from "../components/Onboarding/Onboarding";
 import { useAuth } from "../contexts/AuthContext";
 import api, {
   changePassword,
@@ -61,6 +62,8 @@ export default function Settings() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [tourMode, setTourMode] = useState<"tour" | "credits" | null>(null);
 
   const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
   const [togglingPush, setTogglingPush] = useState(false);
@@ -474,6 +477,56 @@ export default function Settings() {
           )}
         </Box>
 
+        {/* Tour do app e créditos (o ícone do header some depois de 14 dias) */}
+        <Box
+          sx={{
+            backgroundColor: "#1a1a1a",
+            border: "1px solid #2a2a2a",
+            borderRadius: 3,
+            p: 2,
+            mt: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box sx={{ flex: 1, minWidth: 200 }}>
+            <Typography
+              sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 0.5 }}
+            >
+              🎵 Conheça o MusicWork
+            </Typography>
+            <Typography sx={{ color: "#666", fontSize: 13 }}>
+              Reveja o tour pelo app ou veja quem desenvolveu o MusicWork.
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              onClick={() => setTourMode("credits")}
+              sx={{ color: "#aaa", textTransform: "none" }}
+            >
+              Sobre
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => setTourMode("tour")}
+              sx={{
+                color: "#7c4dff",
+                borderColor: "#7c4dff88",
+                whiteSpace: "nowrap",
+                "&:hover": {
+                  borderColor: "#7c4dff",
+                  backgroundColor: "#7c4dff11",
+                },
+              }}
+            >
+              Ver o tour
+            </Button>
+          </Box>
+        </Box>
+
         {/* Fale com o suporte */}
         <Box
           sx={{
@@ -569,6 +622,16 @@ export default function Settings() {
           </Button>
         </Box>
       </Box>
+
+      <Onboarding
+        open={tourMode !== null}
+        onClose={() => {
+          setTourMode(null);
+          // a tela de notificações do tour pode ter ativado o push
+          getPushStatus().then(setPushStatus);
+        }}
+        startAtCredits={tourMode === "credits"}
+      />
 
       <Dialog
         open={deleteDialogOpen}

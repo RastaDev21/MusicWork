@@ -19,6 +19,7 @@ interface User {
   avatarUrl?: string | null;
   genre?: string | null;
   isEmailVerified?: boolean;
+  onboardingSeenAt?: string | null;
 }
 interface AuthContextData {
   user: User | null;

@@ -1,9 +1,9 @@
-export default function Logo() {
+export default function Logo({ width = 160 }: { width?: number }) {
   return (
     <svg
       viewBox="0 0 680 240"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ width: "160px", height: "auto" }}
+      style={{ width: `${width}px`, height: "auto" }}
     >
       <defs>
         <mask id="text-gaps" maskUnits="userSpaceOnUse">

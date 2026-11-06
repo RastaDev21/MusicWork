@@ -1,28 +1,33 @@
 import { Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
 import { useSnackbar } from "notistack";
-import { enablePush, isPushSupported } from "../../services/push";
-
-const DISMISSED_KEY = "musicwork_push_prompt_dismissed";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  dismissPushPrompt,
+  enablePush,
+  isPushPromptDismissed,
+  isPushSupported,
+} from "../../services/push";
 
 // Convite para ativar as notificações no aparelho. Some de vez quando o
-// usuário permite, bloqueia ou toca em "Agora não"; depois disso, só por
-// Configurações.
+// usuário permite, bloqueia, toca em "Agora não" ou passa pela tela de
+// notificações do tour; depois disso, só por Configurações.
 function shouldShow() {
   return (
     isPushSupported() &&
     Notification.permission === "default" &&
-    !localStorage.getItem(DISMISSED_KEY)
+    !isPushPromptDismissed()
   );
 }
 
 export default function PushPrompt() {
+  const { user } = useAuth();
   const [visible, setVisible] = useState(shouldShow);
   const [enabling, setEnabling] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   function handleDismiss() {
-    localStorage.setItem(DISMISSED_KEY, "1");
+    dismissPushPrompt();
     setVisible(false);
   }
 
@@ -42,7 +47,12 @@ export default function PushPrompt() {
     }
   }
 
-  if (!visible) return null;
+  // Quem ainda não viu o tour vai receber o convite lá dentro. A checagem do
+  // "dispensado" roda de novo aqui porque o tour pode ter dispensado o banner
+  // depois de ele montar (re-renderiza quando o tour fecha e marca a conta).
+  if (!visible || !user?.onboardingSeenAt || isPushPromptDismissed()) {
+    return null;
+  }
 
   return (
     <Box

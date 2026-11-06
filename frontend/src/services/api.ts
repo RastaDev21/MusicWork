@@ -93,6 +93,13 @@ export async function deleteAccount(confirmation: string) {
   return response.data;
 }
 
+export async function markOnboardingSeen() {
+  const response = await api.patch<{ onboardingSeenAt: string }>(
+    "/profile/onboarding",
+  );
+  return response.data.onboardingSeenAt;
+}
+
 // ── Perfil / uploads de imagem e vídeo do perfil ──
 
 export async function uploadAvatar(file: File) {

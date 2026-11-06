@@ -1,4 +1,9 @@
-import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
+import {
+  Badge,
+  BottomNavigation,
+  BottomNavigationAction,
+  Paper,
+} from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
 import WorkIcon from "@mui/icons-material/Work";
@@ -16,7 +21,11 @@ const navItems = [
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },
 ];
 
-export default function BottomNav() {
+export default function BottomNav({
+  unreadMessages,
+}: {
+  unreadMessages: number;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -46,7 +55,26 @@ export default function BottomNav() {
           <BottomNavigationAction
             key={item.label}
             label={item.label}
-            icon={item.icon}
+            icon={
+              item.path === "/mensagens" ? (
+                <Badge
+                  badgeContent={unreadMessages}
+                  max={9}
+                  color="error"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      fontSize: 10,
+                      height: 16,
+                      minWidth: 16,
+                    },
+                  }}
+                >
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )
+            }
             sx={{
               // Sem isso, o minWidth padrão (80px) x 6 itens estoura telas de ~360px
               minWidth: 0,

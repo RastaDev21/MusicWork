@@ -1,4 +1,11 @@
-import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
+import {
+  Badge,
+  Box,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
 import WorkIcon from "@mui/icons-material/Work";
@@ -18,7 +25,11 @@ const menuItems = [
   { label: "Perfil", icon: <PersonIcon />, path: "/perfil" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  unreadMessages,
+}: {
+  unreadMessages: number;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
@@ -58,7 +69,24 @@ export default function Sidebar() {
               <ListItemIcon
                 sx={{ minWidth: 36, color: active ? "#7c4dff" : "#aaa" }}
               >
-                {item.icon}
+                {item.path === "/mensagens" ? (
+                  <Badge
+                    badgeContent={unreadMessages}
+                    max={9}
+                    color="error"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        fontSize: 10,
+                        height: 16,
+                        minWidth: 16,
+                      },
+                    }}
+                  >
+                    {item.icon}
+                  </Badge>
+                ) : (
+                  item.icon
+                )}
               </ListItemIcon>
               <ListItemText
                 primary={item.label}

@@ -1,10 +1,29 @@
 import { Box } from "@mui/material";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Navbar from "../NavBar/NavBar";
 import Sidebar from "../SideBar/SideBar";
 import BottomNav from "../BottomNav/BottomNav";
+import { getUnreadMessageCount } from "../../services/api";
 
 export default function Layout({ children }: { children: ReactNode }) {
+  // Mensagens não lidas: badge no "Mensagens" do menu lateral (desktop) e do
+  // menu de baixo (celular). Antes ficava num ícone do header.
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    async function fetchUnreadMessages() {
+      try {
+        const count = await getUnreadMessageCount();
+        setUnreadMessages(count);
+      } catch {
+        // silencioso
+      }
+    }
+    fetchUnreadMessages();
+    const interval = setInterval(fetchUnreadMessages, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Box
       sx={{
@@ -24,7 +43,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           overflow: "hidden",
         }}
       >
-        <Sidebar />
+        <Sidebar unreadMessages={unreadMessages} />
 
         <Box
           sx={{
@@ -39,7 +58,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </Box>
       </Box>
 
-      <BottomNav />
+      <BottomNav unreadMessages={unreadMessages} />
     </Box>
   );
 }

@@ -3,6 +3,7 @@ import {
   Typography,
   Avatar,
   IconButton,
+  Button,
   Chip,
   TextField,
 } from "@mui/material";
@@ -55,6 +56,9 @@ interface PostCardProps {
   isPinned?: boolean;
   onDelete?: (id: string) => void;
   onTogglePin?: (id: string) => void;
+  // Feed: botão "Seguir" no card de quem ainda não é seguido
+  authorFollowedByMe?: boolean;
+  onFollowAuthor?: (userId: string, name: string) => Promise<void>;
 }
 
 export default function PostCard({
@@ -76,6 +80,8 @@ export default function PostCard({
   isPinned = false,
   onDelete,
   onTogglePin,
+  authorFollowedByMe,
+  onFollowAuthor,
 }: PostCardProps) {
   const [liked, setLiked] = useState(likedByMe);
   const [likesCount, setLikesCount] = useState(likes);
@@ -88,9 +94,20 @@ export default function PostCard({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [followingAuthor, setFollowingAuthor] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  async function handleFollowAuthor() {
+    if (!onFollowAuthor) return;
+    setFollowingAuthor(true);
+    try {
+      await onFollowAuthor(userId, name);
+    } finally {
+      setFollowingAuthor(false);
+    }
+  }
 
   function handleGoToProfile() {
     if (isOwner) {
@@ -290,6 +307,33 @@ export default function PostCard({
             {secondaryProfession} · {city} · {time}
           </Typography>
         </Box>
+
+        {!isOwner && onFollowAuthor && authorFollowedByMe === false && (
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={handleFollowAuthor}
+            disabled={followingAuthor}
+            sx={{
+              flexShrink: 0,
+              minWidth: 0,
+              px: 1.5,
+              py: 0.25,
+              borderRadius: 2,
+              color: "#b39dfa",
+              borderColor: "#7c4dff88",
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: 13,
+              "&:hover": {
+                borderColor: "#7c4dff",
+                backgroundColor: "#7c4dff11",
+              },
+            }}
+          >
+            Seguir
+          </Button>
+        )}
 
         {isOwner && onTogglePin && (
           <IconButton

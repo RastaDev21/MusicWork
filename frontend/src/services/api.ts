@@ -154,6 +154,12 @@ export interface FollowUser {
   city?: string | null;
 }
 
+// Só segue (não alterna como o POST /follows/:id)
+export async function followUser(userId: string) {
+  const response = await api.put<{ following: boolean }>(`/follows/${userId}`);
+  return response.data;
+}
+
 export async function getFollowers(userId: string) {
   const response = await api.get<FollowUser[]>(`/follows/${userId}/followers`);
   return response.data;

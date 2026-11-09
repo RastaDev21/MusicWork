@@ -4,8 +4,9 @@ import Layout from "../components/Layout/Layout";
 import PostCard from "../components/PostCard/PostCard";
 import NewPost from "../components/NewPost/NewPost";
 import PushPrompt from "../components/PushPrompt/PushPrompt";
-import api, { pinPost, unpinPost } from "../services/api";
+import api, { followUser, pinPost, unpinPost } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
+import { useSnackbar } from "notistack";
 
 interface Post {
   id: string;
@@ -18,6 +19,7 @@ interface Post {
   likesCount: number;
   likedByMe: boolean;
   commentsCount: number;
+  authorFollowedByMe?: boolean;
   User: {
     name: string;
     instrument: string;
@@ -45,6 +47,7 @@ export default function Feed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const { user: currentUser } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
 
   async function loadPosts() {
     const token = localStorage.getItem("musicwork_token");
@@ -75,6 +78,23 @@ export default function Feed() {
       setLoadingMore(false);
     }
   }
+  async function handleFollowAuthor(authorId: string, authorName: string) {
+    try {
+      await followUser(authorId);
+      // Todos os posts desse autor na tela, não só o do botão tocado
+      setPosts(prev =>
+        prev.map(post =>
+          post.userId === authorId
+            ? { ...post, authorFollowedByMe: true }
+            : post,
+        ),
+      );
+      enqueueSnackbar(`Agora você segue ${authorName}`, { variant: "success" });
+    } catch {
+      enqueueSnackbar("Não foi possível seguir agora", { variant: "error" });
+    }
+  }
+
   async function handleDelete(postId: string) {
     try {
       await api.delete(`/posts/${postId}`);
@@ -145,6 +165,8 @@ export default function Feed() {
               onDelete={handleDelete}
               onTogglePin={handleTogglePin}
               avatarUrl={post.User.avatarUrl}
+              authorFollowedByMe={post.authorFollowedByMe}
+              onFollowAuthor={handleFollowAuthor}
             />
           ))
         )}

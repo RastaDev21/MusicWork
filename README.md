@@ -228,6 +228,7 @@ musicwork/
 - ✅ Contador de comentários real no feed (inclui respostas)
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo, tanto no perfil público quanto no próprio perfil
+- ✅ Botão "Seguir" no card do Feed (nov/2026), só nos posts de quem você ainda não segue; usa `PUT /follows/:id`, que só segue (o `POST` alterna e, com o card desatualizado, poderia deixar de seguir sem querer). O feed traz `authorFollowedByMe` calculado numa consulta só por página
 - ✅ Listas de seguidores e seguindo (nov/2026): tocar no contador abre a lista, mais recentes primeiro; tocar numa pessoa abre o perfil dela (`ProfileStats` + `FollowListDialog`, rotas `GET /follows/:id/followers` e `/following`)
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 - ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo tour, pelo banner do Feed ou em Configurações

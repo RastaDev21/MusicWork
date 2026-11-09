@@ -146,6 +146,24 @@ export async function deleteProfileAudio() {
   return response.data;
 }
 
+export interface FollowUser {
+  id: string;
+  name: string;
+  avatarUrl?: string | null;
+  instrument?: string | null;
+  city?: string | null;
+}
+
+export async function getFollowers(userId: string) {
+  const response = await api.get<FollowUser[]>(`/follows/${userId}/followers`);
+  return response.data;
+}
+
+export async function getFollowing(userId: string) {
+  const response = await api.get<FollowUser[]>(`/follows/${userId}/following`);
+  return response.data;
+}
+
 // ── Notificações ──
 
 export interface NotificationItem {

@@ -12,6 +12,7 @@ import api, {
 } from "../services/api";
 import { startConversation } from "../services/api";
 import SocialLinks from "../components/profile/SocialLinks";
+import ProfileStats from "../components/profile/ProfileStats";
 import ProfileChips from "../components/profile/ProfileChips";
 import ProfileDetailsCard from "../components/profile/ProfileDetailsCard";
 import AudioPlayer from "../components/profile/AudioPlayer";
@@ -298,24 +299,12 @@ export default function PublicProfile() {
                   mt: 1,
                 }}
               >
-                <Box sx={{ display: "flex", gap: 4 }}>
-                  {[
-                    { label: "Posts", value: posts.length },
-                    { label: "Seguidores", value: followers },
-                    { label: "Seguindo", value: followingCount },
-                  ].map(stat => (
-                    <Box key={stat.label} sx={{ textAlign: "center" }}>
-                      <Typography
-                        sx={{ color: "#fff", fontWeight: 700, fontSize: 18 }}
-                      >
-                        {stat.value}
-                      </Typography>
-                      <Typography sx={{ color: "#666", fontSize: 12 }}>
-                        {stat.label}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
+                <ProfileStats
+                  userId={id}
+                  posts={posts.length}
+                  followers={followers}
+                  following={followingCount}
+                />
 
                 <SocialLinks
                   instagram={musician.instagram}

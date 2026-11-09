@@ -218,8 +218,9 @@ export default function PrivacyPolicy() {
           </Box>
           <Typography variant="body1" sx={{ mb: 2, color: "inherit" }}>
             Seu perfil (nome, foto, capa, instrumentos, cidade, biografia,
-            links), seus posts, shows e anúncios ficam visíveis para os outros
-            usuários conectados ao MusicWork. Seu email não é exibido. As
+            links), seus posts, shows e anúncios, e as listas de quem você
+            segue e de quem segue você, ficam visíveis para os outros usuários
+            conectados ao MusicWork. Seu email não é exibido. As
             mensagens do chat são visíveis apenas para os participantes da
             conversa. Arquivos de mídia são entregues por links do nosso
             provedor de armazenamento, que podem ser abertos por quem tiver o

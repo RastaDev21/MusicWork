@@ -228,6 +228,7 @@ musicwork/
 - ✅ Contador de comentários real no feed (inclui respostas)
 - ✅ Seguir músicos (persistido no banco)
 - ✅ Contadores reais de seguidores/seguindo, tanto no perfil público quanto no próprio perfil
+- ✅ Listas de seguidores e seguindo (nov/2026): tocar no contador abre a lista, mais recentes primeiro; tocar numa pessoa abre o perfil dela (`ProfileStats` + `FollowListDialog`, rotas `GET /follows/:id/followers` e `/following`)
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 - ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo tour, pelo banner do Feed ou em Configurações
 - ✅ Onboarding (nov/2026): tour de 6 telas que abre sozinho uma vez por conta, ícone **?** no header por 14 dias, "Ver o tour" e "Sobre" (créditos) em Configurações
@@ -520,6 +521,8 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Service worker próprio (`frontend/src/sw.ts`):** desde o push, o `vite-plugin-pwa` usa `strategies: "injectManifest"` em vez de gerar o SW sozinho. O `sw.ts` reproduz o que o plugin gerava (`skipWaiting`, `clientsClaim`, precache, `cleanupOutdatedCaches`, fallback do SPA para `index.html`) — a lista de precache foi conferida igual à de antes. Tem tsconfig próprio (`tsconfig.sw.json`, lib `WebWorker`) e fica fora do `tsconfig.app.json`. **Não renomear o arquivo final `sw.js`**: é o endereço que os aparelhos já instalados usam para buscar atualização.
 
 - **Onboarding (nov/2026) — quando abre e quando marca:** abre sozinho quando `onboardingSeenAt` está vazio. Como o usuário do localStorage pode estar velho (viu o tour em outro aparelho), o `NavBar` confere no `GET /profile` antes de abrir. Marca como visto **ao fechar**, não ao abrir: enquanto o tour está aberto, o banner "Ative as notificações" do Feed fica escondido (`PushPrompt` exige `onboardingSeenAt`), e ao fechar ele só aparece se a pessoa pulou antes da tela de notificações (chegar nela chama `dismissPushPrompt`). O `PushPrompt` checa o "dispensado" de novo a cada render por isso. O ícone **?** do header aparece por `TOUR_ICON_DAYS` (14) dias contados do `onboardingSeenAt` — por isso o backend guarda só a primeira data. Textos das telas ficam no array `SLIDES` do `Onboarding.tsx` e só descrevem o que o app já faz; o protótipo de referência está num artifact do Claude (canvas "MusicWork — Onboarding no header").
+
+- **Associações `Follow → User` sem alias:** o `server.ts` declara `Follow.belongsTo(User)` duas vezes (por `followerId` e por `followingId`) sem `as`, então uma sobrescreve a outra e um `include` de User em Follow é ambíguo. As listas de seguidores/seguindo (`FollowService.findUsersInOrder`) buscam os ids em Follow e depois os usuários numa segunda consulta, mantendo a ordem. Não trocar por `include` sem antes dar alias às duas associações.
 
 - **`unique: true` na coluna + `sync({ alter: true })` duplica constraint a cada restart:** é bug conhecido do Sequelize com Postgres. A tabela `users` já acumulou centenas (ver "Média prioridade"). Em tabela nova, declarar unicidade como índice nomeado em `indexes` (ex: `PushSubscription`, índice `push_subscriptions_endpoint_unique`) — o sync reconhece pelo nome e não recria.
 

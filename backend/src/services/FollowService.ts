@@ -21,6 +21,20 @@ class FollowService {
     return { following: true };
   }
 
+  // Só segue, sem alternar (botão "Seguir" do feed): se o card estiver
+  // desatualizado e a pessoa já seguir, não deixa de seguir sem querer.
+  async follow(followerId: string, followingId: string) {
+    if (followerId === followingId) throw new Error("Você não pode se seguir");
+
+    const [, created] = await Follow.findOrCreate({
+      where: { followerId, followingId },
+    });
+    if (created) {
+      await NotificationService.create(followingId, followerId, "follow");
+    }
+    return { following: true };
+  }
+
   async isFollowing(followerId: string, followingId: string) {
     const existing = await Follow.findOne({
       where: { followerId, followingId },

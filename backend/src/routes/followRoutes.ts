@@ -5,6 +5,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 const followRouter = Router();
 
 followRouter.post("/follows/:id", authMiddleware, FollowController.toggle);
+followRouter.put("/follows/:id", authMiddleware, FollowController.follow);
 followRouter.get("/follows/:id", authMiddleware, FollowController.status);
 followRouter.get(
   "/follows/:id/followers",

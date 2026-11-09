@@ -1,4 +1,6 @@
+import { Op } from "sequelize";
 import Post from "../models/Post";
+import Follow from "../models/Follow";
 import User from "../models/User";
 import Like from "../models/Like";
 import Comment from "../models/Comment";
@@ -64,7 +66,25 @@ class PostService {
       offset,
     });
 
-    return posts.map(post => formatPost(post, currentUserId));
+    // Se quem vê já segue cada autor (botão "Seguir" no card do feed). Uma
+    // consulta para a página inteira, não uma por post.
+    const authorIds = [...new Set(posts.map(post => post.userId))];
+    const follows =
+      currentUserId && authorIds.length > 0
+        ? await Follow.findAll({
+            where: {
+              followerId: currentUserId,
+              followingId: { [Op.in]: authorIds },
+            },
+            attributes: ["followingId"],
+          })
+        : [];
+    const followedIds = new Set(follows.map(follow => follow.followingId));
+
+    return posts.map(post => ({
+      ...formatPost(post, currentUserId),
+      authorFollowedByMe: followedIds.has(post.userId),
+    }));
   }
 
   // Posts de um usuário específico (perfil próprio e público).

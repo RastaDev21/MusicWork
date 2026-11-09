@@ -13,6 +13,26 @@ class FollowController {
     }
   }
 
+  async followers(request: Request, response: Response) {
+    try {
+      const userId = request.params.id as string;
+      const users = await FollowService.listFollowers(userId);
+      return response.status(200).json(users);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
+  async following(request: Request, response: Response) {
+    try {
+      const userId = request.params.id as string;
+      const users = await FollowService.listFollowing(userId);
+      return response.status(200).json(users);
+    } catch (error: any) {
+      return response.status(400).json({ error: error.message });
+    }
+  }
+
   async status(request: Request, response: Response) {
     try {
       const followerId = request.userId as string;

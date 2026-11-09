@@ -6,5 +6,15 @@ const followRouter = Router();
 
 followRouter.post("/follows/:id", authMiddleware, FollowController.toggle);
 followRouter.get("/follows/:id", authMiddleware, FollowController.status);
+followRouter.get(
+  "/follows/:id/followers",
+  authMiddleware,
+  FollowController.followers,
+);
+followRouter.get(
+  "/follows/:id/following",
+  authMiddleware,
+  FollowController.following,
+);
 
 export default followRouter;

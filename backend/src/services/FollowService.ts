@@ -1,4 +1,6 @@
+import { Op } from "sequelize";
 import Follow from "../models/Follow";
+import User from "../models/User";
 import NotificationService from "./NotificationService";
 
 class FollowService {
@@ -32,6 +34,38 @@ class FollowService {
 
   async countFollowing(userId: string) {
     return Follow.count({ where: { followerId: userId } });
+  }
+
+  // Quem segue o perfil, mais recentes primeiro
+  async listFollowers(userId: string) {
+    const follows = await Follow.findAll({
+      where: { followingId: userId },
+      attributes: ["followerId"],
+      order: [["createdAt", "DESC"]],
+    });
+    return this.findUsersInOrder(follows.map(follow => follow.followerId));
+  }
+
+  // Quem o perfil segue, mais recentes primeiro
+  async listFollowing(userId: string) {
+    const follows = await Follow.findAll({
+      where: { followerId: userId },
+      attributes: ["followingId"],
+      order: [["createdAt", "DESC"]],
+    });
+    return this.findUsersInOrder(follows.map(follow => follow.followingId));
+  }
+
+  // Busca separada (sem include): as duas associações Follow → User no
+  // server.ts não têm alias e uma sobrescreve a outra.
+  private async findUsersInOrder(ids: string[]) {
+    if (ids.length === 0) return [];
+    const users = await User.findAll({
+      where: { id: { [Op.in]: ids } },
+      attributes: ["id", "name", "avatarUrl", "instrument", "city"],
+    });
+    const byId = new Map(users.map(user => [user.id, user]));
+    return ids.map(id => byId.get(id)).filter(Boolean);
   }
 }
 

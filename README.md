@@ -2,16 +2,25 @@
 
 ## 🔄 Onde paramos (última atualização: novembro de 2026)
 
-**Última sessão (nov/2026):** onboarding — tour de 6 telas pelo app (boas-vindas, perfil, buscar e Work, feed e Agenda, mensagens com o botão de ativar notificações, considerações finais com os créditos de Humberto Simoes e Fábio duBaixo). Abre sozinho uma vez por conta; depois fica no ícone **?** do header por 14 dias e para sempre em Configurações ("Ver o tour" e "Sobre"). Ideia do Fábio. Testado localmente de ponta a ponta no Chrome (celular e computador), incluindo push real.
+**Última sessão (6 a 9/nov/2026):** testes das notificações no celular, ajustes que saíram deles e três novidades sociais, todas em produção:
 
-**Onboarding — ✅ IMPLEMENTADO (falta deploy):**
+- ✅ **Listas de seguidores e seguindo:** tocar nos contadores do perfil (próprio ou público) abre a lista; tocar numa pessoa abre o perfil dela
+- ✅ **Botão "Seguir" no Feed:** aparece no card de quem você ainda não segue e some de todos os posts daquela pessoa ao seguir (sugestão do Humberto)
+- ✅ **Notificações com urgência alta:** curtida e comentário não chegavam com o celular parado (o Android segura push de urgência "normal"); agora todos os pushes saem com urgência alta, como as mensagens já saíam
+- ✅ **Correções de tela:** bio longa vazando do card na busca; nome e cidade quase invisíveis no menu do avatar
+- 🔎 **Descoberta — notificação aparecendo como "Chrome":** se as notificações do *app* MusicWork estiverem desligadas no Android, o Chrome mostra o push no nome dele e o número vai para o ícone do Chrome. Aconteceu logo depois de reinstalar o app pela Play Store; ligar em Configurações do Android → Apps → MusicWork → Notificações resolveu. Falta confirmar num segundo celular se todo usuário novo cai nisso (se cair, vale um aviso no app)
+- 📋 **Teste fechado (07/11):** 8 dos 12 testadores necessários aceitaram o convite (16 emails na lista). O prazo de 14 dias **ainda não começou**: ele conta a partir do 12º aceite. Email na lista não conta; conta quem abriu o link de participação logado na mesma conta Google
+
+**Onboarding:** tour de 6 telas pelo app (boas-vindas, perfil, buscar e Work, feed e Agenda, mensagens com o botão de ativar notificações, considerações finais com os créditos de Humberto Simoes e Fábio duBaixo). Abre sozinho uma vez por conta; depois fica no ícone **?** do header por 14 dias e para sempre em Configurações ("Ver o tour" e "Sobre"). Ideia do Fábio. Testado localmente de ponta a ponta no Chrome (celular e computador), incluindo push real.
+
+**Onboarding — ✅ EM PRODUÇÃO (06/11/2026), visto funcionando no celular:**
 
 - `onboardingSeenAt` no `User` (null = ainda não viu) e `PATCH /profile/onboarding`, que guarda só a primeira data
 - `components/Onboarding/Onboarding.tsx` (tela cheia no celular, janela no computador); o `NavBar` abre sozinho e marca como visto ao fechar
 - O ícone de mensagens saiu do header (ficou o **?** do tour); o contador de não lidas foi para o "Mensagens" do menu de baixo e da barra lateral (polling no `Layout`)
 - No deploy, **todo mundo que já tem conta vê o tour uma vez** (o campo nasce vazio) — decisão consciente, ninguém tinha visto ainda
 
-**Sessão anterior (nov/2026):** notificações push — pop-up no celular com o app fechado ou em segundo plano, igual aos outros apps, para seguir, curtir, comentar, responder, curtir comentário e mensagem do chat. Testado localmente de ponta a ponta: backend entregando para um serviço de push falso (payload descriptografado e conferido) e Chrome real recebendo pelo FCM do Google.
+**Notificações push (nov/2026):** pop-up no celular com o app fechado ou em segundo plano, igual aos outros apps, para seguir, curtir, comentar, responder, curtir comentário e mensagem do chat. Testado localmente de ponta a ponta: backend entregando para um serviço de push falso (payload descriptografado e conferido) e Chrome real recebendo pelo FCM do Google.
 
 **Notificações push — ✅ EM PRODUÇÃO (05/11/2026):**
 
@@ -25,13 +34,16 @@
 Pendente:
 
 - ✅ Chaves VAPID de produção no Render (diferentes das do `.env` local), deploy feito, ativação testada no celular (app da Play Store reinstalado)
-- [ ] Terminar o teste no celular: pop-up de "seguir" e de mensagem com o app fechado, e tocar no pop-up para ver se abre a tela certa
+- ✅ Testado no celular: seguir, mensagem, curtida e comentário chegando com o app fechado
+- [ ] Testar curtida com o celular **bloqueado e parado** por uns 5 minutos (é o caso que a urgência alta resolve)
+- [ ] Tocar no pop-up e ver se abre a tela certa (perfil, Feed ou conversa) — o teste automatizado não consegue clicar em notificação
+- [ ] Confirmar num segundo celular se usuário novo também recebe as notificações como "Chrome" (ver descoberta acima)
 - [ ] Play Console → Segurança dos dados: avaliar declarar "IDs do dispositivo ou outros" (o endereço de entrega das notificações), coletado, não compartilhado, finalidade "Funcionalidade do app"
 - [ ] Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users` (ver "Média prioridade" no fim deste arquivo)
 
 **Antes disso:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
 
-**Exclusão de conta — ✅ CONCLUÍDA (falta deploy):**
+**Exclusão de conta — ✅ EM PRODUÇÃO** (rota e tela conferidas no ar em 09/11/2026):
 
 - `AccountService.deleteAccount` apaga tudo numa transação, em ordem explícita (ver Convenções de código); conversas somem inteiras, para os dois lados
 - `CloudinaryService.deleteUserMedia` limpa a mídia em duas passadas: pelas URLs salvas no banco e pelo prefixo `<pasta>/<userId>-` (pega órfãos)
@@ -64,17 +76,17 @@ Pendente:
 
 - [ ] **Rotacionar `CLOUDINARY_API_SECRET`** (exposto em log no chat em out/2026) — Render e `.env` local
 - [ ] Conferir a janela de restore (backup) do Neon e ajustar o "até 30 dias" escrito em `/excluir-conta` e na seção 5 da política, antes do deploy
-- [ ] Deploy da exclusão de conta e colar `https://musicwork.com.br/excluir-conta` no Play Console (Segurança dos dados → Exclusão de conta)
+- [ ] Colar `https://musicwork.com.br/excluir-conta` no Play Console (Segurança dos dados → Exclusão de conta), se ainda não foi feito — o deploy já está no ar
 - [ ] Colar a URL da política no Play Console
 - [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
 - [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
 - [ ] Denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): **a confirmar** na Central de Ajuda do Play Console antes de construir
-- [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar)
+- [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar). **Em 07/11: 8 de 12 aceites, prazo ainda não começou** — reenviar o link de participação para os 16 da lista
 - [ ] Backup da keystore
 
 **Lembrete de regras do Play Store (contas pessoais novas):**
 
-- Teste fechado obrigatório: mínimo 12 testadores, opt-in contínuo por 14 dias, antes de liberar produção — ainda não iniciado, comece a levantar a lista de testadores em paralelo
+- Teste fechado obrigatório: mínimo 12 testadores, opt-in contínuo por 14 dias, antes de liberar produção — versão publicada e lista com 16 emails; em 07/11 eram 8 aceites. O Painel do Play Console mostra a contagem em "Solicitar o acesso de produção"
 - `targetSdkVersion` precisa ser Android 16 (API 36) para apps novos — o Bubblewrap já gera isso automaticamente nas versões recentes
 
 **O que foi feito:**

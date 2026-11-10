@@ -53,6 +53,11 @@ export default function Layout({ children }: { children: ReactNode }) {
             pb: { xs: "56px", md: 0 },
             overflowY: "auto",
             height: "100%",
+            // O MUI trava a rolagem do body ao abrir um Dialog ou Menu, mas
+            // aqui quem rola é este Box: esconde a barra junto. O espaço da
+            // barra fica reservado para o conteúdo não pular para o lado.
+            scrollbarGutter: "stable",
+            "body[style*='overflow: hidden'] &": { overflowY: "hidden" },
           }}
         >
           {children}

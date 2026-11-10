@@ -115,6 +115,12 @@ export default function DeleteAccount() {
             </li>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
+                Denúncias feitas por você e sobre você, e a lista de quem você
+                bloqueou
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
                 Works do marketplace e shows da Agenda (com flyers)
               </Typography>
             </li>

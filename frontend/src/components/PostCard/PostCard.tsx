@@ -15,12 +15,23 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import PushPinOutlinedIcon from "@mui/icons-material/PushPinOutlined";
+import FlagIcon from "@mui/icons-material/OutlinedFlag";
 import { useState } from "react";
 import api, { getImageUrl } from "../../services/api";
 import { useSnackbar } from "notistack";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { getYoutubeEmbedUrl } from "../../constants/youtube";
+import MoreActionsMenu from "../moderation/MoreActionsMenu";
+import ReportDialog from "../moderation/ReportDialog";
+
+// Link "Denunciar" de comentários e respostas, ao lado de "Responder"
+const reportLinkSx = {
+  color: "#666",
+  fontSize: 11,
+  cursor: "pointer",
+  "&:hover": { color: "#ff4d6d" },
+};
 
 interface Comment {
   id: string;
@@ -95,6 +106,18 @@ export default function PostCard({
   const [replyContent, setReplyContent] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const [followingAuthor, setFollowingAuthor] = useState(false);
+  // O alvo continua guardado depois de fechar, para o título não trocar
+  // durante a animação de saída
+  const [reportTarget, setReportTarget] = useState<{
+    type: "post" | "comment";
+    id: string;
+  } | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+
+  function openReport(type: "post" | "comment", targetId: string) {
+    setReportTarget({ type, id: targetId });
+    setReportOpen(true);
+  }
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -365,6 +388,19 @@ export default function PostCard({
             <DeleteIcon fontSize="small" />
           </IconButton>
         )}
+
+        {!isOwner && user?.id !== userId && (
+          <MoreActionsMenu
+            label="Opções da publicação"
+            actions={[
+              {
+                label: "Denunciar publicação",
+                icon: <FlagIcon fontSize="small" />,
+                onClick: () => openReport("post", id),
+              },
+            ]}
+          />
+        )}
       </Box>
 
       {content && (
@@ -619,6 +655,17 @@ export default function PostCard({
                             >
                               Responder
                             </Typography>
+
+                            {user?.id !== comment.User?.id && (
+                              <Typography
+                                onClick={() =>
+                                  openReport("comment", comment.id)
+                                }
+                                sx={reportLinkSx}
+                              >
+                                Denunciar
+                              </Typography>
+                            )}
                           </Box>
 
                           {/* Respostas */}
@@ -687,29 +734,50 @@ export default function PostCard({
                                 </Box>
 
                                 <Box
-                                  onClick={() => handleLikeComment(reply.id)}
                                   sx={{
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 0.4,
+                                    gap: 1.5,
                                     mt: 0.4,
                                     ml: 0.5,
-                                    cursor: "pointer",
-                                    width: "fit-content",
-                                    color: reply.likedByMe ? "#ff4d6d" : "#666",
-                                    "&:hover": { color: "#ff4d6d" },
                                   }}
                                 >
-                                  {reply.likedByMe ? (
-                                    <FavoriteIcon sx={{ fontSize: 12 }} />
-                                  ) : (
-                                    <FavoriteBorderIcon sx={{ fontSize: 12 }} />
+                                  <Box
+                                    onClick={() => handleLikeComment(reply.id)}
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 0.4,
+                                      cursor: "pointer",
+                                      color: reply.likedByMe
+                                        ? "#ff4d6d"
+                                        : "#666",
+                                      "&:hover": { color: "#ff4d6d" },
+                                    }}
+                                  >
+                                    {reply.likedByMe ? (
+                                      <FavoriteIcon sx={{ fontSize: 12 }} />
+                                    ) : (
+                                      <FavoriteBorderIcon
+                                        sx={{ fontSize: 12 }}
+                                      />
+                                    )}
+                                    <Typography sx={{ fontSize: 10 }}>
+                                      {reply.likesCount > 0
+                                        ? reply.likesCount
+                                        : ""}
+                                    </Typography>
+                                  </Box>
+                                  {user?.id !== reply.User?.id && (
+                                    <Typography
+                                      onClick={() =>
+                                        openReport("comment", reply.id)
+                                      }
+                                      sx={reportLinkSx}
+                                    >
+                                      Denunciar
+                                    </Typography>
                                   )}
-                                  <Typography sx={{ fontSize: 10 }}>
-                                    {reply.likesCount > 0
-                                      ? reply.likesCount
-                                      : ""}
-                                  </Typography>
                                 </Box>
                               </Box>
                             </Box>
@@ -821,6 +889,13 @@ export default function PostCard({
           )}
         </Box>
       )}
+
+      <ReportDialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType={reportTarget?.type ?? "post"}
+        targetId={reportTarget?.id ?? id}
+      />
     </Box>
   );
 }

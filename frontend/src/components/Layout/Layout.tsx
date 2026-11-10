@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Navbar from "../NavBar/NavBar";
 import Sidebar from "../SideBar/SideBar";
 import BottomNav from "../BottomNav/BottomNav";
+import TermsGate from "../TermsGate/TermsGate";
 import { getUnreadMessageCount } from "../../services/api";
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -59,6 +60,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </Box>
 
       <BottomNav unreadMessages={unreadMessages} />
+      <TermsGate />
     </Box>
   );
 }

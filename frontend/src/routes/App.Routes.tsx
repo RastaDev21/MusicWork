@@ -17,6 +17,8 @@ import VerifyEmail from "../pages/VerifyEmail";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import DeleteAccount from "../pages/DeleteAccount";
 import ChildSafety from "../pages/ChildSafety";
+import TermsOfUse from "../pages/TermsOfUse";
+import Reports from "../pages/Reports";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,7 @@ export default function AppRoutes() {
       <Route path="/privacidade" element={<PrivacyPolicy />} />
       <Route path="/excluir-conta" element={<DeleteAccount />} />
       <Route path="/seguranca-infantil" element={<ChildSafety />} />
+      <Route path="/termos" element={<TermsOfUse />} />
       <Route
         path="/feed"
         element={
@@ -100,6 +103,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Chat />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/denuncias"
+        element={
+          <PrivateRoute>
+            <Reports />
           </PrivateRoute>
         }
       />

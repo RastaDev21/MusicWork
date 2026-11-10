@@ -18,7 +18,12 @@ export default function PrivacyPolicy() {
             conecta músicos, permitindo a criação de perfis, publicação de
             posts, troca de mensagens e oferta ou busca de serviços musicais.
             Esta política explica quais dados coletamos, como usamos e como você
-            pode exercer seus direitos sobre eles.
+            pode exercer seus direitos sobre eles. As regras de uso da
+            plataforma estão nos{" "}
+            <Link component={RouterLink} to="/termos" sx={{ color: "#b39dff" }}>
+              Termos de uso
+            </Link>
+            .
           </Typography>
 
           <Typography
@@ -79,6 +84,15 @@ export default function PrivacyPolicy() {
                 <strong>Mensagens:</strong> conteúdo trocado no chat entre
                 usuários da plataforma, incluindo texto, fotos e vídeos
                 enviados.
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>Denúncias e bloqueios:</strong> quando você denuncia
+                algo, guardamos quem denunciou, o motivo, o comentário opcional
+                e uma cópia do que foi denunciado (no caso de uma conversa, as
+                últimas 20 mensagens dela). Quando você bloqueia alguém,
+                guardamos quem você bloqueou.
               </Typography>
             </li>
             <li>
@@ -146,6 +160,12 @@ export default function PrivacyPolicy() {
               <Typography variant="body1" sx={{ color: "inherit" }}>
                 Prestar suporte quando você entra em contato pelo chat de
                 suporte
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                Analisar denúncias e aplicar os Termos de uso, removendo
+                conteúdos ou contas que violem as regras
               </Typography>
             </li>
           </Box>
@@ -222,7 +242,10 @@ export default function PrivacyPolicy() {
             segue e de quem segue você, ficam visíveis para os outros usuários
             conectados ao MusicWork. Seu email não é exibido. As
             mensagens do chat são visíveis apenas para os participantes da
-            conversa. Arquivos de mídia são entregues por links do nosso
+            conversa, exceto quando um dos participantes denuncia a conversa:
+            nesse caso, as últimas mensagens vão para a equipe do MusicWork
+            analisar. Quem é denunciado não fica sabendo quem denunciou.
+            Arquivos de mídia são entregues por links do nosso
             provedor de armazenamento, que podem ser abertos por quem tiver o
             link.
           </Typography>
@@ -277,8 +300,8 @@ export default function PrivacyPolicy() {
               Você mesmo pode excluir sua conta a qualquer momento, pelo app ou
               pelo site: <strong>Configurações → Excluir conta</strong>. A
               exclusão é imediata e definitiva e apaga seu perfil, suas mídias,
-              posts, comentários, curtidas, seguidores, works, shows e conversas
-              do chat.
+              posts, comentários, curtidas, seguidores, works, shows, conversas
+              do chat, denúncias e bloqueios.
             </Typography>
             <Typography variant="body1" sx={{ color: "inherit" }}>
               Passo a passo, o que é apagado e como pedir a exclusão sem acesso

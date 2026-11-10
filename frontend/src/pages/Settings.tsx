@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import Onboarding from "../components/Onboarding/Onboarding";
+import BlockedUsersCard from "../components/moderation/BlockedUsersCard";
 import { useAuth } from "../contexts/AuthContext";
 import api, {
   changePassword,
@@ -527,6 +528,8 @@ export default function Settings() {
           </Box>
         </Box>
 
+        <BlockedUsersCard />
+
         {/* Fale com o suporte */}
         <Box
           sx={{
@@ -577,6 +580,47 @@ export default function Settings() {
           >
             {openingSupport ? "Abrindo..." : "Abrir chat"}
           </Button>
+        </Box>
+
+        {/* Termos de uso e privacidade */}
+        <Box
+          sx={{
+            backgroundColor: "#1a1a1a",
+            border: "1px solid #2a2a2a",
+            borderRadius: 3,
+            p: 2,
+            mt: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box sx={{ flex: 1, minWidth: 200 }}>
+            <Typography
+              sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 0.5 }}
+            >
+              📄 Regras e privacidade
+            </Typography>
+            <Typography sx={{ color: "#666", fontSize: 13 }}>
+              O que é permitido no MusicWork e como cuidamos dos seus dados.
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              onClick={() => navigate("/termos")}
+              sx={{ color: "#aaa", textTransform: "none" }}
+            >
+              Termos de uso
+            </Button>
+            <Button
+              onClick={() => navigate("/privacidade")}
+              sx={{ color: "#aaa", textTransform: "none" }}
+            >
+              Privacidade
+            </Button>
+          </Box>
         </Box>
 
         {/* Excluir conta */}

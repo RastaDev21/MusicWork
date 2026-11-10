@@ -20,6 +20,8 @@ interface User {
   genre?: string | null;
   isEmailVerified?: boolean;
   onboardingSeenAt?: string | null;
+  termsAcceptedAt?: string | null;
+  isSupport?: boolean;
 }
 interface AuthContextData {
   user: User | null;
@@ -35,6 +37,7 @@ interface AuthContextData {
     secondaryProfession?: string;
     city?: string;
     bio?: string;
+    acceptedTerms: boolean;
   }) => Promise<void>;
   signOut: () => void;
   updateUser: (data: Partial<User>) => void;
@@ -115,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     secondaryProfession?: string;
     city?: string;
     bio?: string;
+    acceptedTerms: boolean;
   }) {
     setLoading(true);
     try {

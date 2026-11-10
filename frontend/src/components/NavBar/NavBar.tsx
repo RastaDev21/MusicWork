@@ -24,6 +24,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import api, {
   getImageUrl,
   getNotifications,
+  getOpenReportsCount,
   getUnreadNotificationCount,
   markNotificationsAsRead,
   markOnboardingSeen,
@@ -31,6 +32,7 @@ import api, {
 } from "../../services/api";
 import SettingsIcon from "@mui/icons-material/Settings";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
+import FlagIcon from "@mui/icons-material/OutlinedFlag";
 
 // Depois disso o ícone do tour sai do header; o tour continua em
 // Configurações
@@ -72,6 +74,7 @@ export default function Navbar() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [tourOpen, setTourOpen] = useState(false);
+  const [openReports, setOpenReports] = useState(0);
   const onboardingChecked = useRef(false);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,11 +95,29 @@ export default function Navbar() {
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
-  // Tour abre sozinho uma vez por conta. O usuário salvo no localStorage
-  // pode estar desatualizado (viu o tour em outro aparelho), então confere no
-  // servidor antes de abrir.
+  // Conta de suporte: quantas denúncias abertas (badge no avatar e no item
+  // "Denúncias" do menu)
   useEffect(() => {
-    if (!user || user.onboardingSeenAt || onboardingChecked.current) return;
+    if (!user?.isSupport) return;
+    getOpenReportsCount()
+      .then(setOpenReports)
+      .catch(() => {
+        // silencioso
+      });
+  }, [user?.isSupport, location.pathname]);
+
+  // Tour abre sozinho uma vez por conta, depois do aceite dos termos
+  // (TermsGate). O usuário salvo no localStorage pode estar desatualizado (viu
+  // o tour em outro aparelho), então confere no servidor antes de abrir.
+  useEffect(() => {
+    if (
+      !user ||
+      !user.termsAcceptedAt ||
+      user.onboardingSeenAt ||
+      onboardingChecked.current
+    ) {
+      return;
+    }
     onboardingChecked.current = true;
 
     async function checkOnboarding() {
@@ -329,21 +350,28 @@ export default function Navbar() {
             ))}
           </Menu>
 
-          <Avatar
-            onClick={handleOpenMenu}
-            src={getImageUrl(user?.avatarUrl)}
-            sx={{
-              width: 36,
-              height: 36,
-              backgroundColor: "#7c4dff",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              "&:hover": { opacity: 0.85 },
-            }}
+          <Badge
+            badgeContent={openReports}
+            color="error"
+            overlap="circular"
+            invisible={!user?.isSupport || openReports === 0}
           >
-            {user?.name?.charAt(0).toUpperCase()}
-          </Avatar>
+            <Avatar
+              onClick={handleOpenMenu}
+              src={getImageUrl(user?.avatarUrl)}
+              sx={{
+                width: 36,
+                height: 36,
+                backgroundColor: "#7c4dff",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: "pointer",
+                "&:hover": { opacity: 0.85 },
+              }}
+            >
+              {user?.name?.charAt(0).toUpperCase()}
+            </Avatar>
+          </Badge>
 
           <Menu
             anchorEl={anchorEl}
@@ -404,6 +432,23 @@ export default function Navbar() {
               <SettingsIcon fontSize="small" />
               Configurações
             </MenuItem>
+
+            {user?.isSupport && (
+              <MenuItem
+                onClick={() => {
+                  handleCloseMenu();
+                  navigate("/denuncias");
+                }}
+                sx={{
+                  color: "#aaa",
+                  gap: 1,
+                  "&:hover": { color: "#fff", backgroundColor: "#2a2a2a" },
+                }}
+              >
+                <FlagIcon fontSize="small" />
+                Denúncias{openReports > 0 ? ` (${openReports})` : ""}
+              </MenuItem>
+            )}
 
             <MenuItem
               onClick={handleSignOut}

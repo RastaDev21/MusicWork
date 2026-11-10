@@ -11,7 +11,7 @@ export default function ChildSafety() {
           Padrões de segurança infantil — MusicWork
         </Typography>
         <Typography variant="body2" sx={{ color: "#a0a0a0" }} gutterBottom>
-          Última atualização: outubro de 2026
+          Última atualização: novembro de 2026
         </Typography>
 
         <Box sx={{ mt: 4 }}>
@@ -73,7 +73,16 @@ export default function ChildSafety() {
           <Box component="ul" sx={{ color: "inherit" }}>
             <li>
               <Typography variant="body1" sx={{ color: "inherit" }}>
-                <strong>Dentro do aplicativo:</strong> Configurações →{" "}
+                <strong>Dentro do aplicativo:</strong> pelo menu{" "}
+                <strong>⋮ → Denunciar</strong> da publicação, do perfil, do
+                anúncio ou da conversa (ou pelo link "Denunciar" do comentário),
+                escolhendo o motivo <strong>Risco a menores de idade</strong>.
+                Essas denúncias chegam ao suporte marcadas como urgentes.
+              </Typography>
+            </li>
+            <li>
+              <Typography variant="body1" sx={{ color: "inherit" }}>
+                <strong>Pelo chat de suporte:</strong> Configurações →{" "}
                 <strong>Fale com o suporte</strong>. Informe o nome do perfil e
                 o que aconteceu.
               </Typography>
@@ -169,8 +178,9 @@ export default function ChildSafety() {
               18 and over.
             </Typography>
             <Typography variant="body2" sx={{ mb: 1.5, color: "inherit" }}>
-              Users can report violations inside the app (Settings → "Fale com o
-              suporte", in-app support chat) or by email at
+              Users can report violations inside the app (the "Denunciar" option
+              on posts, comments, profiles, ads and conversations, or the in-app
+              support chat in Settings → "Fale com o suporte") or by email at
               humberto_21style@hotmail.com. When we obtain actual knowledge of
               CSAM or any violation, we remove the content, delete the
               responsible account and report it to the relevant authorities

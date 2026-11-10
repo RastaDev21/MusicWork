@@ -5,17 +5,23 @@ import {
   IconButton,
   TextField,
   CircularProgress,
+  Button,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ImageIcon from "@mui/icons-material/Image";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
+import FlagIcon from "@mui/icons-material/OutlinedFlag";
+import BlockIcon from "@mui/icons-material/Block";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { useAuth } from "../contexts/AuthContext";
 import { useSnackbar } from "notistack";
+import MoreActionsMenu from "../components/moderation/MoreActionsMenu";
+import ReportDialog from "../components/moderation/ReportDialog";
+import BlockDialog from "../components/moderation/BlockDialog";
 import {
   getMessages,
   sendMessage,
@@ -23,7 +29,9 @@ import {
   uploadMessageVideo,
   getImageUrl,
   listConversations,
+  unblockUser,
   ChatMessage,
+  ConversationSummary,
 } from "../services/api";
 
 function formatTime(dateString: string) {
@@ -46,11 +54,13 @@ export default function Chat() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [otherUser, setOtherUser] = useState<{
-    id: string;
-    name: string;
-    avatarUrl: string | null;
-  } | null>(null);
+  const [otherUser, setOtherUser] = useState<
+    ConversationSummary["otherUser"] | null
+  >(null);
+  const [blockStatus, setBlockStatus] =
+    useState<ConversationSummary["blockStatus"]>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
 
@@ -81,7 +91,10 @@ export default function Chat() {
       try {
         const convs = await listConversations();
         const conv = convs.find(c => c.id === id);
-        if (conv) setOtherUser(conv.otherUser);
+        if (conv) {
+          setOtherUser(conv.otherUser);
+          setBlockStatus(conv.blockStatus ?? null);
+        }
       } catch (error) {
         console.error("Erro ao carregar conversa:", error);
       }
@@ -127,6 +140,17 @@ export default function Chat() {
     e.target.value = "";
   }
 
+  async function handleUnblock() {
+    if (!otherUser) return;
+    try {
+      await unblockUser(otherUser.id);
+      setBlockStatus(null);
+      enqueueSnackbar("Desbloqueado", { variant: "success" });
+    } catch {
+      enqueueSnackbar("Não foi possível desbloquear", { variant: "error" });
+    }
+  }
+
   async function handleSend() {
     if (!id || (!content.trim() && !imageFile && !videoFile)) return;
 
@@ -165,7 +189,10 @@ export default function Chat() {
         sx={{
           maxWidth: 600,
           mx: "auto",
-          height: "calc(100vh - 64px)",
+          // No celular, desconta também o menu de baixo (56px): sem isso a
+          // tela passava da área visível e a rolagem até a última mensagem
+          // escondia o cabeçalho (onde ficam denunciar e bloquear)
+          height: { xs: "calc(100vh - 120px)", md: "calc(100vh - 64px)" },
           display: "flex",
           flexDirection: "column",
         }}
@@ -193,9 +220,34 @@ export default function Chat() {
               >
                 {otherUser.name.charAt(0).toUpperCase()}
               </Avatar>
-              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 15 }}>
+              <Typography
+                sx={{ color: "#fff", fontWeight: 600, fontSize: 15, flex: 1 }}
+              >
                 {otherUser.name}
               </Typography>
+              {/* Conversa com o suporte não tem denunciar nem bloquear */}
+              {!otherUser.isSupport && (
+                <MoreActionsMenu
+                  size="medium"
+                  label="Opções da conversa"
+                  actions={[
+                    {
+                      label: "Denunciar conversa",
+                      icon: <FlagIcon fontSize="small" />,
+                      onClick: () => setReportOpen(true),
+                    },
+                    ...(blockStatus === "me"
+                      ? []
+                      : [
+                          {
+                            label: "Bloquear",
+                            icon: <BlockIcon fontSize="small" />,
+                            onClick: () => setBlockOpen(true),
+                          },
+                        ]),
+                  ]}
+                />
+              )}
             </>
           )}
         </Box>
@@ -352,7 +404,7 @@ export default function Chat() {
 
         <Box
           sx={{
-            display: "flex",
+            display: blockStatus ? "none" : "flex",
             alignItems: "center",
             gap: 0.5,
             p: 1.5,
@@ -422,7 +474,51 @@ export default function Chat() {
             <SendIcon fontSize="small" />
           </IconButton>
         </Box>
+
+        {/* Com bloqueio, a conversa fica só para leitura */}
+        {blockStatus && (
+          <Box
+            sx={{
+              p: 2,
+              borderTop: "1px solid #2a2a2a",
+              textAlign: "center",
+            }}
+          >
+            <Typography sx={{ color: "#999", fontSize: 13 }}>
+              {blockStatus === "me"
+                ? `Você bloqueou ${otherUser?.name ?? "este perfil"}.`
+                : "Não é possível responder a esta conversa."}
+            </Typography>
+            {blockStatus === "me" && (
+              <Button
+                size="small"
+                onClick={handleUnblock}
+                sx={{ color: "#ff6b84", mt: 0.5, textTransform: "none" }}
+              >
+                Desbloquear
+              </Button>
+            )}
+          </Box>
+        )}
       </Box>
+
+      {id && otherUser && (
+        <>
+          <ReportDialog
+            open={reportOpen}
+            onClose={() => setReportOpen(false)}
+            targetType="conversation"
+            targetId={id}
+          />
+          <BlockDialog
+            open={blockOpen}
+            onClose={() => setBlockOpen(false)}
+            userId={otherUser.id}
+            name={otherUser.name}
+            onBlocked={() => setBlockStatus("me")}
+          />
+        </>
+      )}
     </Layout>
   );
 }

@@ -21,7 +21,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
+import FlagIcon from "@mui/icons-material/OutlinedFlag";
 import Layout from "../components/Layout/Layout";
+import MoreActionsMenu from "../components/moderation/MoreActionsMenu";
+import ReportDialog from "../components/moderation/ReportDialog";
 import { useEffect, useState } from "react";
 import api, { getImageUrl } from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -138,6 +141,8 @@ export default function WorkPage() {
   const [locationType, setLocationType] = useState("presencial");
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const [reportWorkId, setReportWorkId] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   function resetForm() {
     setType("offer");
@@ -542,6 +547,21 @@ export default function WorkPage() {
                         />
                       </Box>
                     )}
+                    {!isOwner && (
+                      <MoreActionsMenu
+                        label="Opções do anúncio"
+                        actions={[
+                          {
+                            label: "Denunciar anúncio",
+                            icon: <FlagIcon fontSize="small" />,
+                            onClick: () => {
+                              setReportWorkId(work.id);
+                              setReportOpen(true);
+                            },
+                          },
+                        ]}
+                      />
+                    )}
                   </Box>
                 </Box>
 
@@ -876,6 +896,15 @@ export default function WorkPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {reportWorkId && (
+        <ReportDialog
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          targetType="work"
+          targetId={reportWorkId}
+        />
+      )}
     </Layout>
   );
 }

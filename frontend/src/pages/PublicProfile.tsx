@@ -16,6 +16,13 @@ import ProfileStats from "../components/profile/ProfileStats";
 import ProfileChips from "../components/profile/ProfileChips";
 import ProfileDetailsCard from "../components/profile/ProfileDetailsCard";
 import AudioPlayer from "../components/profile/AudioPlayer";
+import MoreActionsMenu from "../components/moderation/MoreActionsMenu";
+import ReportDialog from "../components/moderation/ReportDialog";
+import BlockDialog from "../components/moderation/BlockDialog";
+import FlagIcon from "@mui/icons-material/OutlinedFlag";
+import BlockIcon from "@mui/icons-material/Block";
+import { useSnackbar } from "notistack";
+import { unblockUser } from "../services/api";
 interface Musician {
   id: string;
   name: string;
@@ -37,6 +44,8 @@ interface Musician {
   favoriteSongUrl?: string | null;
   isProfessor?: boolean;
   profileAudioUrl?: string | null;
+  isSupport?: boolean;
+  blockedByMe?: boolean;
 }
 
 interface Post {
@@ -99,6 +108,12 @@ export default function PublicProfile() {
   const [following, setFollowing] = useState(false);
   const [followers, setFollowers] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [unblocking, setUnblocking] = useState(false);
+  // Muda para recarregar o perfil depois de bloquear ou desbloquear
+  const [reloadKey, setReloadKey] = useState(0);
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     async function loadProfile() {
@@ -128,7 +143,7 @@ export default function PublicProfile() {
       }
     }
     if (id) loadProfile();
-  }, [id]);
+  }, [id, reloadKey]);
 
   async function handleFollow() {
     const res = await api.post(`/follows/${id}`);
@@ -137,6 +152,20 @@ export default function PublicProfile() {
   }
 
   const navigate = useNavigate();
+
+  async function handleUnblock() {
+    if (!id) return;
+    setUnblocking(true);
+    try {
+      await unblockUser(id);
+      enqueueSnackbar("Desbloqueado", { variant: "success" });
+      setReloadKey(key => key + 1);
+    } catch {
+      enqueueSnackbar("Não foi possível desbloquear", { variant: "error" });
+    } finally {
+      setUnblocking(false);
+    }
+  }
 
   async function handleMessage() {
     if (!id) return;
@@ -196,6 +225,60 @@ export default function PublicProfile() {
     >
       Mensagem
     </Button>
+  );
+
+  const blocked = !!musician.blockedByMe;
+
+  const unblockButton = (
+    <Button
+      variant="outlined"
+      onClick={handleUnblock}
+      disabled={unblocking}
+      sx={{
+        color: "#ff6b84",
+        borderColor: "#ff6b84",
+        "&:hover": { borderColor: "#ff4d6d", backgroundColor: "#ff4d6d11" },
+      }}
+    >
+      Desbloquear
+    </Button>
+  );
+
+  // O suporte não pode ser bloqueado e não tem o que denunciar
+  const moreMenu = !musician.isSupport && (
+    <MoreActionsMenu
+      size="medium"
+      label="Opções do perfil"
+      actions={[
+        {
+          label: "Denunciar perfil",
+          icon: <FlagIcon fontSize="small" />,
+          onClick: () => setReportOpen(true),
+        },
+        ...(blocked
+          ? []
+          : [
+              {
+                label: "Bloquear",
+                icon: <BlockIcon fontSize="small" />,
+                onClick: () => setBlockOpen(true),
+              },
+            ]),
+      ]}
+    />
+  );
+
+  const actionButtons = blocked ? (
+    <>
+      {unblockButton}
+      {moreMenu}
+    </>
+  ) : (
+    <>
+      {followButton}
+      {messageButton}
+      {moreMenu}
+    </>
   );
 
   const detailsCard = (
@@ -284,10 +367,14 @@ export default function PublicProfile() {
 
               {/* Botão de seguir - só no mobile, logo abaixo dos chips */}
               <Box
-                sx={{ display: { xs: "flex", md: "none" }, gap: 1, mb: 1.5 }}
+                sx={{
+                  display: { xs: "flex", md: "none" },
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 1.5,
+                }}
               >
-                {followButton}
-                {messageButton}
+                {actionButtons}
               </Box>
 
               <Box
@@ -343,16 +430,42 @@ export default function PublicProfile() {
                 minWidth: 200,
               }}
             >
-              <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
-                {followButton}
-                {messageButton}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  width: "100%",
+                }}
+              >
+                {actionButtons}
               </Box>
               {detailsCard}
             </Box>
           </Box>
 
+          {blocked && (
+            <Box
+              sx={{
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #2a2a2a",
+                borderRadius: 3,
+                p: 2,
+                mt: 2,
+              }}
+            >
+              <Typography sx={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>
+                Você bloqueou {musician.name}
+              </Typography>
+              <Typography sx={{ color: "#999", fontSize: 13, mt: 0.5 }}>
+                Vocês não veem as publicações um do outro, e {musician.name} não
+                pode seguir você nem mandar mensagens.
+              </Typography>
+            </Box>
+          )}
+
           {/* Próximos shows - só aparece se tiver algum */}
-          {shows.length > 0 && (
+          {!blocked && shows.length > 0 && (
             <Box
               sx={{
                 backgroundColor: "#1a1a1a",
@@ -397,7 +510,7 @@ export default function PublicProfile() {
         </Box>
 
         {/* Conteúdo — Posts, sempre por último */}
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2, display: blocked ? "none" : "block" }}>
           <Typography
             sx={{ color: "#fff", fontWeight: 600, fontSize: 15, mb: 2 }}
           >
@@ -433,6 +546,24 @@ export default function PublicProfile() {
           )}
         </Box>
       </Box>
+
+      {id && (
+        <>
+          <ReportDialog
+            open={reportOpen}
+            onClose={() => setReportOpen(false)}
+            targetType="user"
+            targetId={id}
+          />
+          <BlockDialog
+            open={blockOpen}
+            onClose={() => setBlockOpen(false)}
+            userId={id}
+            name={musician.name}
+            onBlocked={() => setReloadKey(key => key + 1)}
+          />
+        </>
+      )}
     </Layout>
   );
 }

@@ -15,6 +15,9 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  Checkbox,
+  FormControlLabel,
+  Typography,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -65,6 +68,7 @@ export default function Register() {
   const [city, setCity] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   function isValidEmail(value: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -83,6 +87,10 @@ export default function Register() {
       setError("A senha deve ter no mínimo 6 caracteres");
       return;
     }
+    if (!acceptedTerms) {
+      setError("Aceite os Termos de uso para criar a conta");
+      return;
+    }
     try {
       setError("");
       await signUp({
@@ -92,6 +100,7 @@ export default function Register() {
         instrument,
         secondaryProfession,
         city,
+        acceptedTerms,
       });
     } catch (err: unknown) {
       const e = err as Error;
@@ -213,7 +222,47 @@ export default function Register() {
             placeholder="Ex: Fotógrafo, Designer, Professor..."
             disabled={loading}
             autoComplete="off"
-            sx={{ ...inputSx, mb: 3 }}
+            sx={{ ...inputSx, mb: 1.5 }}
+          />
+
+          {/* Os links abrem em outra aba para não perder o que foi digitado */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={acceptedTerms}
+                onChange={e => setAcceptedTerms(e.target.checked)}
+                disabled={loading}
+                sx={{ color: "#666", "&.Mui-checked": { color: "#7c4dff" } }}
+              />
+            }
+            label={
+              <Typography sx={{ color: "#bbb", fontSize: 13 }}>
+                Li e aceito os{" "}
+                <Link
+                  href="/termos"
+                  target="_blank"
+                  rel="noopener"
+                  sx={{ color: "#9c6fe4" }}
+                >
+                  Termos de uso
+                </Link>{" "}
+                e a{" "}
+                <Link
+                  href="/privacidade"
+                  target="_blank"
+                  rel="noopener"
+                  sx={{ color: "#9c6fe4" }}
+                >
+                  Política de privacidade
+                </Link>
+              </Typography>
+            }
+            sx={{
+              mb: 2,
+              mr: 0,
+              alignItems: "flex-start",
+              "& .MuiCheckbox-root": { pt: 0.25 },
+            }}
           />
 
           <Button

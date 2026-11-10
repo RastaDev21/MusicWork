@@ -100,6 +100,13 @@ export async function markOnboardingSeen() {
   return response.data.onboardingSeenAt;
 }
 
+export async function acceptTerms() {
+  const response = await api.patch<{ termsAcceptedAt: string }>(
+    "/profile/terms",
+  );
+  return response.data.termsAcceptedAt;
+}
+
 // ── Perfil / uploads de imagem e vídeo do perfil ──
 
 export async function uploadAvatar(file: File) {
@@ -327,6 +334,8 @@ export interface ConversationSummary {
   };
   lastMessage: ChatMessage | null;
   unreadCount: number;
+  // "me" = eu bloqueei, "them" = fui bloqueado
+  blockStatus?: "me" | "them" | null;
 }
 
 export async function startConversation(otherUserId: string) {
@@ -383,6 +392,91 @@ export async function uploadMessageVideo(file: File) {
   formData.append("messageVideo", file, file.name);
 
   const response = await api.post("/upload/message-video", formData);
+  return response.data;
+}
+
+// ── Denúncias e bloqueios ──
+
+export type ReportTargetType =
+  | "post"
+  | "comment"
+  | "user"
+  | "work"
+  | "conversation";
+
+export async function createReport(data: {
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: string;
+  details?: string;
+}) {
+  const response = await api.post<{ id: string }>("/reports", data);
+  return response.data;
+}
+
+export interface ReportItem {
+  id: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: string;
+  details: string | null;
+  createdAt: string;
+  snapshot: {
+    authorName?: string | null;
+    content?: string | null;
+    title?: string | null;
+    contact?: string | null;
+    imageUrl?: string | null;
+    videoUrl?: string | null;
+    instrument?: string | null;
+    city?: string | null;
+    messages?: {
+      senderName: string | null;
+      fromReported: boolean;
+      content: string | null;
+      imageUrl: string | null;
+      videoUrl: string | null;
+      createdAt: string;
+    }[];
+  } | null;
+  reporter: { id: string; name: string; avatarUrl: string | null } | null;
+  reportedUser: { id: string; name: string; avatarUrl: string | null } | null;
+}
+
+// Só a conta de suporte
+export async function getReports() {
+  const response = await api.get<ReportItem[]>("/reports");
+  return response.data;
+}
+
+export async function getOpenReportsCount() {
+  const response = await api.get<{ count: number }>("/reports/count");
+  return response.data.count;
+}
+
+export async function resolveReport(
+  reportId: string,
+  action: "remove_content" | "delete_account" | "dismiss",
+) {
+  const response = await api.post<{ message: string }>(
+    `/reports/${reportId}/resolve`,
+    { action },
+  );
+  return response.data;
+}
+
+export async function blockUser(userId: string) {
+  const response = await api.put<{ blocked: boolean }>(`/blocks/${userId}`);
+  return response.data;
+}
+
+export async function unblockUser(userId: string) {
+  const response = await api.delete<{ blocked: boolean }>(`/blocks/${userId}`);
+  return response.data;
+}
+
+export async function getBlockedUsers() {
+  const response = await api.get<FollowUser[]>("/blocks");
   return response.data;
 }
 

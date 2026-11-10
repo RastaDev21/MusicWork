@@ -1,6 +1,8 @@
 import Notification from "../models/Notification";
 import User from "../models/User";
 import PushService from "./PushService";
+import BlockService from "./BlockService";
+import { Op } from "sequelize";
 
 type NotificationType =
   | "follow"
@@ -27,6 +29,9 @@ class NotificationService {
     postId?: string,
   ) {
     if (recipientId === senderId) return null; // não notifica a si mesmo
+    if (await BlockService.isBlockedEitherWay(recipientId, senderId)) {
+      return null;
+    }
 
     const notification = await Notification.create({
       recipientId,
@@ -73,8 +78,11 @@ class NotificationService {
   }
 
   async listByUser(recipientId: string) {
+    const hiddenIds = await BlockService.getHiddenUserIds(recipientId);
     return Notification.findAll({
-      where: { recipientId },
+      where: hiddenIds.length
+        ? { recipientId, senderId: { [Op.notIn]: hiddenIds } }
+        : { recipientId },
       include: [
         {
           model: User,

@@ -2,6 +2,9 @@ import { Op } from "sequelize";
 import Follow from "../models/Follow";
 import User from "../models/User";
 import NotificationService from "./NotificationService";
+import BlockService from "./BlockService";
+
+const BLOCKED_FOLLOW_ERROR = "Não é possível seguir este perfil";
 
 class FollowService {
   async toggle(followerId: string, followingId: string) {
@@ -16,6 +19,10 @@ class FollowService {
       return { following: false };
     }
 
+    if (await BlockService.isBlockedEitherWay(followerId, followingId)) {
+      throw new Error(BLOCKED_FOLLOW_ERROR);
+    }
+
     await Follow.create({ followerId, followingId });
     await NotificationService.create(followingId, followerId, "follow");
     return { following: true };
@@ -25,6 +32,9 @@ class FollowService {
   // desatualizado e a pessoa já seguir, não deixa de seguir sem querer.
   async follow(followerId: string, followingId: string) {
     if (followerId === followingId) throw new Error("Você não pode se seguir");
+    if (await BlockService.isBlockedEitherWay(followerId, followingId)) {
+      throw new Error(BLOCKED_FOLLOW_ERROR);
+    }
 
     const [, created] = await Follow.findOrCreate({
       where: { followerId, followingId },

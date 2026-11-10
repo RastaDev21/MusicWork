@@ -3,6 +3,8 @@ import User from "../models/User";
 import Post from "../models/Post";
 import CommentLike from "../models/CommentLike";
 import NotificationService from "./NotificationService";
+import BlockService from "./BlockService";
+import { Op } from "sequelize";
 
 class CommentService {
   async create(
@@ -11,6 +13,11 @@ class CommentService {
     content: string,
     parentId?: string | null,
   ) {
+    const post = await Post.findByPk(postId, { attributes: ["userId"] });
+    if (post && (await BlockService.isBlockedEitherWay(userId, post.userId))) {
+      throw new Error("Não é possível comentar nesta publicação");
+    }
+
     const comment = await Comment.create({
       userId,
       postId,
@@ -34,7 +41,6 @@ class CommentService {
         );
       }
     } else {
-      const post = await Post.findByPk(postId);
       if (post) {
         await NotificationService.create(
           post.userId,
@@ -49,8 +55,13 @@ class CommentService {
   }
 
   async listByPost(postId: string, currentUserId?: string) {
+    const hiddenIds = currentUserId
+      ? await BlockService.getHiddenUserIds(currentUserId)
+      : [];
     const comments = await Comment.findAll({
-      where: { postId },
+      where: hiddenIds.length
+        ? { postId, userId: { [Op.notIn]: hiddenIds } }
+        : { postId },
       include: [
         { model: User, attributes: ["id", "name", "avatarUrl", "instrument"] },
         { model: CommentLike, attributes: ["userId"] },

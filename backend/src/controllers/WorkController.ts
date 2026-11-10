@@ -43,13 +43,16 @@ class WorkController {
   async list(request: Request, response: Response) {
     try {
       const { type, category, city, limit, offset } = request.query;
-      const works = await WorkService.listWorks({
-        type: type as string,
-        category: category as string,
-        city: city as string,
-        limit: Math.min(Number(limit) || 20, 50),
-        offset: Number(offset) || 0,
-      });
+      const works = await WorkService.listWorks(
+        {
+          type: type as string,
+          category: category as string,
+          city: city as string,
+          limit: Math.min(Number(limit) || 20, 50),
+          offset: Number(offset) || 0,
+        },
+        request.userId as string,
+      );
       return response.status(200).json(works);
     } catch (error: any) {
       return response.status(400).json({ error: error.message });

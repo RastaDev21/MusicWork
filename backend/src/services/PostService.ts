@@ -4,6 +4,7 @@ import Follow from "../models/Follow";
 import User from "../models/User";
 import Like from "../models/Like";
 import Comment from "../models/Comment";
+import BlockService from "./BlockService";
 
 // Include e formatação compartilhados pelas 3 consultas de post
 // (feed, perfil, post fixado) — evita repetir a mesma projeção.
@@ -59,7 +60,11 @@ class PostService {
   }
 
   async listPosts(currentUserId?: string, limit = 20, offset = 0) {
+    const hiddenIds = currentUserId
+      ? await BlockService.getHiddenUserIds(currentUserId)
+      : [];
     const posts = await Post.findAll({
+      where: hiddenIds.length ? { userId: { [Op.notIn]: hiddenIds } } : {},
       include: POST_INCLUDE,
       order: [["createdAt", "DESC"]],
       limit,
@@ -89,6 +94,12 @@ class PostService {
 
   // Posts de um usuário específico (perfil próprio e público).
   async listByUser(userId: string, currentUserId?: string) {
+    if (
+      currentUserId &&
+      (await BlockService.isBlockedEitherWay(currentUserId, userId))
+    ) {
+      return [];
+    }
     const posts = await Post.findAll({
       where: { userId },
       include: POST_INCLUDE,
@@ -99,6 +110,12 @@ class PostService {
   }
 
   async getPinnedPost(userId: string, currentUserId?: string) {
+    if (
+      currentUserId &&
+      (await BlockService.isBlockedEitherWay(currentUserId, userId))
+    ) {
+      return null;
+    }
     const post = await Post.findOne({
       where: { userId, isPinned: true },
       include: POST_INCLUDE,

@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import Work from "../models/Work";
 import User from "../models/User";
+import BlockService from "./BlockService";
 
 class WorkService {
   async createWork(data: {
@@ -26,10 +27,15 @@ class WorkService {
       limit?: number;
       offset?: number;
     } = {},
+    currentUserId?: string,
   ) {
     const { type, category, city, limit = 20, offset = 0 } = filters;
 
     const where: any = {};
+    const hiddenIds = currentUserId
+      ? await BlockService.getHiddenUserIds(currentUserId)
+      : [];
+    if (hiddenIds.length) where.userId = { [Op.notIn]: hiddenIds };
     if (type && type !== "all") where.type = type;
     if (category) where.category = category;
     if (city) where.city = { [Op.iLike]: `%${city}%` };

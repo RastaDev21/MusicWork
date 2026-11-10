@@ -35,6 +35,7 @@ class User extends Model {
   declare emailVerificationExpires: Date | null;
   declare googleId: string | null;
   declare onboardingSeenAt: Date | null;
+  declare termsAcceptedAt: Date | null;
 }
 
 User.init(
@@ -178,6 +179,12 @@ User.init(
     // Primeira vez que viu o tour do app (onboarding). null = ainda não viu:
     // o tour abre sozinho. Também conta os 14 dias do ícone no header.
     onboardingSeenAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    // null = ainda não aceitou os termos de uso (contas de antes dos termos e
+    // contas novas pelo Google): o app pede o aceite antes de liberar o uso.
+    termsAcceptedAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },

@@ -3,6 +3,7 @@ import User from "../models/User";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import EmailService from "./EmailService";
+import BlockService from "./BlockService";
 
 function toPublicProfile(user: User) {
   return {
@@ -59,11 +60,13 @@ class UserService {
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
     const emailVerificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
+    // O controller só chega aqui com os termos aceitos no formulário
     const user = await User.create({
       ...data,
       password: hashedPassword,
       emailVerificationToken,
       emailVerificationExpires,
+      termsAcceptedAt: new Date(),
     });
 
     try {
@@ -104,7 +107,22 @@ class UserService {
       email: user.email,
       isEmailVerified: user.isEmailVerified,
       onboardingSeenAt: user.onboardingSeenAt,
+      termsAcceptedAt: user.termsAcceptedAt,
     };
+  }
+
+  async acceptTerms(id: string) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    if (!user.termsAcceptedAt) {
+      await user.update({ termsAcceptedAt: new Date() });
+    }
+
+    return { termsAcceptedAt: user.termsAcceptedAt };
   }
 
   // Guarda só a primeira vez: os 14 dias do ícone do tour contam dela.
@@ -122,15 +140,24 @@ class UserService {
     return { onboardingSeenAt: user.onboardingSeenAt };
   }
 
-  // Perfil de terceiros (/users/:id): sem email.
-  async findPublicById(id: string) {
+  // Perfil de terceiros (/users/:id): sem email. Quem me bloqueou aparece
+  // como não encontrado; quem eu bloqueei vem com blockedByMe para a tela
+  // mostrar o desbloquear no lugar do conteúdo.
+  async findPublicById(id: string, viewerId?: string) {
     const user = await User.findByPk(id);
 
     if (!user) {
       throw new Error("Usuário não encontrado");
     }
 
-    return toPublicProfile(user);
+    const blockStatus = viewerId
+      ? await BlockService.getBlockStatus(viewerId, id)
+      : null;
+    if (blockStatus === "them") {
+      throw new Error("Usuário não encontrado");
+    }
+
+    return { ...toPublicProfile(user), blockedByMe: blockStatus === "me" };
   }
 
   async updateUser(
@@ -192,14 +219,17 @@ class UserService {
     };
   }
 
-  async searchUsers(params: {
-    query?: string;
-    instrument?: string;
-    genre?: string;
-    city?: string;
-    nationality?: string;
-    isProfessor?: boolean;
-  }) {
+  async searchUsers(
+    params: {
+      query?: string;
+      instrument?: string;
+      genre?: string;
+      city?: string;
+      nationality?: string;
+      isProfessor?: boolean;
+    },
+    currentUserId?: string,
+  ) {
     const { query, instrument, genre, city, nationality, isProfessor } = params;
 
     const conditions: any[] = [];
@@ -222,6 +252,11 @@ class UserService {
     }
 
     conditions.push({ isSupport: { [Op.not]: true } });
+
+    const hiddenIds = currentUserId
+      ? await BlockService.getHiddenUserIds(currentUserId)
+      : [];
+    if (hiddenIds.length) conditions.push({ id: { [Op.notIn]: hiddenIds } });
 
     if (instrument) conditions.push(unaccentLike("instrument", instrument));
     if (genre) conditions.push(unaccentLike("genre", genre));

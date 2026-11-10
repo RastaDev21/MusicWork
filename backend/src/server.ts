@@ -19,6 +19,8 @@ import commentLikeRouter from "./routes/commentLikeRoutes";
 import showRouter from "./routes/showRoutes";
 import conversationRouter from "./routes/conversationRoutes";
 import pushRouter from "./routes/pushRoutes";
+import reportRouter from "./routes/reportRoutes";
+import blockRouter from "./routes/blockRoutes";
 
 import User from "./models/User";
 import Post from "./models/Post";
@@ -32,6 +34,8 @@ import Show from "./models/Show";
 import Conversation from "./models/Conversation";
 import Message from "./models/Message";
 import PushSubscription from "./models/PushSubscription";
+import Report from "./models/Report";
+import Block from "./models/Block";
 
 const app = express();
 
@@ -69,6 +73,8 @@ app.use(commentLikeRouter);
 app.use(showRouter);
 app.use(conversationRouter);
 app.use(pushRouter);
+app.use(reportRouter);
+app.use(blockRouter);
 
 app.get("/health", (request, response) => {
   return response.json({ status: "ok" });
@@ -157,6 +163,12 @@ Message.sync({ alter: true }).then(() => {
 });
 PushSubscription.sync({ alter: true }).then(() => {
   console.log("✅ Tabela push_subscriptions sincronizada");
+});
+Report.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela reports sincronizada");
+});
+Block.sync({ alter: true }).then(() => {
+  console.log("✅ Tabela blocks sincronizada");
 });
 
 const PORT = process.env.PORT || 3333;

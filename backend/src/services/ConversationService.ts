@@ -3,6 +3,7 @@ import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import User from "../models/User";
 import PushService from "./PushService";
+import BlockService from "./BlockService";
 
 class ConversationService {
   async findOrCreateConversation(userId: string, otherUserId: string) {
@@ -20,6 +21,9 @@ class ConversationService {
     });
 
     if (!conversation) {
+      if (await BlockService.isBlockedEitherWay(userId, otherUserId)) {
+        throw new Error("Não é possível conversar com este perfil");
+      }
       conversation = await Conversation.create({
         user1Id: userId,
         user2Id: otherUserId,
@@ -57,6 +61,9 @@ class ConversationService {
     });
 
     const conversationIds = conversations.map(c => c.id);
+
+    // Conversa com bloqueio continua na lista, mas sem como responder
+    const blocks = await BlockService.getBlockSets(userId);
 
     // Uma única query agregada para todas as contagens de não lidas (evita N+1).
     const unreadRows = conversationIds.length
@@ -96,6 +103,11 @@ class ConversationService {
           otherUser,
           lastMessage,
           unreadCount: unreadByConversation.get(conv.id) || 0,
+          blockStatus: blocks.byMe.has(otherUser?.id)
+            ? "me"
+            : blocks.againstMe.has(otherUser?.id)
+              ? "them"
+              : null,
         };
       }),
     );
@@ -166,6 +178,14 @@ class ConversationService {
       throw new Error("A mensagem precisa ter texto, imagem ou vídeo");
     }
 
+    const recipientId =
+      conversation.user1Id === senderId
+        ? conversation.user2Id
+        : conversation.user1Id;
+    if (await BlockService.isBlockedEitherWay(senderId, recipientId)) {
+      throw new Error("Não é possível enviar mensagens nesta conversa");
+    }
+
     const message = await Message.create({
       conversationId,
       senderId,
@@ -181,10 +201,6 @@ class ConversationService {
     });
 
     const sender = (withSender as any)?.sender as User | undefined;
-    const recipientId =
-      conversation.user1Id === senderId
-        ? conversation.user2Id
-        : conversation.user1Id;
     const preview = hasContent
       ? (content as string).trim().slice(0, 140)
       : imageUrl

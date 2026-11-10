@@ -12,6 +12,8 @@ import Show from "../models/Show";
 import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import PushSubscription from "../models/PushSubscription";
+import Report from "../models/Report";
+import Block from "../models/Block";
 import { deleteUserMedia } from "./CloudinaryService";
 
 class AccountService {
@@ -125,6 +127,17 @@ class AccountService {
         transaction,
       });
       await PushSubscription.destroy({ where: { userId }, transaction });
+      // Denúncias feitas pela pessoa e sobre ela
+      await Report.destroy({
+        where: {
+          [Op.or]: [{ reporterId: userId }, { reportedUserId: userId }],
+        },
+        transaction,
+      });
+      await Block.destroy({
+        where: { [Op.or]: [{ blockerId: userId }, { blockedId: userId }] },
+        transaction,
+      });
       await User.destroy({ where: { id: userId }, transaction });
     });
 

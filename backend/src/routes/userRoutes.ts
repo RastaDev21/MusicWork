@@ -12,6 +12,7 @@ userRouter.patch(
   authMiddleware,
   UserController.markOnboardingSeen,
 );
+userRouter.patch("/profile/terms", authMiddleware, UserController.acceptTerms);
 userRouter.put("/users", authMiddleware, UserController.update);
 userRouter.get("/users/:id", authMiddleware, UserController.show);
 

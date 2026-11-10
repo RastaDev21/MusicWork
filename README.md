@@ -2,6 +2,16 @@
 
 ## 🔄 Onde paramos (última atualização: novembro de 2026)
 
+**Termos de uso, denúncias e bloqueios (10/11/2026) — testado local, FALTA DEPLOY:** exigência da política de conteúdo gerado por usuários do Play (conferida na página oficial em 10/11: termos aceitos antes de publicar, denunciar usuários e conteúdo, bloquear usuários e agir nas denúncias). Teste e2e local com 57 verificações passando (backend na 3399 + banco `development`), e prints de todas as telas.
+
+- **Termos de uso** (`/termos`, separados da política de privacidade): caixa de aceite obrigatória no cadastro (`acceptedTerms`, o backend recusa sem ela) e tela de aceite (`TermsGate`) para quem já tinha conta ou entra pelo Google, sem como pular (a saída é sair da conta). Campo `termsAcceptedAt` no `User`, rota `PATCH /profile/terms`. O tour só abre depois do aceite
+- **Denunciar:** menu ⋮ em publicação, perfil, anúncio do Work e conversa; link "Denunciar" em comentários e respostas. 8 motivos, comentário opcional. A denúncia guarda uma cópia do conteúdo (`snapshot`; na conversa, as últimas 20 mensagens). Tabela `reports`, rota `POST /reports`
+- **Fila do suporte** (`/denuncias`, só `isSupport`): push no celular do suporte a cada denúncia ("urgente" quando o motivo é menor de idade), badge no avatar e item "Denúncias" no menu. Ações: remover conteúdo (post, comentário ou anúncio, com a mídia apagada do Cloudinary), excluir a conta denunciada ou arquivar. Rotas `GET /reports`, `GET /reports/count`, `POST /reports/:id/resolve`
+- **Bloquear:** menu ⋮ do perfil e da conversa. Desfaz o seguir nos dois sentidos, impede seguir, mensagem e comentário, e esconde de um para o outro posts, comentários, busca, Work e notificações. Perfil de quem te bloqueou aparece como "não encontrado"; conversa com bloqueio fica só para leitura. Lista com "Desbloquear" em Configurações. Suporte não pode ser bloqueado. Tabela `blocks`, rotas `PUT`/`DELETE /blocks/:id` e `GET /blocks`
+- Política de privacidade, `/excluir-conta` e `/seguranca-infantil` atualizadas (denúncias, bloqueios, termos); a exclusão de conta apaga denúncias e bloqueios da pessoa
+- Correção no caminho: no celular, a tela de conversa era 56px maior que a área visível (não descontava o menu de baixo) e a rolagem até a última mensagem escondia o cabeçalho, onde agora ficam denunciar e bloquear
+- **Já existia (28/10):** página pública `/seguranca-infantil` (`pages/ChildSafety.tsx`), exigida pela política de padrões de segurança infantil para apps da categoria Social
+
 **Última sessão (6 a 9/nov/2026):** testes das notificações no celular, ajustes que saíram deles e três novidades sociais, todas em produção:
 
 - ✅ **Listas de seguidores e seguindo:** tocar nos contadores do perfil (próprio ou público) abre a lista; tocar numa pessoa abre o perfil dela
@@ -79,7 +89,9 @@ Pendente:
 - [ ] Colar a URL da política no Play Console
 - [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
 - [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
-- [ ] Denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): **a confirmar** na Central de Ajuda do Play Console antes de construir
+- [ ] Denunciar conteúdo e bloquear usuários + termos de uso (política de conteúdo gerado por usuário): **confirmado como obrigatório e implementado em 10/11, falta deploy** (ver topo)
+- [ ] Play Console → Conteúdo do app → Padrões de segurança infantil: link `https://musicwork.com.br/seguranca-infantil`, canal de denúncia no app e ponto de contato, se ainda não foi preenchido
+- [ ] Na primeira vez que entrar com a conta de suporte depois do deploy, aceitar os termos (ela também passa pela tela de aceite)
 - [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar). **Em 10/11: 9 de 12 aceites (faltam 3), prazo ainda não começou** — reenviar o link de participação para os 16 da lista
 - [ ] Backup da keystore
 
@@ -244,6 +256,7 @@ musicwork/
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 - ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo tour, pelo banner do Feed ou em Configurações
 - ✅ Onboarding (nov/2026): tour de 6 telas que abre sozinho uma vez por conta, ícone **?** no header por 14 dias, "Ver o tour" e "Sobre" (créditos) em Configurações
+- ✅ Termos de uso, denunciar e bloquear (nov/2026, falta deploy): aceite dos termos no cadastro e para contas antigas, denúncia de publicação, comentário, perfil, anúncio e conversa, fila de denúncias da conta de suporte e bloqueio de usuários (ver "Onde paramos")
 
 ### Perfil ✅
 
@@ -518,7 +531,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Rotas públicas sem tema (ex: `/privacidade`):** `PrivacyPolicy.tsx` usa cores fixas (fundo `#0f0f0f`, texto claro) porque, fora do layout autenticado, o texto herdava preto sobre fundo escuro e ficava ilegível. Qualquer página pública nova deve definir cores explicitamente ou ser envolvida pelo mesmo tema.
 
-- **Exclusão de conta apaga em ordem explícita, sem depender de `ON DELETE CASCADE` (out/2026):** `AccountService.deleteAccount` coleta ids e URLs de mídia antes, depois apaga numa `sequelize.transaction` na ordem CommentLike → Comment → Like → Notification → Post → Follow → Work → Show → Message → Conversation → PushSubscription → User. As FKs são criadas pelo `sync({ alter: true })` (em paralelo, sem `await` entre tabelas), então o comportamento de cascade no banco não é confiável. **Ao criar uma tabela nova que referencia `users`, incluí-la nessa lista**, senão a exclusão deixa linha órfã ou falha por FK. Comentários apagados incluem os do usuário, os feitos nos posts dele e as respostas de outros aos comentários dele (mesma regra do `CommentService.delete`). Conversas somem inteiras, para os dois lados (decisão consciente: mais simples e não deixa dado pessoal pra trás).
+- **Exclusão de conta apaga em ordem explícita, sem depender de `ON DELETE CASCADE` (out/2026):** `AccountService.deleteAccount` coleta ids e URLs de mídia antes, depois apaga numa `sequelize.transaction` na ordem CommentLike → Comment → Like → Notification → Post → Follow → Work → Show → Message → Conversation → PushSubscription → Report → Block → User. As FKs são criadas pelo `sync({ alter: true })` (em paralelo, sem `await` entre tabelas), então o comportamento de cascade no banco não é confiável. **Ao criar uma tabela nova que referencia `users`, incluí-la nessa lista**, senão a exclusão deixa linha órfã ou falha por FK. Comentários apagados incluem os do usuário, os feitos nos posts dele e as respostas de outros aos comentários dele (mesma regra do `CommentService.delete`). Conversas somem inteiras, para os dois lados (decisão consciente: mais simples e não deixa dado pessoal pra trás).
 
 - **Limpeza de mídia da conta excluída é por URL + por prefixo:** `CloudinaryService.deleteUserMedia` primeiro apaga os `public_id` extraídos das URLs salvas no banco (pega uploads antigos com prefixo `user-`/`undefined-` e a mídia da outra pessoa nas conversas apagadas), depois chama `delete_resources_by_prefix("<pasta>/<userId>-")` em cada pasta (pega órfãos: fotos trocadas antes do `avatarPublicId`, áudio/vídeo substituídos, upload de post nunca publicado). Depende do formato `public_id: \`${userId}-${Date.now()}\`` do `uploadMiddleware` — não mudar esse formato sem ajustar lá. **Pasta nova no `uploadMiddleware` precisa entrar em `CLOUDINARY_FOLDERS`.** As chamadas rodam uma por vez: em paralelo, a Admin API recusa com HTTP 420. A limpeza roda depois do commit do banco e nunca derruba a resposta (falha só vai pro log).
 
@@ -533,6 +546,12 @@ VITE_API_URL=https://api.musicwork.com.br
 - **Service worker próprio (`frontend/src/sw.ts`):** desde o push, o `vite-plugin-pwa` usa `strategies: "injectManifest"` em vez de gerar o SW sozinho. O `sw.ts` reproduz o que o plugin gerava (`skipWaiting`, `clientsClaim`, precache, `cleanupOutdatedCaches`, fallback do SPA para `index.html`) — a lista de precache foi conferida igual à de antes. Tem tsconfig próprio (`tsconfig.sw.json`, lib `WebWorker`) e fica fora do `tsconfig.app.json`. **Não renomear o arquivo final `sw.js`**: é o endereço que os aparelhos já instalados usam para buscar atualização.
 
 - **Onboarding (nov/2026) — quando abre e quando marca:** abre sozinho quando `onboardingSeenAt` está vazio. Como o usuário do localStorage pode estar velho (viu o tour em outro aparelho), o `NavBar` confere no `GET /profile` antes de abrir. Marca como visto **ao fechar**, não ao abrir: enquanto o tour está aberto, o banner "Ative as notificações" do Feed fica escondido (`PushPrompt` exige `onboardingSeenAt`), e ao fechar ele só aparece se a pessoa pulou antes da tela de notificações (chegar nela chama `dismissPushPrompt`). O `PushPrompt` checa o "dispensado" de novo a cada render por isso. O ícone **?** do header aparece por `TOUR_ICON_DAYS` (14) dias contados do `onboardingSeenAt` — por isso o backend guarda só a primeira data. Textos das telas ficam no array `SLIDES` do `Onboarding.tsx` e só descrevem o que o app já faz; o protótipo de referência está num artifact do Claude (canvas "MusicWork — Onboarding no header").
+
+- **Bloqueio vale para os dois lados (nov/2026):** `BlockService.getHiddenUserIds(userId)` devolve quem eu bloqueei **e** quem me bloqueou, e é o que filtra feed, comentários, busca, Work e o sino; `isBlockedEitherWay` barra seguir, mensagem, comentário e notificação nova. **Ao criar uma listagem nova de conteúdo de usuários, filtrar por `getHiddenUserIds`**. `findPublicById` responde 404 para quem foi bloqueado (não revela o bloqueio) e `blockedByMe: true` para quem bloqueou. A conta de suporte não pode ser bloqueada, para o canal de ajuda e denúncia nunca fechar.
+
+- **Denúncias guardam cópia do conteúdo (nov/2026):** `ReportService.create` salva em `snapshot` o que foi denunciado (texto, mídia, título do anúncio, últimas 20 mensagens da conversa), para o suporte ver mesmo se o autor editar ou apagar. A mesma pessoa denunciando o mesmo alvo com denúncia aberta não duplica. Remover conteúdo resolve as outras denúncias abertas do mesmo alvo; excluir a conta apaga as denúncias sobre ela. As rotas da fila usam `supportMiddleware`, que confere `isSupport` no banco (o token não carrega). Os motivos ficam em `REASON_LABEL` (backend) e `REPORT_REASONS` (frontend), com as mesmas chaves.
+
+- **Termos antes do tour (nov/2026):** `TermsGate` (no `Layout`) confere `termsAcceptedAt` no servidor antes de abrir, como o onboarding faz com `onboardingSeenAt`, e o `NavBar` só abre o tour quando `termsAcceptedAt` está preenchido. Conta nova pelo Google nasce sem aceite e passa pela tela.
 
 - **Associações `Follow → User` sem alias:** o `server.ts` declara `Follow.belongsTo(User)` duas vezes (por `followerId` e por `followingId`) sem `as`, então uma sobrescreve a outra e um `include` de User em Follow é ambíguo. As listas de seguidores/seguindo (`FollowService.findUsersInOrder`) buscam os ids em Follow e depois os usuários numa segunda consulta, mantendo a ordem. Não trocar por `include` sem antes dar alias às duas associações.
 

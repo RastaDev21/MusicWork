@@ -8,7 +8,7 @@
 - ✅ **Botão "Seguir" no Feed:** aparece no card de quem você ainda não segue e some de todos os posts daquela pessoa ao seguir (sugestão do Humberto)
 - ✅ **Notificações com urgência alta:** curtida e comentário não chegavam com o celular parado (o Android segura push de urgência "normal"); agora todos os pushes saem com urgência alta, como as mensagens já saíam
 - ✅ **Correções de tela:** bio longa vazando do card na busca; nome e cidade quase invisíveis no menu do avatar
-- 🔎 **Descoberta — notificação aparecendo como "Chrome":** se as notificações do *app* MusicWork estiverem desligadas no Android, o Chrome mostra o push no nome dele e o número vai para o ícone do Chrome. Aconteceu logo depois de reinstalar o app pela Play Store; ligar em Configurações do Android → Apps → MusicWork → Notificações resolveu. Falta confirmar num segundo celular se todo usuário novo cai nisso (se cair, vale um aviso no app)
+- 🔎 **Descoberta — notificação aparecendo como "Chrome":** se as notificações do *app* MusicWork estiverem desligadas no Android, o Chrome mostra o push no nome dele e o número vai para o ícone do Chrome. Aconteceu logo depois de reinstalar o app pela Play Store; ligar em Configurações do Android → Apps → MusicWork → Notificações resolveu. Num segundo celular, instalado do zero pela Play Store, as notificações chegaram no nome do MusicWork, então não é todo usuário novo que cai nisso
 - 📋 **Teste fechado (07/11):** 8 dos 12 testadores necessários aceitaram o convite (16 emails na lista). O prazo de 14 dias **ainda não começou**: ele conta a partir do 12º aceite. Email na lista não conta; conta quem abriu o link de participação logado na mesma conta Google
 
 **Onboarding:** tour de 6 telas pelo app (boas-vindas, perfil, buscar e Work, feed e Agenda, mensagens com o botão de ativar notificações, considerações finais com os créditos de Humberto Simoes e Fábio duBaixo). Abre sozinho uma vez por conta; depois fica no ícone **?** do header por 14 dias e para sempre em Configurações ("Ver o tour" e "Sobre"). Ideia do Fábio. Testado localmente de ponta a ponta no Chrome (celular e computador), incluindo push real.
@@ -35,9 +35,9 @@ Pendente:
 
 - ✅ Chaves VAPID de produção no Render (diferentes das do `.env` local), deploy feito, ativação testada no celular (app da Play Store reinstalado)
 - ✅ Testado no celular: seguir, mensagem, curtida e comentário chegando com o app fechado
-- [ ] Testar curtida com o celular **bloqueado e parado** por uns 5 minutos (é o caso que a urgência alta resolve)
-- [ ] Tocar no pop-up e ver se abre a tela certa (perfil, Feed ou conversa) — o teste automatizado não consegue clicar em notificação
-- [ ] Confirmar num segundo celular se usuário novo também recebe as notificações como "Chrome" (ver descoberta acima)
+- ✅ Curtida chegando com o celular **bloqueado e parado** por uns 5 minutos (o caso que a urgência alta resolve)
+- ✅ Tocar no pop-up abre a tela certa (perfil, Feed ou conversa), conferido à mão no celular
+- ✅ Segundo celular instalado pela Play Store recebe as notificações no nome do MusicWork, não do Chrome
 - [ ] Play Console → Segurança dos dados: avaliar declarar "IDs do dispositivo ou outros" (o endereço de entrega das notificações), coletado, não compartilhado, finalidade "Funcionalidade do app"
 - [ ] Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users` (ver "Média prioridade" no fim deste arquivo)
 

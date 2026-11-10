@@ -9,7 +9,7 @@
 - ✅ **Notificações com urgência alta:** curtida e comentário não chegavam com o celular parado (o Android segura push de urgência "normal"); agora todos os pushes saem com urgência alta, como as mensagens já saíam
 - ✅ **Correções de tela:** bio longa vazando do card na busca; nome e cidade quase invisíveis no menu do avatar
 - 🔎 **Descoberta — notificação aparecendo como "Chrome":** se as notificações do *app* MusicWork estiverem desligadas no Android, o Chrome mostra o push no nome dele e o número vai para o ícone do Chrome. Aconteceu logo depois de reinstalar o app pela Play Store; ligar em Configurações do Android → Apps → MusicWork → Notificações resolveu. Num segundo celular, instalado do zero pela Play Store, as notificações chegaram no nome do MusicWork, então não é todo usuário novo que cai nisso
-- 📋 **Teste fechado (07/11):** 8 dos 12 testadores necessários aceitaram o convite (16 emails na lista). O prazo de 14 dias **ainda não começou**: ele conta a partir do 12º aceite. Email na lista não conta; conta quem abriu o link de participação logado na mesma conta Google
+- 📋 **Teste fechado (10/11):** 9 dos 12 testadores necessários aceitaram o convite (16 emails na lista), faltam 3. O prazo de 14 dias **ainda não começou**: ele conta a partir do 12º aceite. Email na lista não conta; conta quem abriu o link de participação logado na mesma conta Google
 
 **Onboarding:** tour de 6 telas pelo app (boas-vindas, perfil, buscar e Work, feed e Agenda, mensagens com o botão de ativar notificações, considerações finais com os créditos de Humberto Simoes e Fábio duBaixo). Abre sozinho uma vez por conta; depois fica no ícone **?** do header por 14 dias e para sempre em Configurações ("Ver o tour" e "Sobre"). Ideia do Fábio. Testado localmente de ponta a ponta no Chrome (celular e computador), incluindo push real.
 
@@ -51,7 +51,7 @@ Pendente:
 - Conta de suporte (`isSupport`) não pode ser excluída
 - 2 bugs encontrados no teste e corrigidos antes do commit: (1) as chamadas de limpeza em paralelo estouravam o limite de concorrência da Admin API do Cloudinary (`420 Too many concurrent admin_api_resource_destroy operations`) — agora rodam uma por vez; (2) o objeto de erro do SDK do Cloudinary carrega a API key e o secret em `request_options.auth`, e estava sendo logado inteiro — agora só mensagem + código HTTP
 
-**Incidente de segurança (out/2026):** durante o teste da exclusão de conta, o bug (2) acima fez o `CLOUDINARY_API_SECRET` aparecer num log exibido no chat. **Rotacionar o secret** (Render + `.env` local) — ver pendências.
+**Incidente de segurança (out/2026):** durante o teste da exclusão de conta, o bug (2) acima fez o `CLOUDINARY_API_SECRET` aparecer num log exibido no chat. **Decisão (10/11/2026): o secret não vai ser rotacionado.** Fica registrado aqui caso a decisão mude.
 
 **Login com Google — ✅ CONCLUÍDO:**
 
@@ -74,19 +74,18 @@ Feito:
 
 Pendente:
 
-- [ ] **Rotacionar `CLOUDINARY_API_SECRET`** (exposto em log no chat em out/2026) — Render e `.env` local
 - [ ] Conferir a janela de restore (backup) do Neon e ajustar o "até 30 dias" escrito em `/excluir-conta` e na seção 5 da política, antes do deploy
 - [ ] Colar `https://musicwork.com.br/excluir-conta` no Play Console (Segurança dos dados → Exclusão de conta), se ainda não foi feito — o deploy já está no ar
 - [ ] Colar a URL da política no Play Console
 - [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
 - [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
 - [ ] Denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): **a confirmar** na Central de Ajuda do Play Console antes de construir
-- [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar). **Em 07/11: 8 de 12 aceites, prazo ainda não começou** — reenviar o link de participação para os 16 da lista
+- [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar). **Em 10/11: 9 de 12 aceites (faltam 3), prazo ainda não começou** — reenviar o link de participação para os 16 da lista
 - [ ] Backup da keystore
 
 **Lembrete de regras do Play Store (contas pessoais novas):**
 
-- Teste fechado obrigatório: mínimo 12 testadores, opt-in contínuo por 14 dias, antes de liberar produção — versão publicada e lista com 16 emails; em 07/11 eram 8 aceites. O Painel do Play Console mostra a contagem em "Solicitar o acesso de produção"
+- Teste fechado obrigatório: mínimo 12 testadores, opt-in contínuo por 14 dias, antes de liberar produção — versão publicada e lista com 16 emails; em 10/11 eram 9 aceites. O Painel do Play Console mostra a contagem em "Solicitar o acesso de produção"
 - `targetSdkVersion` precisa ser Android 16 (API 36) para apps novos — o Bubblewrap já gera isso automaticamente nas versões recentes
 
 **O que foi feito:**
@@ -110,7 +109,7 @@ Pendente:
 
 **Status:** Os 4 itens testados e commitados. Backend e frontend compilando sem erros.
 
-**Próximo passo sugerido:** rotacionar o secret do Cloudinary, fazer o deploy da exclusão de conta e seguir com a Fase 7 (ver pendências acima), priorizando a lista de 12 testers, já que os 14 dias do teste fechado são o gargalo.
+**Próximo passo sugerido:** seguir com a Fase 7 (ver pendências acima), priorizando os aceites que faltam no teste fechado, já que os 14 dias só começam a contar no 12º.
 
 ---
 

@@ -52,7 +52,6 @@ User.init(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     password: {
       type: DataTypes.STRING,
@@ -174,7 +173,6 @@ User.init(
     googleId: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     // Primeira vez que viu o tour do app (onboarding). null = ainda não viu:
     // o tour abre sozinho. Também conta os 14 dias do ícone no header.
@@ -193,6 +191,22 @@ User.init(
     sequelize,
     modelName: "User",
     tableName: "users",
+    // Email e googleId únicos por índice nomeado, não por `unique: true` na
+    // coluna: com ele, o `sync({ alter: true })` criava uma constraint única
+    // nova a cada boot. Os nomes são os das constraints originais, então o
+    // sync reconhece as que já existem e não cria outra.
+    indexes: [
+      {
+        name: "users_email_key",
+        unique: true,
+        fields: ["email"],
+      },
+      {
+        name: "users_googleId_key",
+        unique: true,
+        fields: ["googleId"],
+      },
+    ],
   },
 );
 

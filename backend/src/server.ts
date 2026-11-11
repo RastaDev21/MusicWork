@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 
 import "./database";
+import { removeDuplicateUserConstraints } from "./database/removeDuplicateUserConstraints";
 import userRouter from "./routes/userRoutes";
 import authRouter from "./routes/authRoutes";
 import postRouter from "./routes/postRoutes";
@@ -119,9 +120,15 @@ Message.belongsTo(User, { foreignKey: "senderId", as: "sender" });
 
 Show.belongsTo(User, { foreignKey: "userId" });
 
-User.sync({ alter: true }).then(() => {
-  console.log("✅ Tabela users sincronizada");
-});
+// Antes do sync, apaga as constraints únicas repetidas (ver o arquivo)
+removeDuplicateUserConstraints()
+  .catch(error => {
+    console.log("❌ Erro ao limpar constraints de users:", error.message);
+  })
+  .then(() => User.sync({ alter: true }))
+  .then(() => {
+    console.log("✅ Tabela users sincronizada");
+  });
 
 Post.sync({ alter: true }).then(() => {
   console.log("✅ Tabela posts sincronizada");

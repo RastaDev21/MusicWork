@@ -49,7 +49,7 @@ Pendente:
 - ✅ Tocar no pop-up abre a tela certa (perfil, Feed ou conversa), conferido à mão no celular
 - ✅ Segundo celular instalado pela Play Store recebe as notificações no nome do MusicWork, não do Chrome
 - [ ] Play Console → Segurança dos dados: avaliar declarar "IDs do dispositivo ou outros" (o endereço de entrega das notificações), coletado, não compartilhado, finalidade "Funcionalidade do app"
-- [ ] Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users` (ver "Média prioridade" no fim deste arquivo)
+- ✅ Bug antigo encontrado no caminho: constraints únicas duplicadas na tabela `users`, corrigido em 11/11 (ver "Resolvidos" no fim deste arquivo)
 
 **Antes disso:** exclusão de conta implementada (exigência da Play Store): botão em Configurações, endpoint `DELETE /account` apagando banco + mídias do Cloudinary, página pública `/excluir-conta` e seção destacada na política de privacidade. Testada de ponta a ponta localmente (banco `development` + Cloudinary real) com duas contas de teste — nada sobrou no banco nem no Cloudinary.
 
@@ -555,7 +555,7 @@ VITE_API_URL=https://api.musicwork.com.br
 
 - **Associações `Follow → User` sem alias:** o `server.ts` declara `Follow.belongsTo(User)` duas vezes (por `followerId` e por `followingId`) sem `as`, então uma sobrescreve a outra e um `include` de User em Follow é ambíguo. As listas de seguidores/seguindo (`FollowService.findUsersInOrder`) buscam os ids em Follow e depois os usuários numa segunda consulta, mantendo a ordem. Não trocar por `include` sem antes dar alias às duas associações.
 
-- **`unique: true` na coluna + `sync({ alter: true })` duplica constraint a cada restart:** é bug conhecido do Sequelize com Postgres. A tabela `users` já acumulou centenas (ver "Média prioridade"). Em tabela nova, declarar unicidade como índice nomeado em `indexes` (ex: `PushSubscription`, índice `push_subscriptions_endpoint_unique`) — o sync reconhece pelo nome e não recria.
+- **`unique: true` na coluna + `sync({ alter: true })` duplica constraint a cada restart:** é bug conhecido do Sequelize com Postgres (o `changeColumn` do alter roda `ADD UNIQUE` toda vez). A tabela `users` acumulou 400 até nov/2026 (ver "Resolvidos"). Nunca usar `unique: true` em coluna: declarar unicidade como índice nomeado em `indexes` (ex: `PushSubscription`, índice `push_subscriptions_endpoint_unique`) — o sync reconhece pelo nome e não recria. No `User`, os índices têm os nomes das constraints originais (`users_email_key`, `users_googleId_key`) justamente para o sync reconhecer as que já existiam.
 
 ### Convenções vindas da revisão de código (jul/2026)
 
@@ -605,12 +605,6 @@ Cada item tem: contexto, quando resolver e como resolver.
 
 ## 🟡 Média prioridade
 
-### Constraints únicas duplicadas na tabela `users`
-
-**Contexto:** encontrado em nov/2026. `email` e `googleId` do `User` usam `unique: true`, e o `User.sync({ alter: true })` cria uma constraint única nova para cada uma a cada restart do backend (bug do Sequelize com Postgres). No banco `development` já eram **376** constraints únicas na tabela `users`; produção deve estar parecida ou pior. Cada uma é um índice: deixa inserts e updates em `users` mais lentos e o boot mais demorado.
-
-**Como resolver:** trocar o `unique: true` das colunas por índices nomeados em `indexes` (mesmo padrão do `PushSubscription`) e apagar as duplicadas no banco, mantendo uma por coluna. Testar primeiro na branch `development` do Neon. Vale considerar também parar de usar `alter: true` em produção.
-
 ### Editar email no frontend
 
 **Contexto:** O backend já suporta troca de email via `/account/email`, mas isso
@@ -642,6 +636,18 @@ atualizada de pendências.
 
 ## ✅ Resolvidos
 
+- **Constraints únicas duplicadas na tabela `users`** -> corrigido em 11/11/2026.
+  O `unique: true` do `email` e do `googleId` fazia o `sync({ alter: true })`
+  criar uma constraint nova para cada um a cada restart: no `development` eram
+  400 (cada uma é um índice, deixando inserts, updates e o boot mais lentos).
+  Agora o `User` declara os dois como índices nomeados, e
+  `database/removeDuplicateUserConstraints.ts` apaga as cópias antes do sync,
+  mantendo a original de cada coluna. Na produção, a limpeza roda sozinha no
+  primeiro boot depois do deploy (log `🧹 N constraints únicas repetidas
+  removidas de users`); depois não acha mais nada. Testado no `development`: 3
+  boots seguidos sem criar nenhuma, email e `googleId` repetidos continuam
+  recusados pelo banco, e o e2e de moderação (57 verificações) passando. Ainda
+  vale considerar parar de usar `alter: true` em produção.
 - **Push notifications (Web Push API)** -> implementado em nov/2026. Notificação
   chegando com o app fechado (seguir, curtir, comentar, responder, curtir
   comentário, mensagem). Ver "Onde paramos" e Convenções de código.
@@ -669,4 +675,4 @@ atualizada de pendências.
 
 ---
 
-_Última atualização: outubro de 2026_
+_Última atualização: novembro de 2026_

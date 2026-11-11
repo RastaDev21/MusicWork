@@ -2,7 +2,9 @@
 
 ## 🔄 Onde paramos (última atualização: novembro de 2026)
 
-**Termos de uso, denúncias e bloqueios (10/11/2026) — testado local, FALTA DEPLOY:** exigência da política de conteúdo gerado por usuários do Play (conferida na página oficial em 10/11: termos aceitos antes de publicar, denunciar usuários e conteúdo, bloquear usuários e agir nas denúncias). Teste e2e local com 57 verificações passando (backend na 3399 + banco `development`), e prints de todas as telas.
+**11/11/2026:** corrigidas as constraints únicas duplicadas da tabela `users` — a limpeza rodou na produção no primeiro boot depois do deploy e apagou 388 (ver "Resolvidos" no fim deste arquivo).
+
+**Termos de uso, denúncias e bloqueios — ✅ EM PRODUÇÃO (10/11/2026), visto funcionando no ar:** exigência da política de conteúdo gerado por usuários do Play (conferida na página oficial em 10/11: termos aceitos antes de publicar, denunciar usuários e conteúdo, bloquear usuários e agir nas denúncias). Teste e2e local com 57 verificações passando (backend na 3399 + banco `development`), e prints de todas as telas.
 
 - **Termos de uso** (`/termos`, separados da política de privacidade): caixa de aceite obrigatória no cadastro (`acceptedTerms`, o backend recusa sem ela) e tela de aceite (`TermsGate`) para quem já tinha conta ou entra pelo Google, sem como pular (a saída é sair da conta). Campo `termsAcceptedAt` no `User`, rota `PATCH /profile/terms`. O tour só abre depois do aceite
 - **Denunciar:** menu ⋮ em publicação, perfil, anúncio do Work e conversa; link "Denunciar" em comentários e respostas. 8 motivos, comentário opcional. A denúncia guarda uma cópia do conteúdo (`snapshot`; na conversa, as últimas 20 mensagens). Tabela `reports`, rota `POST /reports`
@@ -10,6 +12,7 @@
 - **Bloquear:** menu ⋮ do perfil e da conversa. Desfaz o seguir nos dois sentidos, impede seguir, mensagem e comentário, e esconde de um para o outro posts, comentários, busca, Work e notificações. Perfil de quem te bloqueou aparece como "não encontrado"; conversa com bloqueio fica só para leitura. Lista com "Desbloquear" em Configurações. Suporte não pode ser bloqueado. Tabela `blocks`, rotas `PUT`/`DELETE /blocks/:id` e `GET /blocks`
 - Política de privacidade, `/excluir-conta` e `/seguranca-infantil` atualizadas (denúncias, bloqueios, termos); a exclusão de conta apaga denúncias e bloqueios da pessoa
 - Correção no caminho: no celular, a tela de conversa era 56px maior que a área visível (não descontava o menu de baixo) e a rolagem até a última mensagem escondia o cabeçalho, onde agora ficam denunciar e bloquear
+- Correção depois do deploy: no computador, a barra de rolagem do conteúdo continuava à vista atrás do aceite dos termos (e de qualquer janela ou menu), porque quem rola é o `Box` do `Layout`, não o body que o MUI trava. Agora some junto, com o espaço reservado para o feed não pular
 - **Já existia (28/10):** página pública `/seguranca-infantil` (`pages/ChildSafety.tsx`), exigida pela política de padrões de segurança infantil para apps da categoria Social
 
 **Última sessão (6 a 9/nov/2026):** testes das notificações no celular, ajustes que saíram deles e três novidades sociais, todas em produção:
@@ -81,6 +84,7 @@ Feito:
 - ✅ Teste interno: lista "teste" com 2 emails, versão 1 (1) publicada, instalação confirmada em celular real via link de opt-in
 - ✅ Política de privacidade publicada em `/privacidade` (`pages/PrivacyPolicy.tsx`, rota pública fora do `PrivateRoute`, cores fixas porque a rota não herda o tema)
 - ✅ Exclusão de conta: botão em Configurações + `DELETE /account` + página pública `/excluir-conta` (`pages/DeleteAccount.tsx`) + seção destacada na política
+- ✅ Termos de uso, denunciar conteúdo e bloquear usuários (política de conteúdo gerado por usuário): em produção desde 10/11 (ver topo)
 
 Pendente:
 
@@ -89,7 +93,6 @@ Pendente:
 - [ ] Colar a URL da política no Play Console
 - [ ] Ficha da loja: descrição curta (até 80 caracteres), descrição completa (até 4000), ícone 512x512, gráfico de destaque 1024x500, pelo menos 2 capturas de tela de celular
 - [ ] Classificação de conteúdo, segurança de dados, público-alvo, declaração de anúncios (não tem) e acesso ao app (informar conta de teste para o revisor, pois o app exige login)
-- [ ] Denunciar conteúdo e bloquear usuários + termos de uso (política de conteúdo gerado por usuário): **confirmado como obrigatório e implementado em 10/11, falta deploy** (ver topo)
 - [ ] Play Console → Conteúdo do app → Padrões de segurança infantil: link `https://musicwork.com.br/seguranca-infantil`, canal de denúncia no app e ponto de contato, se ainda não foi preenchido
 - [ ] Na primeira vez que entrar com a conta de suporte depois do deploy, aceitar os termos (ela também passa pela tela de aceite)
 - [ ] **Teste fechado:** mínimo 12 testers com opt-in contínuo por 14 dias, depois pedido de acesso à produção com resumo do feedback (contar cerca de 3 semanas até publicar). **Em 10/11: 9 de 12 aceites (faltam 3), prazo ainda não começou** — reenviar o link de participação para os 16 da lista
@@ -256,7 +259,7 @@ musicwork/
 - ✅ Notificações (seguir, curtir post, comentar, responder, curtir comentário) com sino no navbar, badge de não lidas e marcação automática ao abrir
 - ✅ Notificações push no celular (nov/2026): as mesmas do sino + mensagens do chat, chegando com o app fechado. Ativação pelo tour, pelo banner do Feed ou em Configurações
 - ✅ Onboarding (nov/2026): tour de 6 telas que abre sozinho uma vez por conta, ícone **?** no header por 14 dias, "Ver o tour" e "Sobre" (créditos) em Configurações
-- ✅ Termos de uso, denunciar e bloquear (nov/2026, falta deploy): aceite dos termos no cadastro e para contas antigas, denúncia de publicação, comentário, perfil, anúncio e conversa, fila de denúncias da conta de suporte e bloqueio de usuários (ver "Onde paramos")
+- ✅ Termos de uso, denunciar e bloquear (nov/2026, em produção): aceite dos termos no cadastro e para contas antigas, denúncia de publicação, comentário, perfil, anúncio e conversa, fila de denúncias da conta de suporte e bloqueio de usuários (ver "Onde paramos")
 
 ### Perfil ✅
 
@@ -642,9 +645,10 @@ atualizada de pendências.
   400 (cada uma é um índice, deixando inserts, updates e o boot mais lentos).
   Agora o `User` declara os dois como índices nomeados, e
   `database/removeDuplicateUserConstraints.ts` apaga as cópias antes do sync,
-  mantendo a original de cada coluna. Na produção, a limpeza roda sozinha no
-  primeiro boot depois do deploy (log `🧹 N constraints únicas repetidas
-  removidas de users`); depois não acha mais nada. Testado no `development`: 3
+  mantendo a original de cada coluna. Na produção, a limpeza rodou sozinha no
+  primeiro boot depois do deploy, em 11/11 às 10:28, e apagou 388 (log `🧹 388
+  constraints únicas repetidas removidas de users` no Render); nos boots
+  seguintes não acha mais nada. Testado antes no `development`: 3
   boots seguidos sem criar nenhuma, email e `googleId` repetidos continuam
   recusados pelo banco, e o e2e de moderação (57 verificações) passando. Ainda
   vale considerar parar de usar `alter: true` em produção.
